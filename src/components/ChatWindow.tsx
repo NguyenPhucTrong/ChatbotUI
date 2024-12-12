@@ -1,7 +1,15 @@
-import flower1 from "../assets/image/flower1.png";
+import { useState } from "react";
+import HeaderWindow from "./HeaderWindow";
+import MessageList from "./MessageList";
+import MessageInput from "./MessageInput";
+
+interface Message {
+    sender: any;
+    text: any;
+}
 
 
-const messages = [
+const FMessages: Message[] = [
     { text: "Hi Zoe!", sender: "me" },
     { text: "Hi, what's up?", sender: "them" },
     {
@@ -17,46 +25,24 @@ const messages = [
 
 function ChatWindow() {
 
-    // const [showOptions, setShowOptions] = useState(false);
+    const [messages, setMessages] = useState<Message[]>(FMessages)
+
+    const handleMessages = (text: any) => {
+        setMessages([...messages, { text, sender: "me" }])
+    }
+
 
     return (
         <div className="flex-1 flex flex-col">
             {/* Header */}
-            <div className=" flex flex-row-reverse p-4 bg-gray-300 text-white flex justify-between items-center">
-                <img src={flower1} alt="Zoe" className="w-10 h-10 rounded-full" />
-            </div>
+
+            <HeaderWindow />
 
             {/* Messages */}
-            <div className="flex-1 p-4 overflow-y-auto bg-gray-50">
-                {messages.map((message, index) => (
-                    <div
-                        key={index}
-                        className={`flex ${message.sender === "me" ? "justify-end" : "justify-start"
-                            } mb-4`}
-                    >
-                        <div
-                            className={`p-3 rounded-lg ${message.sender === "me"
-                                ? " bg-blue-500 text-white"
-                                : "bg-gray-200 text-gray-800"
-                                }`}
-                        >
-                            {message.text}
-                        </div>
-                    </div>
-                ))}
-            </div>
+            <MessageList messages={messages} />
 
             {/* Input */}
-            <div className="p-4 border-t border-gray-300 flex items-center">
-                <input
-                    type="text"
-                    placeholder="Type your message here..."
-                    className="flex-1 p-2 border border-gray-300 rounded-lg"
-                />
-                <button className="ml-4 px-4 py-2 bg-blue-500 text-white rounded-lg">
-                    Send
-                </button>
-            </div>
+            <MessageInput onSend={handleMessages} />
         </div>
     );
 }

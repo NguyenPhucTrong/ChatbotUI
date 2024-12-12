@@ -1,12 +1,9 @@
-import ChatWindow from "./components/ChatWindow";
-import ChatSidebar from "./components/ChatSidebar";
+
+import Home from "./pages/home";
 
 function App() {
   return (
-    <div className="flex h-screen">
-      <ChatSidebar />
-      <ChatWindow />
-    </div>
+    <Home />
   );
 }
 

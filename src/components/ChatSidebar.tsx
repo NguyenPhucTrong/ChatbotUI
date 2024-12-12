@@ -13,6 +13,7 @@ const users = [
 function ChatSidebar() {
     return (
         <div className="w-[350px] bg-gray-100 border-r border-gray-300">
+            {/* Search */}
             <div className="p-4">
                 <input
                     type="text"
@@ -20,6 +21,7 @@ function ChatSidebar() {
                     className="w-full p-2 border border-gray-300 rounded-lg"
                 />
             </div>
+            {/* Messages */}
             <ul>
                 {users.map((user, index) => (
                     <li key={index} className="p-4 flex items-center border-b border-gray-200">

@@ -1,7 +1,13 @@
-export default function App() {
+import ChatWindow from "./components/ChatWindow";
+import ChatSidebar from "./components/ChatSidebar";
+
+function App() {
   return (
-    <h1 className="text-3xl font-bold underline">
-      Hello world!
-    </h1>
-  )
+    <div className="flex h-screen">
+      <ChatSidebar />
+      <ChatWindow />
+    </div>
+  );
 }
+
+export default App;

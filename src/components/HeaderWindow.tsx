@@ -1,7 +1,11 @@
 import flower1 from "../assets/image/flower1.png";
 import { useState } from "react";
 
-export default function HeaderWindow() {
+interface HeaderWindowProps {
+    onNewChat: () => void;
+}
+
+export default function HeaderWindow({ onNewChat }: HeaderWindowProps) {
     const [showOptions, setShowOptions] = useState(false);
 
     return (
@@ -23,6 +27,12 @@ export default function HeaderWindow() {
                         </ul>
                     </div>
                 )}
+            </div>
+
+            <div>
+                <button onClick={onNewChat} className="px-4 py-2 bg-white text-black rounded-lg shadow-lg hover:bg-gray-100 ">
+                    New Chat
+                </button>
             </div>
 
         </div>

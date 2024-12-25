@@ -11,14 +11,14 @@ interface Message {
 
 const FMessages: Message[] = [
     { text: "Hi Zoe!", sender: "me" },
-    { text: "Hi, what's up?", sender: "them" },
+    { text: "Hi, what's up?", sender: "bot" },
     {
         text: "I am pleased to announce that on this beautiful magical day of the Fall Equinox...",
         sender: "me",
     },
     { text: "...we have released the first version of the chat-ui-kit-react library", sender: "me" },
-    { text: "That's great news!", sender: "them" },
-    { text: "you must be very excited", sender: "them" },
+    { text: "That's great news!", sender: "bot" },
+    { text: "you must be very excited", sender: "bot" },
     { text: "Yes I am :)", sender: "me" },
     { text: "Thank You :)", sender: "me" },
 ];
@@ -29,6 +29,11 @@ function ChatWindow() {
 
     const handleMessages = (text: any) => {
         setMessages([...messages, { text, sender: "me" }])
+
+    }
+
+    const handleNewChat = () => {
+        setMessages([{ text: "Can i help you?", sender: "bot" }])
     }
 
 
@@ -36,7 +41,7 @@ function ChatWindow() {
         <div className="flex-1 flex flex-col">
             {/* Header */}
 
-            <HeaderWindow />
+            <HeaderWindow onNewChat={handleNewChat} />
 
             {/* Messages */}
             <MessageList messages={messages} />

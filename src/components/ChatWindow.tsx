@@ -1,46 +1,56 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import HeaderWindow from "./HeaderWindow";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
 
 interface Message {
-    sender: any;
-    text: any;
+    sender: "me" | "them";
+    text: string;
 }
 
+const FMessages: { [key: number]: Message[] } = {
+    1: [
+        { text: "Hi! How can I help you?", sender: "them" },
+        { text: "Hi! How can I help you?", sender: "me" }
+    ],
+    2: [
+        { text: "Hello! Need any assistance?", sender: "them" },
+        { text: "Yes, please.", sender: "me" }
+    ],
+    3: [
+        { text: "Good day! How can I assist you?", sender: "them" },
+        { text: "I have a question.", sender: "me" }
+    ]
+};
 
-const FMessages: Message[] = [
-    { text: "Hi Zoe!", sender: "me" },
-    { text: "Hi, what's up?", sender: "bot" },
-    {
-        text: "I am pleased to announce that on this beautiful magical day of the Fall Equinox...",
-        sender: "me",
-    },
-    { text: "...we have released the first version of the chat-ui-kit-react library", sender: "me" },
-    { text: "That's great news!", sender: "bot" },
-    { text: "you must be very excited", sender: "bot" },
-    { text: "Yes I am :)", sender: "me" },
-    { text: "Thank You :)", sender: "me" },
-];
+interface ChatWindowProps {
+    selectedConversationId: number;
+    onNewConversation: (id: number) => void;
+}
 
-function ChatWindow() {
+function ChatWindow({ selectedConversationId, onNewConversation }: ChatWindowProps) {
+    const [messages, setMessages] = useState<Message[]>(FMessages[selectedConversationId] || []);
 
-    const [messages, setMessages] = useState<Message[]>(FMessages)
+    useEffect(() => {
+        setMessages(FMessages[selectedConversationId] || []);
+    }, [selectedConversationId]);
 
-    const handleMessages = (text: any) => {
-        setMessages([...messages, { text, sender: "me" }])
-
-    }
+    const handleMessages = (text: string) => {
+        const newMessages: Message[] = [...messages, { text, sender: "me" }];
+        setMessages(newMessages);
+        FMessages[selectedConversationId] = newMessages;
+    };
 
     const handleNewChat = () => {
-        setMessages([{ text: "Can i help you?", sender: "bot" }])
-    }
-
+        const newConversationId = Object.keys(FMessages).length + 1;
+        const newMessages: Message[] = [{ text: "Can I help you?", sender: "them" }];
+        FMessages[newConversationId] = newMessages;
+        onNewConversation(newConversationId);
+    };
 
     return (
         <div className="flex-1 flex flex-col">
             {/* Header */}
-
             <HeaderWindow onNewChat={handleNewChat} />
 
             {/* Messages */}

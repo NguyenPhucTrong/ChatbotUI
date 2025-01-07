@@ -1,7 +1,6 @@
-
 interface Message {
-    sender: "me" | "them"; // Chỉ định rõ hai giá trị có thể có
-    text: any;
+    sender: "me" | "them";
+    text: string;
 }
 
 interface MessageListProps {
@@ -28,5 +27,5 @@ export default function MessageList({ messages }: MessageListProps) {
                 </div>
             ))}
         </div>
-    )
+    );
 }

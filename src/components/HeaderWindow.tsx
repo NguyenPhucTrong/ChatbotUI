@@ -9,15 +9,12 @@ export default function HeaderWindow({ onNewChat }: HeaderWindowProps) {
     const [showOptions, setShowOptions] = useState(false);
 
     return (
-        <div className=" flex flex-row-reverse p-4 bg-gray-300 text-white flex justify-between items-center"
-
-        >
+        <div className=" flex flex-row-reverse p-4 bg-gray-300 text-white flex justify-between items-center">
             <div className="relative"
-
                 onMouseEnter={() => setShowOptions(true)}
                 onMouseLeave={() => setShowOptions(false)}>
 
-                <img src={flower1} alt="Zoe" className="w-10 h-10 rounded-full mr-10" />
+                <img src={flower1} alt="Chatbot" className="w-10 h-10 rounded-full mr-10" />
                 {showOptions && (
                     <div className="absolute top-0 w-32 right-5 mt-11 bg-white text-black shadow-lg rounded-lg">
                         <ul>
@@ -34,7 +31,6 @@ export default function HeaderWindow({ onNewChat }: HeaderWindowProps) {
                     New Chat
                 </button>
             </div>
-
         </div>
-    )
+    );
 }

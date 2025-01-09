@@ -1,0 +1,65 @@
+/* CSS chung cho trang Setting */
+.setting-container {
+    display: flex;
+  }
+  
+  .setting-content {
+    flex: 1;
+    padding: 20px;
+    background-color: #f4f4f4;
+  }
+  
+  .setting-content h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .setting-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .setting-section {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .setting-section h2 {
+    font-size: 20px;
+    margin-bottom: 15px;
+  }
+  
+  .setting-item {
+    margin-bottom: 15px;
+  }
+  
+  .setting-item label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  
+  .setting-item input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .save-button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .save-button:hover {
+    background-color: #2980b9;
+  }

@@ -1,0 +1,95 @@
+.admin-products {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.products-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.products-search input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 5px;
+}
+
+.products-search button {
+  padding: 8px;
+  border: none;
+  background-color: #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.add-product-button {
+  padding: 10px 15px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.products-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.products-table th,
+.products-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.products-table th {
+  background-color: #f2f2f2;
+}
+
+/* CSS cho nút "Add New User" */
+.add-user-button {
+  background-color: #3498db; /* Màu nền */
+  color: white; /* Màu chữ */
+  border: none; /* Bỏ viền */
+  padding: 10px 20px; /* Kích thước padding */
+  border-radius: 5px; /* Bo góc */
+  cursor: pointer; /* Con trỏ khi hover */
+  font-size: 16px; /* Kích thước chữ */
+  margin-left: 10px; /* Khoảng cách với các phần tử khác */
+  transition: background-color 0.3s ease; /* Hiệu ứng hover */
+}
+
+.add-user-button:hover {
+  background-color: #2980b9; /* Màu nền khi hover */
+}
+/* AdminUserTable.css */
+button {
+  padding: 5px 10px;
+  margin: 0 5px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+button:hover {
+  opacity: 0.8;
+}
+
+/* Nút Edit */
+button {
+  background-color: #3498db;
+  color: white;
+}
+
+/* Nút Delete */
+button.delete-button {
+  background-color: #e74c3c;
+  color: white;
+}

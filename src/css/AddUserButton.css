@@ -1,0 +1,23 @@
+.add-user-button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
+  }
+  
+  .add-user-button:hover {
+    background-color: #2980b9;
+  }
+  
+  .plus-icon {
+    font-size: 20px;
+    margin-right: 8px;
+    font-weight: bold;
+  }

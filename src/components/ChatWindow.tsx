@@ -54,10 +54,10 @@ function ChatWindow({ selectedConversationId, onNewConversation }: ChatWindowPro
             <HeaderWindow onNewChat={handleNewChat} />
 
             {/* Messages */}
-            <MessageList messages={messages} />
+            {/* <MessageList messages={messages} /> */}
 
             {/* Input */}
-            <MessageInput onSend={handleMessages} />
+            {/* <MessageInput onSend={handleMessages} /> */}
         </div>
     );
 }

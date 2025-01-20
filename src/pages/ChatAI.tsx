@@ -1,31 +1,30 @@
-import { useState } from "react";
+import React from "react";
 import MessageInput from "../components/MessageInput";
 import MessageList from "../components/MessageList";
 
+// Định nghĩa interface cho Message
 interface Message {
     sender: "me" | "bot";
     text: string;
 }
 
+// Định nghĩa interface cho các props của ChatAI
+interface ChatAIProps {
+    messages: Message[];
+    onNewChat: () => void;
+    onSend: (text: string | number) => void;
+    chatHistory: { id: number, title: string, messages: Message[] }[];
+    onSelectChat: (selectedMessages: Message[]) => void;
+}
 
-
-export default function ChatAI() {
-
-    const FMessages: Message[] = [
-        { text: "Hi! How can I help you?", sender: "bot" },
-    ];
-
-    const [messages, setMessages] = useState<Message[]>(FMessages);
-
-    const handleMessages = (text: any) => {
-        setMessages([...messages, { text, sender: "me" }])
-
-    }
+// Component ChatAI
+export default function ChatAI({ messages, onNewChat, onSend }: ChatAIProps) {
     return (
         <div className="flex-1 flex flex-col h-full">
-            <MessageList messages={messages} />
-            <MessageInput onSend={handleMessages} />
-
+            {/* Component hiển thị danh sách tin nhắn */}
+            <MessageList messages={messages} onNewChat={onNewChat} />
+            {/* Component nhập và gửi tin nhắn */}
+            <MessageInput onSend={onSend} />
         </div>
-    )
+    );
 }

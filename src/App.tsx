@@ -6,6 +6,7 @@ import { Route, Routes } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import ChatAI from "./pages/ChatAI";
 import ChatHistoryModal from "./components/ChatHistoryModal";
+import { getChatBotResponse } from "./api/ChatApi";
 
 // Định nghĩa interface cho Message
 interface Message {
@@ -21,12 +22,10 @@ interface ChatHistory {
 }
 
 function App() {
-  // Tin nhắn mặc định khi bắt đầu một đoạn chat mới
   const FMessages: Message[] = [
     { text: "Hi! How can I help you?", sender: "bot" },
   ];
 
-  // Đoạn chat mẫu để thêm vào lịch sử chat
   const sampleChat: Message[] = [
     { text: "Hello!", sender: "me" },
     { text: "Hi! How can I help you?", sender: "bot" },
@@ -34,35 +33,26 @@ function App() {
     { text: "Sure, what do you need to know?", sender: "bot" },
   ];
 
-  // State để quản lý tin nhắn hiện tại
   const [messages, setMessages] = useState<Message[]>(FMessages);
-  // State để quản lý trạng thái mở/đóng của modal lịch sử chat
   const [isChatHistoryOpen, setIsChatHistoryOpen] = useState(false);
-  // State để quản lý lịch sử các đoạn chat
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([
-    { id: 1, title: "Chat 1", messages: sampleChat },
-    // Thêm nhiều lịch sử chat khác ở đây
+    { id: 1, title: "Chat 1", messages: FMessages },
   ]);
 
-  // Hàm mở modal lịch sử chat
   const handleOpenChatHistory = () => {
     setIsChatHistoryOpen(true);
   };
 
-  // Hàm đóng modal lịch sử chat
   const handleCloseChatHistory = () => {
     setIsChatHistoryOpen(false);
   };
 
-  // Hàm chọn một đoạn chat từ lịch sử và hiển thị nó
   const handleSelectChat = (selectedMessages: Message[]) => {
     setMessages(selectedMessages);
     setIsChatHistoryOpen(false);
   };
 
-  // Hàm tạo đoạn chat mới và lưu đoạn chat cũ vào lịch sử
   const handleNewChat = () => {
-    // Lưu đoạn chat cũ vào lịch sử nếu có tin nhắn
     if (messages.length > 0) {
       const newChatHistory = {
         id: chatHistory.length + 1,
@@ -71,24 +61,30 @@ function App() {
       };
       setChatHistory([...chatHistory, newChatHistory]);
     }
-    // Đặt lại danh sách tin nhắn về trạng thái ban đầu
     setMessages(FMessages);
   };
 
-  // Hàm xử lý khi gửi tin nhắn mới
-  const handleMessages = (text: any) => {
-    setMessages([...messages, { text, sender: "me" }]);
+  const handleMessages = async (text: any) => {
+    const newMessage: Message = { text, sender: "me" };
+    console.log("Sending message:", newMessage);
+    setMessages((prevMessages) => [...prevMessages, newMessage]);
+
+    try {
+      const response = await getChatBotResponse(text);
+      console.log("Received response from chatbot:", response);
+      const botMessage: Message = { text: response.Answer, sender: "bot" };
+      setMessages((prevMessages) => [...prevMessages, botMessage]);
+    } catch (error) {
+      console.error("Error getting response from chatbot:", error);
+    }
   };
 
   return (
     <div className="flex h-screen">
-      {/* Sidebar chứa các liên kết và nút mở modal lịch sử chat */}
       <SideBar onOpenChatHistory={handleOpenChatHistory} />
       <div className="flex-1 flex flex-col">
-        {/* Header của ứng dụng */}
         <Header />
         <div className="flex-1 overflow-auto">
-          {/* Định nghĩa các route cho ứng dụng */}
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/chatbot" element={
@@ -104,7 +100,6 @@ function App() {
           </Routes>
         </div>
       </div>
-      {/* Modal lịch sử chat */}
       <ChatHistoryModal
         isOpen={isChatHistoryOpen}
         onClose={handleCloseChatHistory}
@@ -115,5 +110,4 @@ function App() {
   );
 }
 
-// Xuất component App
 export default App;

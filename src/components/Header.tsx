@@ -2,11 +2,12 @@ import React, { useState } from 'react'
 import { useLocation } from 'react-router-dom';
 import flower1 from "../assets/image/flower1.png";
 
-import { MdNotifications, MdHelp, MdSettings } from 'react-icons/md';
+import { MdNotifications, MdHelp, MdSettings, MdSearch } from 'react-icons/md';
 
 export default function Header() {
 
     const [showOptions, setShowOptions] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
 
     const location = useLocation();
     // Xác định tiêu đề trang dựa trên đường dẫn hiện tại
@@ -30,6 +31,12 @@ export default function Header() {
             break;
     }
 
+    // const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //     setSearchQuery(e.target.value);
+    //     // onSearch(e.target.value);
+    //     console.log(e.target.value);
+    // }
+
     return (
         <div className="bg-white shadow-md p-4 flex justify-between items-center border-b border-gray-300">
             <div className='flex flex-row items-center'>
@@ -38,20 +45,36 @@ export default function Header() {
                 {/* Nút AI Chat */}
                 <button className='bg-slate-700 ml-8 px-4 py-2 rounded-lg text-white hover:bg-slate-500'>AI Chat</button>
             </div>
+            <div className='relative'>
+                <input
+                    type="text"
+                    placeholder='Search...'
+                    value={searchQuery}
+                    onChange={(e) => {
+                        console.log(e.target.value)
+                        setSearchQuery(e.target.value)
+                    }}
+                    className=' w-96 p-2 pl-10 border rounded-lg border-gray-300'
+                />
+                <MdSearch size={25} className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" />
+            </div>
 
             <div className="flex flex-row gap-10">
-                {/* Nút thông báo */}
-                <button className='border rounded-lg border-gray-600 px-3 py-3 '>
-                    <MdNotifications size={20} />
-                </button>
-                {/* Nút cài đặt */}
-                <button className='border rounded-lg border-gray-600 px-3 py-3 '>
-                    <MdSettings size={20} />
-                </button>
-                {/* Nút trợ giúp */}
-                <button className='border rounded-lg border-gray-600 px-3 py-3 '>
-                    <MdHelp size={20} />
-                </button>
+                <div className=' rounded-lg  px-3 py-3 flex justify-between w-44'>
+
+                    {/* Nút thông báo */}
+                    <button >
+                        <MdNotifications size={24} />
+                    </button>
+                    {/* Nút cài đặt */}
+                    <button >
+                        <MdSettings size={24} />
+                    </button>
+                    {/* Nút trợ giúp */}
+                    <button >
+                        <MdHelp size={24} />
+                    </button>
+                </div>
                 {/* Hình đại diện và menu tùy chọn */}
                 <div className="relative"
                     onMouseEnter={() => setShowOptions(true)}

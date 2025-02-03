@@ -6,6 +6,7 @@ import { Route, Routes } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import ChatAI from "./pages/ChatAI";
 import ChatHistoryModal from "./components/ChatHistoryModal";
+import ProjectManagement from "./pages/ProjectManagement";
 
 // Định nghĩa interface cho Message
 interface Message {
@@ -34,14 +35,10 @@ function App() {
     { text: "Sure, what do you need to know?", sender: "bot" },
   ];
 
-  // State để quản lý tin nhắn hiện tại
   const [messages, setMessages] = useState<Message[]>(FMessages);
-  // State để quản lý trạng thái mở/đóng của modal lịch sử chat
   const [isChatHistoryOpen, setIsChatHistoryOpen] = useState(false);
-  // State để quản lý lịch sử các đoạn chat
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([
     { id: 1, title: "Chat 1", messages: sampleChat },
-    // Thêm nhiều lịch sử chat khác ở đây
   ]);
 
   // Hàm mở modal lịch sử chat
@@ -91,6 +88,7 @@ function App() {
           {/* Định nghĩa các route cho ứng dụng */}
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/project-management" element={<ProjectManagement />} />
             <Route path="/chatbot" element={
               <ChatAI
                 messages={messages}

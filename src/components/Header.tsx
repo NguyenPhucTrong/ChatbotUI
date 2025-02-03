@@ -22,6 +22,9 @@ export default function Header() {
         case "/dashboard":
             pageTitle = "Dashboard";
             break;
+        case "/project-management":
+            pageTitle = "Project Management";
+            break;
         default:
             pageTitle = "404 Not Found";
             break;

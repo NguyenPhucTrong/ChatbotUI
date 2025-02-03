@@ -36,18 +36,18 @@ export default function Header() {
                 <button className='bg-slate-700 ml-8 px-4 py-2 rounded-lg text-white hover:bg-slate-500'>AI Chat</button>
             </div>
 
-            <div className="flex flex-row gap-10">
+            <div className="flex flex-row gap-6">
                 {/* Nút thông báo */}
-                <button className='border rounded-lg border-gray-600 px-3 py-3 '>
-                    <MdNotifications size={20} />
+                <button className=' rounded-lg  px-3 py-3 '>
+                    <MdNotifications size={25} />
                 </button>
                 {/* Nút cài đặt */}
-                <button className='border rounded-lg border-gray-600 px-3 py-3 '>
-                    <MdSettings size={20} />
+                <button className=' rounded-lg px-3 py-3 '>
+                    <MdSettings size={25} />
                 </button>
                 {/* Nút trợ giúp */}
-                <button className='border rounded-lg border-gray-600 px-3 py-3 '>
-                    <MdHelp size={20} />
+                <button className=' rounded-lg px-3 py-3 '>
+                    <MdHelp size={25} />
                 </button>
                 {/* Hình đại diện và menu tùy chọn */}
                 <div className="relative"

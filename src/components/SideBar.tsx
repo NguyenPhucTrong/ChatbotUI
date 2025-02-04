@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import flower2 from "../assets/image/flower2.png";
 import { AiFillHome } from 'react-icons/ai';
-import { FaBars, FaHistory, FaProjectDiagram } from 'react-icons/fa';
-import { MdMenu, MdClose, MdDashboard, MdLogout } from 'react-icons/md';
+import { FaBars, FaHistory, FaProjectDiagram, FaRobot } from 'react-icons/fa';
+import { MdMenu, MdDashboard, MdLogout } from 'react-icons/md';
 
 export default function SideBar({ onOpenChatHistory }: { onOpenChatHistory: () => void }) {
     const [isOpen, setIsOpen] = useState(true);
@@ -13,7 +13,7 @@ export default function SideBar({ onOpenChatHistory }: { onOpenChatHistory: () =
     };
 
     return (
-        <div className={`flex flex-col ${isOpen ? 'w-72' : 'w-16'} bg-gray-800 text-white h-screen transition-width duration-300`}>
+        <div className={`flex flex-col min-w-[288px] mx-auto ${isOpen ? 'w-72' : 'w-16'} bg-gray-800 text-white h-screen transition-width duration-300`}>
             <button onClick={toggleSidebar} className="p-4">
                 {isOpen ? <FaBars className="w-6 h-6" /> : <MdMenu className="w-6 h-6" />}
             </button>
@@ -48,6 +48,15 @@ export default function SideBar({ onOpenChatHistory }: { onOpenChatHistory: () =
                             >
                                 <FaProjectDiagram className="w-6 h-6 mr-2" />
                                 <h1 className='text-lg font-light'>Project Management</h1>
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink to="/chatbot"
+                                className={({ isActive }) => `flex flex-row items-center p-3 pl-5 rounded ${isActive ? 'bg-blue-900' : 'hover:bg-gray-700'}`}
+                            >
+                                <FaRobot className="w-6 h-6 mr-2" />
+                                <h1 className='text-lg font-light'>ChatBot Q&A</h1>
+
                             </NavLink>
                         </li>
                         <li>

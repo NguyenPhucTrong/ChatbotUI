@@ -9,6 +9,13 @@ interface Task {
     priority: string;
 }
 
+interface Table {
+    id: number;
+    name: string;
+    tasks: Task[];
+    columns: string[];
+}
+
 const priorityColors: { [key: string]: string } = {
     High: 'bg-red-500 text-white',
     Medium: 'bg-yellow-500 text-white',
@@ -21,66 +28,108 @@ const statusColors: { [key: string]: string } = {
     'Not Started': 'bg-gray-500 text-white',
     Completed: 'bg-green-500 text-white',
 };
+const defaultTasks: Task[] = [
+    { id: 1, title: 'Design UI', status: 'In Progress', dueDate: '10/01/2024', priority: 'Low' },
+    { id: 2, title: 'Develop Backend', status: 'Pending', dueDate: '15/01/2024', priority: 'High' },
+    { id: 3, title: 'Test Application', status: 'Not Started', dueDate: '20/01/2024', priority: 'Medium' },
+];
 
 export default function Home() {
-    const [tasks, setTasks] = useState<Task[]>([
-        { id: 1, title: 'Design UI', status: 'In Progress', dueDate: '10/01/2024', priority: 'Low' },
-        { id: 2, title: 'Develop Backend', status: 'Pending', dueDate: '15/01/2024', priority: 'High' },
-        { id: 3, title: 'Test Application', status: 'Not Started', dueDate: '20/01/2024', priority: 'Medium' },
+    const [tables, setTables] = useState<Table[]>([
+        {
+            id: 1,
+            name: 'Default Table',
+            tasks: defaultTasks,
+            columns: ['Task', 'Status', 'Due Date', 'Priority'],
+        },
     ]);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
     const [filterPriority, setFilterPriority] = useState('All');
-    const [columns, setColumns] = useState<string[]>(['Task', 'Status', 'Due Date', 'Priority']);
 
-    const updateTaskStatus = (id: number) => {
-        setTasks(tasks.map(task => {
-            if (task.id === id) {
-                const statuses = ['Not Started', 'In Progress', 'Pending', 'Completed'];
-                const currentIndex = statuses.indexOf(task.status);
-                const nextIndex = (currentIndex + 1) % statuses.length;
-                return { ...task, status: statuses[nextIndex] };
+    const updateTaskStatus = (tableId: number, taskId: number) => {
+        setTables(tables.map(table => {
+            if (table.id === tableId) {
+                return {
+                    ...table,
+                    tasks: table.tasks.map(task => {
+                        if (task.id === taskId) {
+                            const statuses = ['Not Started', 'In Progress', 'Pending', 'Completed'];
+                            const currentIndex = statuses.indexOf(task.status);
+                            const nextIndex = (currentIndex + 1) % statuses.length;
+                            return { ...task, status: statuses[nextIndex] };
+                        }
+                        return task;
+                    }),
+                };
             }
-            return task;
+            return table;
         }));
     };
 
-    const updateTaskPriority = (id: number) => {
-        setTasks(tasks.map(task => {
-            if (task.id === id) {
-                const priorities = ['Low', 'Medium', 'High'];
-                const currentIndex = priorities.indexOf(task.priority);
-                const nextIndex = (currentIndex + 1) % priorities.length;
-                return { ...task, priority: priorities[nextIndex] };
+    const updateTaskPriority = (tableId: number, taskId: number) => {
+        setTables(tables.map(table => {
+            if (table.id === tableId) {
+                return {
+                    ...table,
+                    tasks: table.tasks.map(task => {
+                        if (task.id === taskId) {
+                            const priorities = ['Low', 'Medium', 'High'];
+                            const currentIndex = priorities.indexOf(task.priority);
+                            const nextIndex = (currentIndex + 1) % priorities.length;
+                            return { ...task, priority: priorities[nextIndex] };
+                        }
+                        return task;
+                    }),
+                };
             }
-            return task;
+            return table;
         }));
     };
 
-    const addTask = () => {
-        const newTask: Task = {
-            id: tasks.length + 1,
-            title: 'New Task',
-            status: 'Not Started',
-            dueDate: '01/01/2025',
-            priority: 'Low',
-        };
-        setTasks([...tasks, newTask]);
+    const addTask = (tableId: number) => {
+        setTables(tables.map(table => {
+            if (table.id === tableId) {
+                const newTask: Task = {
+                    id: table.tasks.length + 1,
+                    title: 'New Task',
+                    status: 'Not Started',
+                    dueDate: '01/01/2025',
+                    priority: 'Low',
+                };
+                return { ...table, tasks: [...table.tasks, newTask] };
+            }
+            return table;
+        }));
     };
 
-    const addColumn = () => {
+    const addColumn = (tableId: number) => {
         const newColumn = prompt('Enter column name:');
         if (newColumn) {
-            setColumns([...columns, newColumn]);
+            setTables(tables.map(table => {
+                if (table.id === tableId) {
+                    return { ...table, columns: [...table.columns, newColumn] };
+                }
+                return table;
+            }));
         }
     };
 
-    const filteredTasks = tasks.filter(task => {
-        return (filterStatus === 'All' || task.status === filterStatus) &&
-            (filterPriority === 'All' || task.priority === filterPriority) &&
-            task.title.toLowerCase().includes(searchTerm.toLowerCase());
-    });
+    const createNewTable = () => {
+        const tableName = prompt('Enter table name:');
+        if (tableName) {
+            setTables([...tables, { id: tables.length + 1, name: tableName, tasks: [...defaultTasks], columns: ['Task', 'Status', 'Due Date', 'Priority'] }]);
+        }
+    };
+
+    const filteredTasks = (tasks: Task[]) => {
+        return tasks.filter(task => {
+            return (filterStatus === 'All' || task.status === filterStatus) &&
+                (filterPriority === 'All' || task.priority === filterPriority) &&
+                task.title.toLowerCase().includes(searchTerm.toLowerCase());
+        });
+    };
 
     return (
         <div className="p-6 flex-1 max-w-[1632px] mx-auto overflow-hidden">
@@ -137,60 +186,72 @@ export default function Home() {
 
             {/* Add Task Button */}
             <div className="flex gap-4 mb-4">
-                <button
-                    onClick={addTask}
-                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-                >
-                    Add Task
-                </button>
 
-                {/* Add Column Button */}
+
+                {/* Create New Table Button */}
                 <button
-                    onClick={addColumn}
-                    className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                    onClick={createNewTable}
+                    className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
                 >
-                    Add Column
+                    Create New Table
                 </button>
             </div>
 
             {/* Task Table */}
-            <div className="w-full overflow-x-auto mx-auto">
-                <table className="min-w-full bg-white border border-gray-300 rounded shadow">
-                    <thead>
-                        <tr>
-                            {columns.map((column, index) => (
-                                <th key={index} className="border px-4 py-2 min-w-[300px]">{column}</th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredTasks.map(task => (
-                            <tr key={task.id} className="hover:bg-gray-100">
-                                <td className="border px-4 py-2 min-w-[300px]">{task.title}</td>
-                                <td
-                                    className={`border px-4 py-2 cursor-pointer min-w-[300px] ${statusColors[task.status]}`}
-                                    onClick={() => updateTaskStatus(task.id)}
-                                >
-                                    {task.status}
-                                </td>
-                                <td className="border px-4 py-2 min-w-[300px]">{task.dueDate}</td>
-                                <td
-                                    className={`border px-4 py-2 cursor-pointer min-w-[300px] ${priorityColors[task.priority]}`}
-                                    onClick={() => updateTaskPriority(task.id)}
-                                >
-                                    {task.priority}
-                                </td>
-                                {columns.slice(4).map((column, index) => (
-                                    <td key={index} className="border px-4 py-2 min-w-[300px]">
-                                        -
-                                    </td>
+            {tables.map((table) => (
+                <div key={table.id} className="w-full overflow-x-auto mx-auto">
+                    <h2 className="text-2xl font-semibold mb-4">{table.name}</h2>
+                    <div className="flex gap-4 mb-4">
+                        <button
+                            onClick={() => addTask(table.id)}
+                            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                        >
+                            Add Task
+                        </button>
+                        <button
+                            onClick={() => addColumn(table.id)}
+                            className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                        >
+                            Add Column
+                        </button>
+                    </div>
+                    <table className="min-w-full bg-white border border-gray-300 rounded shadow">
+                        <thead>
+                            <tr>
+                                {table.columns.map((column, index) => (
+                                    <th key={index} className="border px-4 py-2 min-w-[333px]">{column}</th>
                                 ))}
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-                <br />
-            </div>
+                        </thead>
+                        <tbody>
+                            {filteredTasks(table.tasks).map(task => (
+                                <tr key={task.id} className="hover:bg-gray-100">
+                                    <td className="border px-4 py-2 min-w-[333px]">{task.title}</td>
+                                    <td
+                                        className={`border px-4 py-2 cursor-pointer min-w-[333px] ${statusColors[task.status]}`}
+                                        onClick={() => updateTaskStatus(table.id, task.id)}
+                                    >
+                                        {task.status}
+                                    </td>
+                                    <td className="border px-4 py-2 min-w-[333px]">{task.dueDate}</td>
+                                    <td
+                                        className={`border px-4 py-2 cursor-pointer min-w-[333px] ${priorityColors[task.priority]}`}
+                                        onClick={() => updateTaskPriority(table.id, task.id)}
+                                    >
+                                        {task.priority}
+                                    </td>
+                                    {table.columns.slice(4).map((column, index) => (
+                                        <td key={index} className="border px-4 py-2 min-w-[333px]">
+                                            -
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    <br />
+                </div>
+            ))}
         </div>
     );
 }

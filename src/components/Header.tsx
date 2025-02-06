@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import flower1 from "../assets/image/flower1.png";
 
 import { MdNotifications, MdHelp, MdSettings, MdSearch } from 'react-icons/md';
@@ -25,6 +25,9 @@ export default function Header() {
             break;
         case "/project-management":
             pageTitle = "Project Management";
+            break;
+        case "/profile":
+            pageTitle = "Profile";
             break;
         default:
             pageTitle = "404 Not Found";
@@ -83,7 +86,9 @@ export default function Header() {
                     {showOptions && (
                         <div className="absolute top-0 w-32 right-5 mt-14 bg-white text-black shadow-lg rounded-lg">
                             <ul>
-                                <li className="p-3 hover:bg-gray-100 cursor-pointer">Profile</li>
+                                <li className="p-3 hover:bg-gray-100 cursor-pointer">
+                                    <Link to="/profile" >Profile</Link>
+                                </li>
                                 <li className="p-3 hover:bg-gray-100 cursor-pointer">Settings</li>
                                 <li className="p-3 hover:bg-gray-100 cursor-pointer">Logout</li>
                             </ul>

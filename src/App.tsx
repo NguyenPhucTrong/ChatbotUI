@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import ChatAI from "./pages/ChatAI";
 import ChatHistoryModal from "./components/ChatHistoryModal";
 import ProjectManagement from "./pages/ProjectManagement";
+import Profile from "./pages/Profile";
 
 // Định nghĩa interface cho Message
 interface Message {
@@ -99,9 +100,13 @@ function App() {
               />
             } />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/profile" element={<Profile />} />
+
           </Routes>
         </div>
       </div>
+
+
       {/* Modal lịch sử chat */}
       <ChatHistoryModal
         isOpen={isChatHistoryOpen}

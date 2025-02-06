@@ -218,7 +218,7 @@ export default function ProjectManagement() {
                         <tbody>
                             {filteredTasks(table.tasks).map(task => (
                                 <tr key={task.id} className="hover:bg-gray-100">
-                                    <td className=" border-b px-4 py-2 text-center min-w-[333px]">{task.title}</td>
+                                    <td className=" border-b px-6 py-4  text-center min-w-[333px]">{task.title}</td>
                                     <td className=" border-b px-6 py-4 text-center cursor-pointer " onClick={() => updateTaskStatus(table.id, task.id)}>
                                         <span className={`px-4 py-2 rounded-full ${statusColors[task.status]}`}>{task.status}</span>
                                     </td>

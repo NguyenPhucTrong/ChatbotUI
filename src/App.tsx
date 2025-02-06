@@ -112,4 +112,11 @@ function App() {
         isOpen={isChatHistoryOpen}
         onClose={handleCloseChatHistory}
         chatHistory={chatHistory}
-        o
+        onSelectChat={handleSelectChat}
+      />
+    </div>
+  );
+}
+
+// Xuất component App
+export default App;

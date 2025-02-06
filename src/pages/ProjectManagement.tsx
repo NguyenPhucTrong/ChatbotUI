@@ -136,6 +136,17 @@ export default function ProjectManagement() {
 
             {/* Search Input and Filter Options */}
             <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
+                <div className="flex gap-4 ">
+
+
+                    {/* Create New Table Button */}
+                    <button
+                        onClick={createNewTable}
+                        className=" bg-blue-500 text-white px-5 py-3 rounded-lg hover:bg-blue-700"
+                    >
+                        Create New Table
+                    </button>
+                </div>
                 <div className="relative w-full md:w-1/2">
                     <input
                         type="text"
@@ -183,63 +194,65 @@ export default function ProjectManagement() {
                 </div>
             </div>
 
-            {/* Add Task Button */}
-            <div className="flex gap-4 mb-4">
 
 
-                {/* Create New Table Button */}
-                <button
-                    onClick={createNewTable}
-                    className="bg-purple-500 text-white px-6 py-4 rounded-lg hover:bg-purple-700"
-                >
-                    Create New Table
-                </button>
-            </div>
 
             {/* Task Table */}
             {tables.map((table) => (
                 <div key={table.id} className="w-full overflow-x-auto mx-auto">
                     <h2 className="text-2xl font-semibold mb-4">{table.name}</h2>
-                    <div className="flex gap-4 mb-4">
-                        <button
-                            onClick={() => addTask(table.id)}
-                            className="bg-blue-500 text-white px-6 py-4 rounded-lg hover:bg-blue-700"
-                        >
-                            Add Task
-                        </button>
-                        <button
-                            onClick={() => addColumn(table.id)}
-                            className="bg-green-500 text-white px-6 py-4 rounded-lg hover:bg-green-700"
-                        >
-                            Add Column
-                        </button>
-                    </div>
+
                     <table className="min-w-full bg-white border border-gray-300 rounded shadow border-collapse">
                         <thead>
                             <tr>
                                 {table.columns.map((column, index) => (
-                                    <th key={index} className=" px-4 py-2 min-w-[333px] bg-gray-300">{column}</th>
+                                    <th key={index} className=" px-4 py-2 min-w-[333px] bg-gray-200">{column}</th>
                                 ))}
+                                {/* Thêm cột Add Column */}
+                                <th className="border  px-4 py-2 min-w-[200px] bg-gray-300 text-center cursor-pointer hover:bg-gray-400"
+                                    onClick={() => addColumn(table.id)}>
+                                    ➕ Add Column
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
                             {filteredTasks(table.tasks).map(task => (
                                 <tr key={task.id} className="hover:bg-gray-100">
                                     <td className=" border-b px-4 py-2 text-center min-w-[333px]">{task.title}</td>
-                                    <td className=" border-b px-6 py-4 text-center cursor-pointer " onClick={() => updateTaskStatus(table.id,task.id)}>
+                                    <td className=" border-b px-6 py-4 text-center cursor-pointer " onClick={() => updateTaskStatus(table.id, task.id)}>
                                         <span className={`px-4 py-2 rounded-full ${statusColors[task.status]}`}>{task.status}</span>
                                     </td>
                                     <td className=" border-b px-6 py-4 text-center min-w-[333px]">{task.dueDate}</td>
-                                    <td className=" border-b px-6 py-4 cursor-pointer text-center" onClick={() => updateTaskPriority(table.id,task.id)}>
+                                    <td className=" border-b px-6 py-4 cursor-pointer text-center" onClick={() => updateTaskPriority(table.id, task.id)}>
                                         <span className={`px-4 py-2 rounded-full ${priorityColors[task.priority]}`}>{task.priority}</span>
                                     </td>
+
+
                                     {table.columns.slice(4).map((column, index) => (
-                                        <td key={index} className="border px-6 py-4 text-center min-w-[333px]">
+                                        <td key={index} className="border-b px-6 py-4 text-center min-w-[333px]">
                                             -
                                         </td>
                                     ))}
+                                    <td className="border px-4 py-2 text-center">
+                                        <div className="flex items-center justify-center">
+                                            <span className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-300 cursor-pointer leading-none">
+                                                ...
+                                            </span>
+                                        </div>
+                                    </td>
+
+
+
                                 </tr>
                             ))}
+
+                            {/* Thêm hàng Add Task */}
+                            <tr className="hover:bg-gray-100 cursor-pointer">
+                                <td colSpan={table.columns.length + 1} className="border px-4 py-2 text-center bg-gray-200 hover:bg-gray-300"
+                                    onClick={() => addTask(table.id)}>
+                                    ➕ Add Task
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                     <br />

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { MdSearch } from 'react-icons/md';
+import React, { useEffect, useState } from 'react';
+import { MdSearch, MdEdit, MdDelete } from 'react-icons/md';
 
 interface Task {
     id: number;
@@ -46,6 +46,16 @@ export default function ProjectManagement() {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
     const [filterPriority, setFilterPriority] = useState('All');
+    const [showOptions, setShowOptions] = useState<{ tableId: number | null, taskId: number | null }>({ tableId: null, taskId: null });
+
+    useEffect(() => {
+        if (showOptions !== null) {
+            const timber = setTimeout(() => { setShowOptions({ tableId: null, taskId: null }) }, 2000);
+            return () => clearTimeout(timber);
+        }
+
+    }, [showOptions]);
+
 
     const updateTaskStatus = (tableId: number, taskId: number) => {
         setTables(tables.map(table => {
@@ -129,6 +139,10 @@ export default function ProjectManagement() {
                 task.title.toLowerCase().includes(searchTerm.toLowerCase());
         });
     };
+
+    const toggleOptions = (tableId: number, taskId: number) => {
+        setShowOptions(prev => (prev.tableId === tableId && prev.taskId === taskId ? { tableId: null, taskId: null } : { tableId, taskId })); // Nếu đang mở thì đóng, nếu chưa mở thì mở
+    }
 
     return (
         <div className="  p-6 flex-1 max-w-[1632px] mx-auto overflow-hidden">
@@ -233,11 +247,25 @@ export default function ProjectManagement() {
                                             -
                                         </td>
                                     ))}
-                                    <td className="border px-4 py-2 text-center">
+                                    <td className="border px-4 py-2 text-center relative">
                                         <div className="flex items-center justify-center">
-                                            <span className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-300 cursor-pointer leading-none">
+                                            <span className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-300 cursor-pointer leading-none"
+                                                onClick={() => toggleOptions(table.id, task.id)}
+                                            >
                                                 ...
                                             </span>
+                                            {showOptions.tableId === table.id && showOptions.taskId === task.id && (
+                                                <div className="absolute -top-20 right-0 w-32 bg-white text-black shadow-lg rounded-lg z-10">
+                                                    <ul>
+                                                        <li className="p-3 hover:bg-gray-100 cursor-pointer flex items-center">
+                                                            <MdEdit className="mr-2" /> Edit
+                                                        </li>
+                                                        <li className="p-3 hover:bg-gray-100 cursor-pointer flex items-center">
+                                                            <MdDelete className="mr-2" /> Delete
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            )}
                                         </div>
                                     </td>
 

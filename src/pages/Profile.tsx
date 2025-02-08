@@ -53,8 +53,8 @@ export default function Profile() {
                 {/* Thông tin cá nhân */}
                 <div className="flex flex-row justify-between text-left gap-x-8 mb-6">
                     {/* Cột 1: Email + Phone */}
-                    <div className="flex-1">
-                        <p className="text-gray-600">
+                    <div className="flex-1 ">
+                        <p className="text-gray-600 my-5">
                             <span className="font-semibold">Email:</span>
                             <input
                                 type="email"
@@ -63,7 +63,7 @@ export default function Profile() {
                                 className="ml-2 border-b-2 border-gray-300 focus:outline-none focus:border-blue-500"
                             />
                         </p>
-                        <p className="text-gray-600">
+                        <p className="text-gray-600 my-5">
                             <span className="font-semibold">Phone:</span>
                             <input
                                 type="text"
@@ -75,7 +75,7 @@ export default function Profile() {
                     </div>
                     {/* Cột 2: Department + Role */}
                     <div className="flex-1">
-                        <p className="text-gray-600">
+                        <p className="text-gray-600 my-5">
                             <span className="font-semibold">Department:</span>
                             <input
                                 type="text"
@@ -84,7 +84,7 @@ export default function Profile() {
                                 className="ml-2 border-b-2 border-gray-300 focus:outline-none focus:border-blue-500"
                             />
                         </p>
-                        <p className="text-gray-600">
+                        <p className="text-gray-600 my-5">
                             <span className="font-semibold">Role:</span>
                             <input
                                 type="text"

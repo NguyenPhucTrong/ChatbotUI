@@ -66,36 +66,37 @@ export default function Header() {
                 <div className="flex flex-row gap-10">
                     <div className=' rounded-lg  px-3 py-3 flex justify-between w-44'>
 
-                    {/* Nút thông báo */}
-                    <button >
-                        <MdNotifications size={24} />
-                    </button>
-                    {/* Nút cài đặt */}
-                    <button >
-                        <MdSettings size={24} />
-                    </button>
-                    {/* Nút trợ giúp */}
-                    <button >
-                        <MdHelp size={24} />
-                    </button>
-                </div>
-                {/* Hình đại diện và menu tùy chọn */}
-                <div className="relative"
-                    onMouseEnter={() => setShowOptions(true)}
-                    onMouseLeave={() => setShowOptions(false)}>
-                    <img src={flower1} alt="Chatbot" className="w-14 h-14 rounded-full mr-10 cursor-pointer" />
-                    {showOptions && (
-                        <div className="absolute top-0 w-32 right-5 mt-14 bg-white text-black shadow-lg rounded-lg">
-                            <ul>
-                                <li className="p-3 hover:bg-gray-100 cursor-pointer">
-                                    <Link to="/profile" >Profile</Link>
-                                </li>
-                                <li className="p-3 hover:bg-gray-100 cursor-pointer">Settings</li>
-                                <li className="p-3 hover:bg-gray-100 cursor-pointer">Logout</li>
-                            </ul>
-                        </div>
-                    )}
+                        {/* Nút thông báo */}
+                        <button >
+                            <MdNotifications size={24} />
+                        </button>
+                        {/* Nút cài đặt */}
+                        <button >
+                            <MdSettings size={24} />
+                        </button>
+                        {/* Nút trợ giúp */}
+                        <button >
+                            <MdHelp size={24} />
+                        </button>
+                    </div>
+                    {/* Hình đại diện và menu tùy chọn */}
+                    <div className="relative"
+                        onMouseEnter={() => setShowOptions(true)}
+                        onMouseLeave={() => setShowOptions(false)}>
+                        <img src={flower1} alt="Chatbot" className="w-14 h-14 rounded-full mr-10 cursor-pointer" />
+                        {showOptions && (
+                            <div className="absolute top-0 w-32 right-5 mt-14 bg-white text-black shadow-lg rounded-lg">
+                                <ul>
+                                    <li className="p-3 hover:bg-gray-100 cursor-pointer">
+                                        <Link to="/profile" >Profile</Link>
+                                    </li>
+                                    <li className="p-3 hover:bg-gray-100 cursor-pointer">Settings</li>
+                                    <li className="p-3 hover:bg-gray-100 cursor-pointer">Logout</li>
+                                </ul>
+                            </div>
+                        )}
 
+                    </div>
                 </div>
             </div>
         </div>

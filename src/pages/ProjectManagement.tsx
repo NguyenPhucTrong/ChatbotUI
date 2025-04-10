@@ -8,6 +8,7 @@ interface Task {
     dueDate: string;
     priority: string;
     assignee: string;
+
 }
 
 interface Table {
@@ -33,6 +34,7 @@ const defaultTasks: Task[] = [
     { id: 1, title: 'Design UI', status: 'In Progress', dueDate: '10/01/2024', priority: 'Low', assignee: 'John Doe' },
     { id: 2, title: 'Develop Backend', status: 'Pending', dueDate: '15/01/2024', priority: 'High', assignee: 'Jane Smith' },
     { id: 3, title: 'Test Application', status: 'Not Started', dueDate: '20/01/2024', priority: 'Medium', assignee: 'Alice Johnson' },
+
 ];
 export default function ProjectManagement() {
     const [tables, setTables] = useState<Table[]>([
@@ -47,10 +49,12 @@ export default function ProjectManagement() {
     const [isEditing, setIsEditing] = useState<{ tableId: number | null, taskId: number | null }>();
     const [editAssignee, setEditAssignee] = useState('');
 
+
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
     const [filterPriority, setFilterPriority] = useState('All');
     const [showOptions, setShowOptions] = useState<{ tableId: number | null, taskId: number | null }>({ tableId: null, taskId: null });
+
 
 
     const startEditing = (tableId: number, taskId: number, currentAssignee: string) => {
@@ -75,6 +79,7 @@ export default function ProjectManagement() {
         }));
         setIsEditing({ tableId: null, taskId: null });
     };
+
 
     useEffect(() => {
         if (showOptions !== null) {
@@ -135,6 +140,7 @@ export default function ProjectManagement() {
                     dueDate: '01/01/2025',
                     priority: 'Low',
                     assignee: 'Unassigned',
+
                 };
                 return { ...table, tasks: [...table.tasks, newTask] };
             }
@@ -269,39 +275,44 @@ export default function ProjectManagement() {
                                     <td className=" border-b px-6 py-4 cursor-pointer text-center" onClick={() => updateTaskPriority(table.id, task.id)}>
                                         <span className={`px-4 py-2 rounded-full ${priorityColors[task.priority]}`}>{task.priority}</span>
                                     </td>
-                                    {isEditing?.tableId === table.id && isEditing?.taskId === task.id ? (
-                                        <td className=' border-b px-6 py-4 text-center min-w-[333px]'>
-                                            <input
-                                                type="text"
-                                                value={editAssignee}
-                                                onChange={(e) => setEditAssignee(e.target.value)}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter') {
-                                                        handleEditAssignee(table.id, task.id, e.currentTarget.value);
-                                                        setIsEditing({ tableId: null, taskId: null });
+                                    {
+                                        isEditing?.tableId === table.id && isEditing?.taskId === task.id ? (
+                                            <td className=' border-b px-6 py-4 text-center min-w-[333px]'>
+                                                <input
+                                                    type="text"
+                                                    value={editAssignee}
+                                                    onChange={(e) => setEditAssignee(e.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            handleEditAssignee(table.id, task.id, e.currentTarget.value);
+                                                            setIsEditing({ tableId: null, taskId: null });
+                                                        }
+                                                    }}
+                                                    onBlur={() => {
+                                                        handleEditAssignee(table.id, task.id, editAssignee);
                                                     }
-                                                }}
-                                                onBlur={() => {
-                                                    handleEditAssignee(table.id, task.id, editAssignee);
-                                                }
-                                                }
-                                                className="border  px-2 py-1 rounded "
-                                            />
-                                        </td>
-                                    ) : (
-                                        <td className=' border-b px-6 py-4 text-center min-w-[333px] cursor-pointer'
-                                            onClick={() => startEditing(table.id, task.id, task.assignee)}>
-                                            {task.assignee}
-                                        </td>
-                                    )}
+                                                    }
+                                                    className="border  px-2 py-1 rounded "
+                                                />
+                                            </td>
+                                        ) : (
+                                            <td className=' border-b px-6 py-4 text-center min-w-[333px] cursor-pointer'
+                                                onClick={() => startEditing(table.id, task.id, task.assignee)}>
+                                                {task.assignee}
+                                            </td>
+                                        )
+                                    }
                                     {/* <td className=' border-b px-6 py-4 text-center min-w-[333px]'> {task.assignee} </td> */}
 
 
-                                    {table.columns.slice(5).map((column, index) => (
-                                        <td key={index} className="border-b px-6 py-4 text-center min-w-[333px]">
-                                            -
-                                        </td>
-                                    ))}
+                                    {
+                                        table.columns.slice(5).map((column, index) => (
+
+                                            <td key={index} className="border-b px-6 py-4 text-center min-w-[333px]">
+                                                -
+                                            </td>
+                                        ))
+                                    }
                                     <td className="border px-4 py-2 text-center relative">
                                         <div className="flex items-center justify-center">
                                             <span className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-300 cursor-pointer leading-none"
@@ -326,8 +337,9 @@ export default function ProjectManagement() {
 
 
 
-                                </tr>
-                            ))}
+                                </tr >
+                            ))
+                            }
 
                             {/* Thêm hàng Add Task */}
                             <tr className="hover:bg-gray-100 cursor-pointer">
@@ -336,12 +348,13 @@ export default function ProjectManagement() {
                                     ➕ Add Task
                                 </td>
                             </tr>
-                        </tbody>
-                    </table>
+                        </tbody >
+                    </table >
                     <br />
-                </div>
+                </div >
             ))
             }
         </div >
+
     );
 }

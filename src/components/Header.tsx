@@ -1,13 +1,12 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import flower1 from "../assets/image/flower1.png";
-
 import { MdNotifications, MdHelp, MdSettings, MdSearch } from 'react-icons/md';
 
 export default function Header() {
-
     const [showOptions, setShowOptions] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+    const [showChatbot, setShowChatbot] = useState(false);
 
     const location = useLocation();
     // Xác định tiêu đề trang dựa trên đường dẫn hiện tại
@@ -26,6 +25,16 @@ export default function Header() {
         case "/project-management":
             pageTitle = "Project Management";
             break;
+        case "/company-management":
+        case "/user-management":
+            pageTitle = "Admin";
+            break;
+        case "/notification":
+            pageTitle = "Notification";
+            break;
+        case "/superadmin":
+            pageTitle = "Superadmin";
+            break;
         case "/profile":
             pageTitle = "Profile";
             break;
@@ -34,52 +43,47 @@ export default function Header() {
             break;
     }
 
+
     // const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     //     setSearchQuery(e.target.value);
     //     // onSearch(e.target.value);
     //     console.log(e.target.value);
     // }
 
+
     return (
         <div className="w-full bg-gray-100">
-            <div className="bg-white shadow-md max-w-[1632px] mx-auto p-4 flex justify-between items-center border-b border-gray-300">
+            <div className="bg-white shadow-md w-full mx-auto p-4 flex justify-between items-center border-b border-gray-300">
                 <div className='flex flex-row items-center'>
-                    {/* Tiêu đề trang */}
+
                     <h1 className="text-xl font-bold">{pageTitle}</h1>
-                    {/* Nút AI Chat */}
-                    <button className='bg-slate-700 ml-8 px-4 py-2 rounded-lg text-white hover:bg-slate-500'>AI Chat</button>
-                </div>
+                    <button
+                        className='bg-slate-700 ml-8 px-4 py-2 rounded-lg text-white hover:bg-slate-500'
+                        onClick={() => setShowChatbot(!showChatbot)}
+                    >
+                        AI Chat
+                    </button>
+                </div >
                 <div className='relative'>
                     <input
                         type="text"
                         placeholder='Search...'
                         value={searchQuery}
-                        onChange={(e) => {
-                            console.log(e.target.value)
-                            setSearchQuery(e.target.value)
-                        }}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+
                         className=' w-96 p-2 pl-10 border rounded-lg border-gray-300'
                     />
                     <MdSearch size={25} className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" />
                 </div>
 
                 <div className="flex flex-row gap-10">
-                    <div className=' rounded-lg  px-3 py-3 flex justify-between w-44'>
 
-                        {/* Nút thông báo */}
-                        <button >
-                            <MdNotifications size={24} />
-                        </button>
-                        {/* Nút cài đặt */}
-                        <button >
-                            <MdSettings size={24} />
-                        </button>
-                        {/* Nút trợ giúp */}
-                        <button >
-                            <MdHelp size={24} />
-                        </button>
+                    <div className=' rounded-lg px-3 py-3 flex justify-between w-44'>
+                        <button><MdNotifications size={24} /></button>
+                        <button><MdSettings size={24} /></button>
+                        <button><MdHelp size={24} /></button>
                     </div>
-                    {/* Hình đại diện và menu tùy chọn */}
+
                     <div className="relative"
                         onMouseEnter={() => setShowOptions(true)}
                         onMouseLeave={() => setShowOptions(false)}>
@@ -88,17 +92,35 @@ export default function Header() {
                             <div className="absolute top-0 w-32 right-5 mt-14 bg-white text-black shadow-lg rounded-lg">
                                 <ul>
                                     <li className="p-3 hover:bg-gray-100 cursor-pointer">
-                                        <Link to="/profile" >Profile</Link>
-                                    </li>
+                                        <Link to="/profile">Profile</Link>
+
+                                    </li >
                                     <li className="p-3 hover:bg-gray-100 cursor-pointer">Settings</li>
                                     <li className="p-3 hover:bg-gray-100 cursor-pointer">Logout</li>
-                                </ul>
-                            </div>
-                        )}
+                                </ul >
+                            </div >
+                        )
+                        }
 
                     </div>
                 </div>
             </div>
-        </div>
+            {showChatbot && (
+                <div className="fixed bottom-4 right-4 w-96 h-96 bg-white shadow-lg border rounded-lg p-4">
+                    <div className="flex justify-between items-center border-b pb-2">
+                        <h2 className="text-lg font-bold">AI Chat Assistant</h2>
+                        <button onClick={() => setShowChatbot(false)} className="text-red-500">✖</button>
+                    </div>
+                    <div className="mt-4 h-64 overflow-auto">
+                        <p>Xin chào! Tôi là trợ lý AI. Tôi có thể giúp gì cho bạn?</p>
+                    </div>
+                    <input
+                        type="text"
+                        placeholder="Nhập tin nhắn..."
+                        className="w-full p-2 border rounded-lg mt-2"
+                    />
+                </div>
+            )}
+        </div >
     );
 }

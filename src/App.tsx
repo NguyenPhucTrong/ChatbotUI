@@ -8,6 +8,12 @@ import ChatAI from "./pages/ChatAI";
 import ChatHistoryModal from "./components/ChatHistoryModal";
 import ProjectManagement from "./pages/ProjectManagement";
 import Profile from "./pages/Profile";
+import AdminCompanyManagement from "./pages/AdminCompanyManagement";
+import AdminUsersManagement from "./pages/AdminUsersManagement";
+import AdminSMSFacebook from "./pages/AdminSMSFacebook";
+import SuperadminManagement from "./pages/SuperadminManagement";
+import MainLanding from "./pages/MainLanding";
+import Login from "./pages/Login";
 
 // Định nghĩa interface cho Message
 interface Message {
@@ -100,6 +106,14 @@ function App() {
               />
             } />
             <Route path="/dashboard" element={<Dashboard />} />
+
+            <Route path="/company-management" element={<AdminCompanyManagement />} />
+            <Route path="/user-management" element={<AdminUsersManagement />} />
+            <Route path="/notification" element={<AdminSMSFacebook />} />
+            <Route path="/superadmin" element={<SuperadminManagement />} />
+            <Route path="/mainlanding" element={<MainLanding />} />
+            <Route path="/login" element={<Login />} />
+
             <Route path="/profile" element={<Profile />} />
 
           </Routes>

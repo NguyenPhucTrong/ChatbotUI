@@ -13,7 +13,7 @@ export default function Header() {
 
     let pageTitle = "";
     switch (location.pathname) {
-        case "/":
+        case "/home":
             pageTitle = "Trang chủ";
             break;
         case "/chatbot":

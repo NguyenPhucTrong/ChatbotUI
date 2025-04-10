@@ -2,7 +2,7 @@ import { useState } from "react";
 import SideBar from "./components/SideBar";
 import Header from "./components/Header";
 import Home from "./pages/Home";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import ChatAI from "./pages/ChatAI";
 import ChatHistoryModal from "./components/ChatHistoryModal";
@@ -29,6 +29,11 @@ interface ChatHistory {
 }
 
 function App() {
+
+  const location = useLocation();
+  const isMainLanding = location.pathname === "/"
+  const isLogin = location.pathname === "/login"
+
   // Tin nhắn mặc định khi bắt đầu một đoạn chat mới
   const FMessages: Message[] = [
     { text: "Hi! How can I help you?", sender: "bot" },
@@ -86,15 +91,15 @@ function App() {
 
   return (
     <div className="flex h-screen">
-      {/* Sidebar chứa các liên kết và nút mở modal lịch sử chat */}
-      <SideBar onOpenChatHistory={handleOpenChatHistory} />
+      {!isMainLanding && !isLogin && <SideBar onOpenChatHistory={handleOpenChatHistory} />}
+      {/* <SideBar onOpenChatHistory={handleOpenChatHistory} /> */}
       <div className="flex-1 flex flex-col">
-        {/* Header của ứng dụng */}
-        <Header />
+        {!isMainLanding && !isLogin && <Header />}
+        {/* <Header /> */}
         <div className="flex-1 overflow-auto">
-          {/* Định nghĩa các route cho ứng dụng */}
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<MainLanding />} />
+            <Route path="/home" element={<Home />} />
             <Route path="/project-management" element={<ProjectManagement />} />
             <Route path="/chatbot" element={
               <ChatAI

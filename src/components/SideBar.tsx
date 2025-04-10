@@ -36,7 +36,7 @@ export default function SideBar({ onOpenChatHistory }: { onOpenChatHistory: () =
                                 </button>
                             </li>
                             <li>
-                                <NavLink to="/"
+                                <NavLink to="/home"
                                     className={({ isActive }) => `flex flex-row items-center p-3 pl-5 rounded ${isActive ? 'bg-blue-900' : 'hover:bg-gray-700'}`}
                                 >
                                     <AiFillHome className="w-6 h-6 mr-2" />

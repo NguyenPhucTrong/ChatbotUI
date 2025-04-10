@@ -1,22 +1,24 @@
 import React from "react";
 import { FaGoogle, FaGithub, FaMicrosoft } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md text-center">
         <h2 className="text-2xl font-bold mb-6">Đăng nhập tài khoản</h2>
-        
+
         {/* Social Login Buttons */}
         <div className="space-y-3">
           <button className="flex items-center w-full px-4 py-2 border rounded-md">
-            <FaGoogle className="mr-2" /> Đăng nhập với Google
+            <FaGoogle className="mr-2" onClick={() => navigate("/home")} /> Đăng nhập với Google
           </button>
           <button className="flex items-center w-full px-4 py-2 border rounded-md">
-            <FaGithub className="mr-2" /> Đăng nhập với Github
+            <FaGithub className="mr-2" onClick={() => navigate("/home")} /> Đăng nhập với Github
           </button>
           <button className="flex items-center w-full px-4 py-2 border rounded-md">
-            <FaMicrosoft className="mr-2" /> Đăng nhập với Microsoft
+            <FaMicrosoft className="mr-2" onClick={() => navigate("/home")} /> Đăng nhập với Microsoft
           </button>
         </div>
 
@@ -34,7 +36,7 @@ const Login = () => {
             <label className="block text-left text-sm font-medium">Mật khẩu</label>
             <input type="password" className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring" />
           </div>
-          <button className="w-full bg-black text-white py-2 rounded-md">Đăng nhập</button>
+          <button className="w-full bg-black text-white py-2 rounded-md" onClick={() => navigate("/home")}>Đăng nhập</button>
         </form>
       </div>
     </div>

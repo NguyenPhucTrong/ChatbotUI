@@ -102,22 +102,7 @@ export default function SideBar({ onOpenChatHistory }: { onOpenChatHistory: () =
                                     <h1 className='text-lg font-light'>Super Admin</h1>
                                 </NavLink>
                             </li>
-                            <li>
-                                <NavLink to="/mainlanding"
-                                    className={({ isActive }) => `flex flex-row items-center p-3 pl-5 rounded ${isActive ? 'bg-blue-900' : 'hover:bg-gray-700'}`}
-                                >
-                                    <FaUserShield className="w-6 h-6 mr-2" />
-                                    <h1 className='text-lg font-light'>Main Landing</h1>
-                                </NavLink>
-                            </li>
-                            <li>
-                                <NavLink to="/login"
-                                    className={({ isActive }) => `flex flex-row items-center p-3 pl-5 rounded ${isActive ? 'bg-blue-900' : 'hover:bg-gray-700'}`}
-                                >
-                                    <FaUserShield className="w-6 h-6 mr-2" />
-                                    <h1 className='text-lg font-light'>Login</h1>
-                                </NavLink>
-                            </li>
+
                             <li>
                                 <NavLink to="#"
                                     className={({ isActive }) => `flex flex-row items-center p-3 pl-5 rounded ${isActive ? 'bg-blue-900' : 'hover:bg-gray-700'}`}

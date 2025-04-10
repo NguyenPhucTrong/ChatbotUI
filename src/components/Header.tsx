@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import flower1 from "../assets/image/flower1.png";
 import { MdNotifications, MdHelp, MdSettings, MdSearch } from 'react-icons/md';
+import { toast, ToastContainer } from 'react-toastify';
 
 export default function Header() {
     const [showOptions, setShowOptions] = useState(false);
@@ -9,6 +10,9 @@ export default function Header() {
     const [showChatbot, setShowChatbot] = useState(false);
 
     const location = useLocation();
+
+    const navigate = useNavigate();
+
     // Xác định tiêu đề trang dựa trên đường dẫn hiện tại
 
     let pageTitle = "";
@@ -96,7 +100,10 @@ export default function Header() {
 
                                     </li >
                                     <li className="p-3 hover:bg-gray-100 cursor-pointer">Settings</li>
-                                    <li className="p-3 hover:bg-gray-100 cursor-pointer">Logout</li>
+                                    <li className="p-3 hover:bg-gray-100 cursor-pointer" onClick={() => {
+                                        toast.success("Đăng xuất thành công");
+                                        navigate("/login");
+                                    }} >Logout</li>
                                 </ul >
                             </div >
                         )

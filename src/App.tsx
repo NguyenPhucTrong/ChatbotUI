@@ -14,6 +14,7 @@ import AdminSMSFacebook from "./pages/AdminSMSFacebook";
 import SuperadminManagement from "./pages/SuperadminManagement";
 import MainLanding from "./pages/MainLanding";
 import Login from "./pages/Login";
+import { ToastContainer } from "react-toastify";
 
 // Định nghĩa interface cho Message
 interface Message {
@@ -133,6 +134,7 @@ function App() {
         chatHistory={chatHistory}
         onSelectChat={handleSelectChat}
       />
+      <ToastContainer />
     </div>
   );
 }

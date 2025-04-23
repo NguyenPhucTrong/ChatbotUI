@@ -1,34 +1,88 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { getUserById, updateUser } from '../services/UserServices';
 import Flower1 from '../assets/image/flower1.png';
 
 export default function Profile() {
-    const [avatar, setAvatar] = useState('https://via.placeholder.com/150');
-    const [name, setName] = useState('John Doe');
-    const [email, setEmail] = useState('john.doe@example.com');
-    const [phone, setPhone] = useState('123-456-7890');
-    const [role, setRole] = useState('Software Engineer');
-    const [department, setDepartment] = useState('Engineering');
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
+    const [role, setRole] = useState('');
+    const [fullname, setFullname] = useState('');
+    const [department, setDepartment] = useState('');
+    const [userId] = useState(1); // Tạm thời cố định userId là 1 (có thể thay đổi theo logic của bạn)
 
-    interface Project {
-        name: string;
-        status: string;
-    }
+    // Lấy thông tin user khi component được mount
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const response = await getUserById(userId);
+                console.log('Thông tin userId:', userId);
+                const user = response.data;
+                console.log('Thông tin user:', response.data);
 
-    const [projects, setProjects] = useState<Project[]>([
-        { name: 'Project A', status: 'In Progress' },
-        { name: 'Project B', status: 'Completed' },
-    ]);
+                // Gán dữ liệu từ API vào state, đảm bảo giá trị không bị undefined
+                setName(user.Username || ''); // Sử dụng `|| ''` để tránh undefined
+                setEmail(user.Email || '');
+                setPhone(user.PhoneNumber || '');
+                setRole(user.Role || '');
+                setDepartment(user.Department || '');
+                setFullname(user.Fullname || '');
+            } catch (error) {
+                console.error('Lỗi khi lấy thông tin user:', error);
+                alert('Không thể lấy thông tin user. Vui lòng thử lại.');
+            }
+        };
 
-    const statusColors: { [key: string]: string } = {
-        'In Progress': 'bg-blue-500 text-white',
-        Pending: 'bg-orange-500 text-white',
-        'Not Started': 'bg-gray-500 text-white',
-        Completed: 'bg-green-500 text-white',
-    };
+        fetchUser();
+    }, [userId]);
 
-    const handleSave = () => {
-        // Logic to save the updated information
-        console.log('Information saved:', { name, email, phone, role, department });
+    // Hàm lưu thông tin user
+    const handleSave = async () => {
+        try {
+            const payload: any = {};
+
+            // Chỉ thêm các trường đã thay đổi vào payload
+            if (name !== '') payload.Username = name;
+            if (fullname !== '') payload.Fullname = fullname;
+            if (email !== '') payload.Email = email;
+            if (phone !== '') payload.PhoneNumber = phone;
+            if (role !== '') payload.Role = role;
+
+
+            payload.Password = 'default_password'; // Giá trị mặc định
+            payload.Permission = 'default_permission'; // Giá trị mặc định
+            console.log('Dữ liệu gửi lên:', payload);
+
+            await updateUser(userId, payload);
+
+            // Gọi lại API để cập nhật dữ liệu
+            const response = await getUserById(userId);
+            const user = response.data;
+            setName(user.Username || '');
+            setEmail(user.Email || '');
+            setPhone(user.PhoneNumber || '');
+            setRole(user.Role || '');
+            setDepartment(user.Department || '');
+            setFullname(user.Fullname || '');
+            alert('Thông tin đã được lưu thành công!');
+        } catch (error) {
+            if (error instanceof Error && 'response' in error) {
+                if (error.response && typeof error.response === 'object' && 'data' in error.response) {
+                    console.error('Lỗi từ API:', (error.response as any).data);
+                } else {
+                    console.error('Lỗi không xác định:', error);
+                }
+                const response = error.response as { data: { detail: string } };
+                alert(`Lỗi từ API: ${JSON.stringify(response.data.detail)}`);
+            } else {
+                if (error instanceof Error) {
+                    console.error('Lỗi không xác định:', error.message);
+                } else {
+                    console.error('Lỗi không xác định:', error);
+                }
+                alert('Lỗi không xác định. Vui lòng thử lại.');
+            }
+        }
     };
 
     return (
@@ -52,14 +106,14 @@ export default function Profile() {
 
                 {/* Thông tin cá nhân */}
                 <div className="flex flex-row justify-between text-left gap-x-8 mb-6">
-                    {/* Cột 1: Email + Phone */}
+                    {/* Cột 1: Fullname + Phone */}
                     <div className="flex-1 ">
                         <p className="text-gray-600 my-5">
-                            <span className="font-semibold">Email:</span>
+                            <span className="font-semibold">Fullname:</span>
                             <input
                                 type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                value={fullname}
+                                onChange={(e) => setFullname(e.target.value)}
                                 className="ml-2 border-b-2 border-gray-300 focus:outline-none focus:border-blue-500"
                             />
                         </p>
@@ -73,14 +127,14 @@ export default function Profile() {
                             />
                         </p>
                     </div>
-                    {/* Cột 2: Department + Role */}
+                    {/* Cột 2: Email + Role */}
                     <div className="flex-1">
                         <p className="text-gray-600 my-5">
-                            <span className="font-semibold">Department:</span>
+                            <span className="font-semibold">Email:</span>
                             <input
                                 type="text"
-                                value={department}
-                                onChange={(e) => setDepartment(e.target.value)}
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 className="ml-2 border-b-2 border-gray-300 focus:outline-none focus:border-blue-500"
                             />
                         </p>
@@ -94,21 +148,6 @@ export default function Profile() {
                             />
                         </p>
                     </div>
-                </div>
-
-                {/* Dự án đang tham gia */}
-                <div className="mb-6">
-                    <h2 className="text-xl font-semibold text-gray-700 text-center mb-4">Ongoing Projects</h2>
-                    <ul className="bg-gray-50 rounded-lg shadow-md p-4">
-                        {projects.map((project, index) => (
-                            <li key={index} className="flex justify-between items-center py-3 px-4 border-b last:border-none">
-                                <span className="text-gray-700 font-medium">{project.name}</span>
-                                <span className={`px-3 py-1 rounded-lg text-sm ${statusColors[project.status]}`}>
-                                    {project.status}
-                                </span>
-                            </li>
-                        ))}
-                    </ul>
                 </div>
 
                 {/* Nút chỉnh sửa */}

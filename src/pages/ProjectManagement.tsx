@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { MdSearch, MdEdit, MdDelete } from 'react-icons/md';
+import { getAllProjects } from '../services/ProjectsServices';
+import { createTask, getAllTasks, updateTask, deleteTaskAPI } from '../services/TaskServices';
+import { toast } from 'react-toastify';
+
 
 interface Task {
     id: number;
@@ -8,14 +12,14 @@ interface Task {
     dueDate: string;
     priority: string;
     assignee: string;
-
+    projectId: number; // Added projectId property
 }
 
-interface Table {
+interface Project {
     id: number;
     name: string;
+    tableName: string; // Added tableName property
     tasks: Task[];
-    columns: string[];
 }
 
 const priorityColors: { [key: string]: string } = {
@@ -30,74 +34,186 @@ const statusColors: { [key: string]: string } = {
     'Not Started': 'bg-gray-500 text-white',
     Completed: 'bg-green-500 text-white',
 };
-const defaultTasks: Task[] = [
-    { id: 1, title: 'Design UI', status: 'In Progress', dueDate: '10/01/2024', priority: 'Low', assignee: 'John Doe' },
-    { id: 2, title: 'Develop Backend', status: 'Pending', dueDate: '15/01/2024', priority: 'High', assignee: 'Jane Smith' },
-    { id: 3, title: 'Test Application', status: 'Not Started', dueDate: '20/01/2024', priority: 'Medium', assignee: 'Alice Johnson' },
 
-];
 export default function ProjectManagement() {
-    const [tables, setTables] = useState<Table[]>([
-        {
-            id: 1,
-            name: 'Default Table',
-            tasks: defaultTasks,
-            columns: ['Task', 'Status', 'Due Date', 'Priority', 'Assignee'],
-        },
-    ]);
+    const [projects, setProjects] = useState<Project[]>([]);
 
-    const [isEditing, setIsEditing] = useState<{ tableId: number | null, taskId: number | null }>();
-    const [editAssignee, setEditAssignee] = useState('');
-
+    const [isEditing, setIsEditing] = useState<{ tableId: number | null, taskId: number | null, field: keyof Task | null }>({ tableId: null, taskId: null, field: null });
+    const [editedTitle, setEditedTitle] = useState("");
+    const [isComposing, setIsComposing] = useState(false);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
     const [filterPriority, setFilterPriority] = useState('All');
-    const [showOptions, setShowOptions] = useState<{ tableId: number | null, taskId: number | null }>({ tableId: null, taskId: null });
 
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                // Lấy danh sách dự án
+                const projectResponse = await getAllProjects();
+                console.log('Dữ liệu trả về từ API getAllProjects:', projectResponse.data.data);
 
+                const projectsData = projectResponse.data.data.map((project: any) => ({
+                    id: project.IdProject,
+                    name: project.ProjectName,
+                    tableName: ` Table ${project.ProjectName} `,
+                    tasks: [], // Sẽ gắn task sau
+                }));
 
-    const startEditing = (tableId: number, taskId: number, currentAssignee: string) => {
-        setIsEditing({ tableId, taskId });
-        setEditAssignee(currentAssignee);
-    }
+                // Lấy danh sách task
+                const taskResponse = await getAllTasks();
+                const tasksData = taskResponse.data.data.map((task: any) => ({
+                    id: task.IdTask,
+                    title: task.Title,
+                    status: task.Status,
+                    dueDate: task.DueDate,
+                    priority: task.Priority,
+                    assignee: 'Unassigned', // Nếu API không trả về assignee
+                    projectId: task.IdProject,
+                }));
 
-    const handleEditAssignee = (tableId: number, taskId: number, newAssignee: string) => {
-        setTables(tables.map(table => {
-            if (table.id === tableId) {
-                return {
-                    ...table,
-                    tasks: table.tasks.map(task => {
-                        if (task.id === taskId) {
-                            return { ...task, assignee: newAssignee };
-                        }
-                        return task;
-                    }),
-                };
+                // Gắn task vào dự án tương ứng
+                const projectsWithTasks = projectsData.map((project: Project) => ({
+                    ...project,
+                    tasks: tasksData.filter((task: Task) => task.projectId === project.id),
+                }));
+
+                setProjects(projectsWithTasks);
+            } catch (error) {
+                console.error('Lỗi khi lấy dữ liệu:', error);
             }
-            return table;
-        }));
-        setIsEditing({ tableId: null, taskId: null });
+        };
+
+        fetchData();
+    }, []);
+
+    // const startEditing = (tableId: number, taskId: number, currentAssignee: string) => {
+    //     setIsEditing({ tableId, taskId });
+    //     setEditAssignee(currentAssignee);
+    // };
+
+
+    const createNewTable = () => {
+        const tableName = prompt('Enter table name:');
+        if (tableName) {
+            const newTable: Project = {
+                id: projects.length + 1, // Tạo ID mới cho bảng
+                name: tableName, // Tên bảng do người dùng nhập
+                tableName: `Table ${tableName}`, // Tên hiển thị của bảng
+                tasks: [
+                    {
+                        id: 1, // ID mặc định cho task đầu tiên
+                        title: 'New Task', // Tên mặc định
+                        status: 'Not Started', // Trạng thái mặc định
+                        dueDate: '01/01/2025', // Ngày hết hạn mặc định
+                        priority: 'Low', // Mức độ ưu tiên mặc định
+                        assignee: 'Unassigned', // Người được giao mặc định
+                        projectId: projects.length + 1, // ID của bảng mới
+                    },
+                ], // Danh sách task mặc định
+            };
+
+            // Cập nhật state `projects` để thêm bảng mới
+            setProjects([...projects, newTable]);
+            toast.success(`Bảng "${tableName}" đã được tạo thành công với một task mặc định!`);
+        }
+    };
+
+    const addTask = async (projectId: number) => {
+
+        const newTask: Task = {
+            id: 0, // Tạo ID mới cho task
+            title: 'New Task', // Tên mặc định
+            status: 'Not Started', // Trạng thái mặc định
+            dueDate: '01/01/2025', // Ngày hết hạn mặc định
+            priority: 'Low', // Mức độ ưu tiên mặc định
+            assignee: 'Unassigned', // Người được giao mặc định
+            projectId: projectId, // ID dự án
+        };
+
+        try {
+            // Gọi API để lưu task vào database
+            const response = await createTask({
+                Title: newTask.title,
+                Status: newTask.status as 'Pending' | 'In Progress' | 'Completed' | 'Blocked',
+                DueDate: newTask.dueDate,
+                Priority: newTask.priority as 'Low' | 'Medium' | 'High',
+                IdProject: newTask.projectId,
+            });
+
+            // Backend trả về task đã được lưu (bao gồm ID mới)
+            const savedTask = response.data;
+
+            // Cập nhật state `projects` với task mới
+            setProjects(projects.map((project) => {
+                if (project.id === projectId) {
+                    return {
+                        ...project,
+                        tasks: [...project.tasks, { ...newTask, id: savedTask.IdTask }],
+                    };
+                }
+                return project;
+            }));
+
+            toast.success('Task đã được thêm thành công!');
+        } catch (error) {
+            console.error('Lỗi khi thêm task:', error);
+            // toast.error('Không thể thêm task.');
+        }
+
     };
 
 
-    useEffect(() => {
-        if (showOptions !== null) {
-            const timber = setTimeout(() => { setShowOptions({ tableId: null, taskId: null }) }, 2000);
-            return () => clearTimeout(timber);
+    const handleEditTask = (projectId: number, taskId: number, field: keyof Task, value: string) => {
+        setProjects((prevProjects) =>
+            prevProjects.map((project) => {
+                if (project.id === projectId) {
+                    return {
+                        ...project,
+                        tasks: project.tasks.map((task) => {
+                            if (task.id === taskId) {
+                                return { ...task, [field]: value };
+                            }
+                            return task;
+                        }),
+                    };
+                }
+                return project;
+            })
+        );
+
+        // Gọi API để lưu thay đổi vào backend
+        try {
+            const updatedTask = projects.find(project => project.id === projectId)?.tasks.find(task => task.id === taskId);
+            if (updatedTask) {
+                console.log('Payload gửi đến API:', {
+                    Title: updatedTask.title,
+                    Status: updatedTask.status,
+                    DueDate: updatedTask.dueDate,
+                    Priority: updatedTask.priority,
+                    IdProject: updatedTask.projectId,
+                });
+                updateTask(taskId, {
+                    Title: updatedTask.title,
+                    Status: updatedTask.status as "Pending" | "In Progress" | "Completed" | "Blocked" | undefined,
+                    DueDate: updatedTask.dueDate,
+                    Priority: updatedTask.priority as "Low" | "Medium" | "High" | undefined,
+                    IdProject: updatedTask.projectId,
+                });
+            }
+        } catch (error) {
+            console.error('Lỗi khi cập nhật task:', error);
         }
+    };
 
-    }, [showOptions]);
-
-
-    const updateTaskStatus = (tableId: number, taskId: number) => {
-        setTables(tables.map(table => {
-            if (table.id === tableId) {
+    const updateTaskStatus = async (projectId: number, taskId: number) => {
+        const statuses = ['Not Started', 'In Progress', 'Pending', 'Completed'];
+        setProjects(projects.map(project => {
+            if (project.id === projectId) {
                 return {
-                    ...table,
-                    tasks: table.tasks.map(task => {
+                    ...project,
+                    tasks: project.tasks.map(task => {
                         if (task.id === taskId) {
-                            const statuses = ['Not Started', 'In Progress', 'Pending', 'Completed'];
                             const currentIndex = statuses.indexOf(task.status);
                             const nextIndex = (currentIndex + 1) % statuses.length;
                             return { ...task, status: statuses[nextIndex] };
@@ -106,18 +222,38 @@ export default function ProjectManagement() {
                     }),
                 };
             }
-            return table;
+            return project;
         }));
+        try {
+            const updatedTask = projects.find(project => project.id === projectId)?.tasks.find(task => task.id === taskId);
+            if (updatedTask) {
+                await updateTask(taskId, {
+                    Title: updatedTask.title,
+                    Status: updatedTask.status as "Pending" | "In Progress" | "Completed" | "Blocked" | undefined,
+                    DueDate: updatedTask.dueDate,
+                    Priority: updatedTask.priority as "Low" | "Medium" | "High" | undefined,
+                    IdProject: updatedTask.projectId,
+                });
+                console.log('Cập nhật task thành công:', updatedTask);
+                toast.success('Cập nhật task thành công');
+            }
+        } catch (error) {
+            console.error(`Failed to update task ${taskId}:`, error);
+            toast.error('Cập nhật task thất bại');
+        }
     };
 
-    const updateTaskPriority = (tableId: number, taskId: number) => {
-        setTables(tables.map(table => {
-            if (table.id === tableId) {
+
+
+    const updateTaskPriority = async (projectId: number, taskId: number) => {
+        const priorities = ['Low', 'Medium', 'High'];
+        setProjects(projects.map(project => {
+            if (project.id === projectId) {
                 return {
-                    ...table,
-                    tasks: table.tasks.map(task => {
+                    ...project,
+                    tasks: project.tasks.map(task => {
                         if (task.id === taskId) {
-                            const priorities = ['Low', 'Medium', 'High'];
+
                             const currentIndex = priorities.indexOf(task.priority);
                             const nextIndex = (currentIndex + 1) % priorities.length;
                             return { ...task, priority: priorities[nextIndex] };
@@ -126,46 +262,30 @@ export default function ProjectManagement() {
                     }),
                 };
             }
-            return table;
+            return project;
         }));
-    };
+        try {
+            const updatedTask = projects
+                .find((project) => project.id === projectId)
+                ?.tasks.find((task) => task.id === taskId);
 
-    const addTask = (tableId: number) => {
-        setTables(tables.map(table => {
-            if (table.id === tableId) {
-                const newTask: Task = {
-                    id: table.tasks.length + 1,
-                    title: 'New Task',
-                    status: 'Not Started',
-                    dueDate: '01/01/2025',
-                    priority: 'Low',
-                    assignee: 'Unassigned',
-
-                };
-                return { ...table, tasks: [...table.tasks, newTask] };
+            if (updatedTask) {
+                await updateTask(taskId, {
+                    Title: updatedTask.title,
+                    Status: updatedTask.status as "Pending" | "In Progress" | "Completed" | "Blocked" | undefined,
+                    DueDate: updatedTask.dueDate,
+                    Priority: updatedTask.priority as "Low" | "Medium" | "High" | undefined,
+                    IdProject: updatedTask.projectId,
+                });
+                console.log(`Task ${taskId} priority updated successfully`);
+                toast.success('Cập nhật task thành công');
             }
-            return table;
-        }));
-    };
-
-    const addColumn = (tableId: number) => {
-        const newColumn = prompt('Enter column name:');
-        if (newColumn) {
-            setTables(tables.map(table => {
-                if (table.id === tableId) {
-                    return { ...table, columns: [...table.columns, newColumn] };
-                }
-                return table;
-            }));
+        } catch (error) {
+            console.error(`Failed to update task ${taskId} priority:`, error);
+            toast.error('Cập nhật task thất bại');
         }
     };
 
-    const createNewTable = () => {
-        const tableName = prompt('Enter table name:');
-        if (tableName) {
-            setTables([...tables, { id: tables.length + 1, name: tableName, tasks: [...defaultTasks], columns: ['Task', 'Status', 'Due Date', 'Priority'] }]);
-        }
-    };
 
     const filteredTasks = (tasks: Task[]) => {
         return tasks.filter(task => {
@@ -175,9 +295,32 @@ export default function ProjectManagement() {
         });
     };
 
-    const toggleOptions = (tableId: number, taskId: number) => {
-        setShowOptions(prev => (prev.tableId === tableId && prev.taskId === taskId ? { tableId: null, taskId: null } : { tableId, taskId })); // Nếu đang mở thì đóng, nếu chưa mở thì mở
-    }
+
+    const deleteTask = async (projectId: number, taskId: number) => {
+        try {
+            // Gọi API để xóa task khỏi backend
+            await deleteTaskAPI(taskId); // Sử dụng hàm deleteTask từ TaskServices.ts
+
+            // Cập nhật state `projects` để xóa task khỏi giao diện
+            setProjects((prevProjects) =>
+                prevProjects.map((project) => {
+                    if (project.id === projectId) {
+                        return {
+                            ...project,
+                            tasks: project.tasks.filter((task) => task.id !== taskId),
+                        };
+                    }
+                    return project;
+                })
+            );
+
+            toast.success('Task đã được xóa thành công!');
+        } catch (error) {
+            console.error('Lỗi khi xóa task:', error);
+            toast.error('Không thể xóa task.');
+        }
+    };
+
 
     return (
         <div className="  p-6 flex-1 max-w-[1493px] mx-auto overflow-hidden">
@@ -243,118 +386,160 @@ export default function ProjectManagement() {
                 </div>
             </div>
 
-
-
-
-            {/* Task Table */}
-            {tables.map((table) => (
-                <div key={table.id} className="w-full overflow-x-auto mx-auto">
-                    <h2 className="text-2xl font-semibold mb-4">{table.name}</h2>
+            {/* Project Table */}
+            {projects.map((project) => (
+                <div key={project.id} className="w-full overflow-x-auto mx-auto">
+                    <h2 className="text-2xl font-semibold mb-4">{project.tableName}</h2>
 
                     <table className="min-w-full bg-white border border-gray-300 rounded shadow border-collapse">
                         <thead>
                             <tr>
-                                {table.columns.map((column, index) => (
-                                    <th key={index} className=" px-4 py-2 min-w-[333px] bg-gray-200">{column}</th>
-                                ))}
-                                {/* Thêm cột Add Column */}
-                                <th className="border  px-4 py-2 min-w-[200px] bg-gray-300 text-center cursor-pointer hover:bg-gray-400"
-                                    onClick={() => addColumn(table.id)}>
-                                    ➕ Add Column
-                                </th>
+                                <th className="px-4 py-2 min-w-[333px] bg-gray-200">Task</th>
+                                <th className="border px-4 py-2 min-w-[200px] bg-gray-200">Status</th>
+                                <th className="border px-4 py-2 min-w-[200px] bg-gray-200">Due Date</th>
+                                <th className="border px-4 py-2 min-w-[200px] bg-gray-200">Priority</th>
+                                <th className="border px-4 py-2 min-w-[200px] bg-gray-200">Assignee</th>
+                                <th className="border px-4 py-2 min-w-[200px] bg-gray-200">Delete</th>
+
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredTasks(table.tasks).map(task => (
-                                <tr key={task.id} className="hover:bg-gray-100">
-                                    <td className=" border-b px-6 py-4  text-center min-w-[333px]">{task.title}</td>
-                                    <td className=" border-b px-6 py-4 text-center cursor-pointer " onClick={() => updateTaskStatus(table.id, task.id)}>
+                            {filteredTasks(project.tasks).map((task) => (
+                                <tr key={task.id} className="hover:bg-gray-100 text-center items-center">
+                                    {/* Cột Task */}
+                                    <td className="border-b px-6 py-4">
+                                        {isEditing?.tableId === project.id && isEditing?.taskId === task.id && isEditing?.field === 'title' ? (
+                                            <input
+                                                type="text"
+                                                value={editedTitle}
+                                                onChange={(e) => setEditedTitle(e.target.value)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        handleEditTask(project.id, task.id, 'title', editedTitle);
+                                                        setIsEditing({ tableId: null, taskId: null, field: null });
+                                                    }
+                                                }}
+                                                onBlur={() => {
+                                                    handleEditTask(project.id, task.id, 'title', editedTitle);
+                                                    setIsEditing({ tableId: null, taskId: null, field: null });
+                                                }}
+                                                className="border px-2 py-1 rounded w-full"
+                                                autoFocus
+                                            />
+                                        ) : (
+                                            <span
+                                                onClick={() => setIsEditing({ tableId: project.id, taskId: task.id, field: 'title' })}
+                                                className="cursor-pointer"
+                                            >
+                                                {task.title}
+                                            </span>
+                                        )}
+                                    </td>
+
+                                    <td className="border-b px-6 py-4"
+                                        onClick={() => updateTaskStatus(project.id, task.id)
+
+                                        }>
                                         <span className={`px-4 py-2 rounded-full ${statusColors[task.status]}`}>{task.status}</span>
                                     </td>
-                                    <td className=" border-b px-6 py-4 text-center min-w-[333px]">{task.dueDate}</td>
-                                    <td className=" border-b px-6 py-4 cursor-pointer text-center" onClick={() => updateTaskPriority(table.id, task.id)}>
+
+                                    {/* Cột DueDate */}
+                                    <td className="border-b px-6 py-4">
+                                        {isEditing?.tableId === project.id && isEditing?.taskId === task.id && isEditing?.field === 'dueDate' ? (
+                                            <input
+                                                type="date"
+                                                value={task.dueDate}
+                                                onChange={(e) => {
+                                                    if (!isComposing) {
+                                                        handleEditTask(project.id, task.id, 'title', e.target.value);
+                                                    }
+                                                }}
+                                                onCompositionStart={() => setIsComposing(true)}
+                                                onCompositionEnd={(e) => {
+                                                    setIsComposing(false);
+                                                    handleEditTask(project.id, task.id, 'title', (e.target as HTMLInputElement).value);
+                                                }} onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        setIsEditing({ tableId: null, taskId: null, field: null });
+                                                    }
+                                                }}
+                                                onBlur={() => setIsEditing({ tableId: null, taskId: null, field: null })}
+                                                className="border px-2 py-1 rounded w-full"
+                                                autoFocus
+                                            />
+                                        ) : (
+                                            <span
+                                                onClick={() => setIsEditing({ tableId: project.id, taskId: task.id, field: 'dueDate' })}
+                                                className="cursor-pointer"
+                                            >
+                                                {task.dueDate}
+                                            </span>
+                                        )}
+                                    </td>
+                                    <td className="border-b px-6 py-4"
+                                        onClick={() => updateTaskPriority(project.id, task.id)}
+                                    >
                                         <span className={`px-4 py-2 rounded-full ${priorityColors[task.priority]}`}>{task.priority}</span>
                                     </td>
-                                    {
-                                        isEditing?.tableId === table.id && isEditing?.taskId === task.id ? (
-                                            <td className=' border-b px-6 py-4 text-center min-w-[333px]'>
-                                                <input
-                                                    type="text"
-                                                    value={editAssignee}
-                                                    onChange={(e) => setEditAssignee(e.target.value)}
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === 'Enter') {
-                                                            handleEditAssignee(table.id, task.id, e.currentTarget.value);
-                                                            setIsEditing({ tableId: null, taskId: null });
-                                                        }
-                                                    }}
-                                                    onBlur={() => {
-                                                        handleEditAssignee(table.id, task.id, editAssignee);
+
+                                    {/* Cột Assignee */}
+                                    <td className="border-b px-6 py-4">
+                                        {isEditing?.tableId === project.id && isEditing?.taskId === task.id && isEditing?.field === 'assignee' ? (
+                                            <input
+                                                type="text"
+                                                value={task.assignee}
+                                                onChange={(e) => {
+                                                    if (!isComposing) {
+                                                        handleEditTask(project.id, task.id, 'assignee', (e.target as HTMLInputElement).value);
                                                     }
+                                                }}
+                                                onCompositionStart={() => setIsComposing(true)}
+                                                onCompositionEnd={(e) => {
+                                                    setIsComposing(false);
+                                                    handleEditTask(project.id, task.id, 'assignee', (e.target as HTMLInputElement).value);
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        setIsEditing({ tableId: null, taskId: null, field: null });
                                                     }
-                                                    className="border  px-2 py-1 rounded "
-                                                />
-                                            </td>
+                                                }}
+                                                onBlur={() => setIsEditing({ tableId: null, taskId: null, field: null })}
+                                                className="border px-2 py-1 rounded w-full"
+                                                autoFocus
+                                            />
                                         ) : (
-                                            <td className=' border-b px-6 py-4 text-center min-w-[333px] cursor-pointer'
-                                                onClick={() => startEditing(table.id, task.id, task.assignee)}>
-                                                {task.assignee}
-                                            </td>
-                                        )
-                                    }
-                                    {/* <td className=' border-b px-6 py-4 text-center min-w-[333px]'> {task.assignee} </td> */}
-
-
-                                    {
-                                        table.columns.slice(5).map((column, index) => (
-
-                                            <td key={index} className="border-b px-6 py-4 text-center min-w-[333px]">
-                                                -
-                                            </td>
-                                        ))
-                                    }
-                                    <td className="border px-4 py-2 text-center relative">
-                                        <div className="flex items-center justify-center">
-                                            <span className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-300 cursor-pointer leading-none"
-                                                onClick={() => toggleOptions(table.id, task.id)}
+                                            <span
+                                                onClick={() => setIsEditing({ tableId: project.id, taskId: task.id, field: 'assignee' })}
+                                                className="cursor-pointer"
                                             >
-                                                ...
+                                                {task.assignee}
                                             </span>
-                                            {showOptions.tableId === table.id && showOptions.taskId === task.id && (
-                                                <div className="absolute -top-20 right-0 w-32 bg-white text-black shadow-lg rounded-lg z-10">
-                                                    <ul>
-                                                        <li className="p-3 hover:bg-gray-100 cursor-pointer flex items-center">
-                                                            <MdEdit className="mr-2" /> Edit
-                                                        </li>
-                                                        <li className="p-3 hover:bg-gray-100 cursor-pointer flex items-center">
-                                                            <MdDelete className="mr-2" /> Delete
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            )}
-                                        </div>
+                                        )}
                                     </td>
-
-
-
-                                </tr >
-                            ))
-                            }
-
-                            {/* Thêm hàng Add Task */}
-                            <tr className="hover:bg-gray-100 cursor-pointer">
-                                <td colSpan={table.columns.length + 1} className="border px-4 py-2 text-center bg-gray-200 hover:bg-gray-300"
-                                    onClick={() => addTask(table.id)}>
+                                    <td className="border-b px-6 py-4">
+                                        <button
+                                            onClick={() => deleteTask(project.id, task.id)}
+                                            className="text-red-500 hover:text-red-700"
+                                        >
+                                            🗑️
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                            <tr>
+                                <td colSpan={6} className="border px-4 py-2 text-center bg-gray-200 hover:bg-gray-300 cursor-pointer"
+                                    onClick={() => addTask(project.id)}>
                                     ➕ Add Task
                                 </td>
                             </tr>
-                        </tbody >
-                    </table >
-                    <br />
-                </div >
-            ))
-            }
-        </div >
+                        </tbody>
 
-    );
+
+                    </table>
+                </div>
+            ))}
+        </div>
+    )
 }
+
+

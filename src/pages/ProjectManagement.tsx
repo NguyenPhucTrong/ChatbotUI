@@ -56,7 +56,6 @@ export default function ProjectManagement() {
                 const projectsData = projectResponse.data.data.map((project: any) => ({
                     id: project.IdProject,
                     name: project.ProjectName,
-                    tableName: ` Table ${project.ProjectName} `,
                     tasks: [], // Sẽ gắn task sau
                 }));
 
@@ -328,17 +327,17 @@ export default function ProjectManagement() {
 
             {/* Search Input and Filter Options */}
             <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
-                <div className="flex gap-4 ">
+                {/* <div className="flex gap-4 "> */}
 
 
-                    {/* Create New Table Button */}
-                    <button
+                {/* Create New Table Button */}
+                {/* <button
                         onClick={createNewTable}
                         className=" bg-blue-500 text-white px-5 py-3 rounded-lg hover:bg-blue-700"
                     >
                         Create New Table
                     </button>
-                </div>
+                </div> */}
                 <div className="relative w-full md:w-1/2">
                     <input
                         type="text"
@@ -388,8 +387,8 @@ export default function ProjectManagement() {
 
             {/* Project Table */}
             {projects.map((project) => (
-                <div key={project.id} className="w-full overflow-x-auto mx-auto">
-                    <h2 className="text-2xl font-semibold mb-4">{project.tableName}</h2>
+                <div key={project.id} className="w-full overflow-x-auto mx-auto mt-6 mb-6">
+                    <h2 className="text-2xl font-semibold mb-4">{project.name}</h2>
 
                     <table className="min-w-full bg-white border border-gray-300 rounded shadow border-collapse">
                         <thead>

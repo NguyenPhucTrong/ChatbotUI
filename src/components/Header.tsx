@@ -42,6 +42,9 @@ export default function Header() {
         case "/profile":
             pageTitle = "Profile";
             break;
+        case "/upload":
+            pageTitle = "UploadFile";
+            break;
         default:
             pageTitle = "404 Not Found";
             break;

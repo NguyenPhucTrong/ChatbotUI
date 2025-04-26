@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import flower2 from "../assets/image/flower2.png";
 import { AiFillHome } from 'react-icons/ai';
 import { FaBars, FaHistory, FaProjectDiagram, FaRobot, FaBuilding, FaUsers, FaBell, FaUserShield } from 'react-icons/fa';
-import { MdMenu, MdDashboard, MdLogout } from 'react-icons/md';
+import { MdMenu, MdDashboard, MdLogout, MdUploadFile } from 'react-icons/md';
 
 export default function SideBar({ onOpenChatHistory }: { onOpenChatHistory: () => void }) {
     const [isOpen, setIsOpen] = useState(true);
@@ -66,6 +66,15 @@ export default function SideBar({ onOpenChatHistory }: { onOpenChatHistory: () =
                                 >
                                     <MdDashboard className="w-6 h-6 mr-2" />
                                     <h1 className='text-lg font-light'>Dashboard</h1>
+                                </NavLink>
+                            </li>
+
+                            <li>
+                                <NavLink to="/upload"
+                                    className={({ isActive }) => `flex flex-row items-center p-3 pl-5 rounded ${isActive ? 'bg-blue-900' : 'hover:bg-gray-700'}`}
+                                >
+                                    <MdUploadFile className="w-6 h-6 mr-2" />
+                                    <h1 className='text-lg font-light'>UploadFile</h1>
                                 </NavLink>
                             </li>
 

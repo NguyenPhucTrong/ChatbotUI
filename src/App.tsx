@@ -15,6 +15,7 @@ import SuperadminManagement from "./pages/SuperadminManagement";
 import MainLanding from "./pages/MainLanding";
 import Login from "./pages/Login";
 import { ToastContainer } from "react-toastify";
+import UploadFile from "./pages/UploadFile";
 
 // Định nghĩa interface cho Message
 interface Message {
@@ -119,6 +120,7 @@ function App() {
             <Route path="/superadmin" element={<SuperadminManagement />} />
             <Route path="/mainlanding" element={<MainLanding />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/upload" element={<UploadFile />} />
 
             <Route path="/profile" element={<Profile />} />
 

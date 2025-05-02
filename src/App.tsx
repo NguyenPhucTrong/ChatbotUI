@@ -16,6 +16,7 @@ import MainLanding from "./pages/MainLanding";
 import Login from "./pages/Login";
 import { ToastContainer } from "react-toastify";
 import UploadFile from "./pages/UploadFile";
+import SignUp from "./pages/SignUp";
 
 // Định nghĩa interface cho Message
 interface Message {
@@ -35,6 +36,7 @@ function App() {
   const location = useLocation();
   const isMainLanding = location.pathname === "/"
   const isLogin = location.pathname === "/login"
+  const isSignUp = location.pathname === "/signup"
 
   // Tin nhắn mặc định khi bắt đầu một đoạn chat mới
   const FMessages: Message[] = [
@@ -93,15 +95,15 @@ function App() {
 
   return (
     <div className="flex h-screen">
-      {!isMainLanding && !isLogin && <SideBar onOpenChatHistory={handleOpenChatHistory} />}
+      {!isMainLanding && !isLogin && !isSignUp && <SideBar onOpenChatHistory={handleOpenChatHistory} />}
       {/* <SideBar onOpenChatHistory={handleOpenChatHistory} /> */}
       <div className="flex-1 flex flex-col">
-        {!isMainLanding && !isLogin && <Header />}
+        {!isMainLanding && !isLogin && !isSignUp && <Header />}
         {/* <Header /> */}
         <div className="flex-1 overflow-auto">
           <Routes>
-            <Route path="/" element={<MainLanding />} />
             <Route path="/home" element={<Home />} />
+            <Route path="/" element={<MainLanding />} />
             <Route path="/project-management" element={<ProjectManagement />} />
             <Route path="/chatbot" element={
               <ChatAI
@@ -120,6 +122,8 @@ function App() {
             <Route path="/superadmin" element={<SuperadminManagement />} />
             <Route path="/mainlanding" element={<MainLanding />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
+
             <Route path="/upload" element={<UploadFile />} />
 
             <Route path="/profile" element={<Profile />} />

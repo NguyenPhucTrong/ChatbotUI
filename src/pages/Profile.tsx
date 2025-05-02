@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { getUserById, updateUser } from '../services/UserServices';
+import { getUserById, updateUser,getUserByUsername } from '../services/UserServices';
 import Flower1 from '../assets/image/flower1.png';
+import { Navigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { jwtDecode } from 'jwt-decode';
 
 export default function Profile() {
     const [name, setName] = useState('');
@@ -9,18 +12,28 @@ export default function Profile() {
     const [role, setRole] = useState('');
     const [fullname, setFullname] = useState('');
     const [department, setDepartment] = useState('');
-    const [userId] = useState(1); // Tạm thời cố định userId là 1 (có thể thay đổi theo logic của bạn)
+    const [idUser, setIdUser] = useState<number | null>(null);
+    // const [userId] = useState(1); // Tạm thời cố định userId là 1 (có thể thay đổi theo logic của bạn)
+
+
+    const token = localStorage.getItem('userToken');
+    const currentUsername = localStorage.getItem("username") || "";
+    if (!token) {
+        toast.error('Vui lòng đăng nhập để truy cập trang này.');
+        return <Navigate to="/" />;
+    }
 
     // Lấy thông tin user khi component được mount
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const response = await getUserById(userId);
-                console.log('Thông tin userId:', userId);
+                const response = await getUserByUsername(currentUsername);
+            
                 const user = response.data;
                 console.log('Thông tin user:', response.data);
 
                 // Gán dữ liệu từ API vào state, đảm bảo giá trị không bị undefined
+                setIdUser(user.IdUser);
                 setName(user.Username || ''); // Sử dụng `|| ''` để tránh undefined
                 setEmail(user.Email || '');
                 setPhone(user.PhoneNumber || '');
@@ -29,58 +42,61 @@ export default function Profile() {
                 setFullname(user.Fullname || '');
             } catch (error) {
                 console.error('Lỗi khi lấy thông tin user:', error);
-                alert('Không thể lấy thông tin user. Vui lòng thử lại.');
+                toast.error('Không thể lấy thông tin user. Vui lòng thử lại.');
             }
         };
 
         fetchUser();
-    }, [userId]);
+    }, []);
 
     // Hàm lưu thông tin user
     const handleSave = async () => {
+        if (!idUser) {
+            toast.error('Không tìm thấy ID người dùng. Vui lòng thử lại.');
+            return;
+        }
+    
         try {
             const payload: any = {};
-
+    
             // Chỉ thêm các trường đã thay đổi vào payload
-            if (name !== '') payload.Username = name;
-            if (fullname !== '') payload.Fullname = fullname;
-            if (email !== '') payload.Email = email;
-            if (phone !== '') payload.PhoneNumber = phone;
-            if (role !== '') payload.Role = role;
-
-
+            if (name.trim() !== '') payload.Username = name.trim();
+            if (fullname.trim() !== '') payload.Fullname = fullname.trim();
+            if (email.trim() !== '') payload.Email = email.trim();
+            if (phone.trim() !== '') payload.PhoneNumber = phone.trim();
+            if (role.trim() !== '') payload.Role = role.trim();
+    
+            // Thêm các giá trị mặc định nếu cần
             payload.Password = 'default_password'; // Giá trị mặc định
             payload.Permission = 'default_permission'; // Giá trị mặc định
-            console.log('Dữ liệu gửi lên:', payload);
-
-            await updateUser(userId, payload);
-
-            // Gọi lại API để cập nhật dữ liệu
-            const response = await getUserById(userId);
+    
+            console.log('Dữ liệu gửi lên API:', payload);
+    
+            // Gửi yêu cầu cập nhật thông tin người dùng
+            await updateUser(idUser, payload);
+    
+            // Gọi lại API để cập nhật thông tin hiển thị
+            const response = await getUserById(idUser);
             const user = response.data;
+    
+            // Cập nhật lại state với dữ liệu mới
             setName(user.Username || '');
             setEmail(user.Email || '');
             setPhone(user.PhoneNumber || '');
             setRole(user.Role || '');
             setDepartment(user.Department || '');
             setFullname(user.Fullname || '');
-            alert('Thông tin đã được lưu thành công!');
-        } catch (error) {
-            if (error instanceof Error && 'response' in error) {
-                if (error.response && typeof error.response === 'object' && 'data' in error.response) {
-                    console.error('Lỗi từ API:', (error.response as any).data);
-                } else {
-                    console.error('Lỗi không xác định:', error);
-                }
-                const response = error.response as { data: { detail: string } };
-                alert(`Lỗi từ API: ${JSON.stringify(response.data.detail)}`);
+    
+            // Hiển thị thông báo thành công
+            toast.success('Thông tin đã được lưu thành công!');
+        } catch (error: any) {
+            console.error('Lỗi khi lưu thông tin user:', error);
+    
+            // Xử lý lỗi từ API
+            if (error.response?.data?.detail) {
+                toast.error(`Lỗi từ API: ${error.response.data.detail}`);
             } else {
-                if (error instanceof Error) {
-                    console.error('Lỗi không xác định:', error.message);
-                } else {
-                    console.error('Lỗi không xác định:', error);
-                }
-                alert('Lỗi không xác định. Vui lòng thử lại.');
+                toast.error('Lỗi không xác định. Vui lòng thử lại.');
             }
         }
     };

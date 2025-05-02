@@ -7,12 +7,18 @@ export const getUsersPagination = async (page: number, size: number) => {
     });
 };
 
+const getCurrentUser = async() => {
+    return await axios.get('/api/auth/me',{
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+        },
+    })
+}
+
+
 // Tạo user mới
 export const createUser = async (user: {
     username: string;
-    fullname: string;
-    phoneNumber: string;
-    email: string;
     password: string;
     role: string;
     permission?: string; // Tùy chọn

@@ -16,7 +16,7 @@ const MainLandingPage = () => {
             onClick={() => navigate("/login")}
           >Đăng nhập</button>
           <button className="px-4 py-2 bg-black text-white hover:bg-gray-800 rounded"
-            onClick={() => navigate("/login")}
+            onClick={() => navigate("/signup")}
           >Đăng ký</button>
         </div>
       </header >

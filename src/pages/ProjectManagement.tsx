@@ -3,7 +3,7 @@ import { MdSearch, MdEdit, MdDelete } from 'react-icons/md';
 import { getAllProjects } from '../services/ProjectsServices';
 import { createTask, getAllTasks, updateTask, deleteTaskAPI } from '../services/TaskServices';
 import { toast } from 'react-toastify';
-
+import { Navigate } from 'react-router-dom';
 
 interface Task {
     id: number;
@@ -45,6 +45,13 @@ export default function ProjectManagement() {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
     const [filterPriority, setFilterPriority] = useState('All');
+
+    const token = localStorage.getItem('userToken');
+
+    if (!token) {
+        toast.error('Vui lòng đăng nhập để truy cập trang này.');
+        return <Navigate to="/" />;
+    }
 
     useEffect(() => {
         const fetchData = async () => {

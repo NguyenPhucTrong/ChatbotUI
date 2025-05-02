@@ -7,4 +7,19 @@ const instance = axios.create({
     },
 });
 
+instance.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem("userToken");
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        // Do something before request is sent
+        return config;
+    },
+    (error) => {
+        // Do something with request error
+        return Promise.reject(error);
+    }
+)
+
 export default instance;

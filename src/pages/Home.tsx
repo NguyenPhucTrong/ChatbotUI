@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { createProject, deleteProject, getAllProjects } from '../services/ProjectsServices';
 import { toast } from 'react-toastify';
 
@@ -12,6 +12,14 @@ interface Project {
 export default function Home() {
         const [projects, setProjects] = useState<Project[]>([]);
         const navigate = useNavigate();
+
+        const token = localStorage.getItem('userToken');
+
+        if (!token) {
+                toast.error('Vui lòng đăng nhập để truy cập trang này.');
+                return <Navigate to="/" />;
+            }
+
 
         useEffect(() => {
                 const fetchProjects = async () => {

@@ -112,14 +112,7 @@ export default function SideBar({ onOpenChatHistory }: { onOpenChatHistory: () =
                                 </NavLink>
                             </li>
 
-                            <li>
-                                <NavLink to="#"
-                                    className={({ isActive }) => `flex flex-row items-center p-3 pl-5 rounded ${isActive ? 'bg-blue-900' : 'hover:bg-gray-700'}`}
-                                >
-                                    <MdLogout className="w-6 h-6 mr-2" />
-                                    <h1 className='text-lg font-light'>Logout</h1>
-                                </NavLink>
-                            </li>
+                            
                         </ul >
                     </>
                 )

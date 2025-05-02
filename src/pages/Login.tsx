@@ -1,10 +1,36 @@
-import React from "react";
+import axios from "axios";
+import React, { useState } from "react";
 import { FaGoogle, FaGithub, FaMicrosoft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
+import { loginAuth } from "../services/AuthServices";
 
 const Login = () => {
   const navigate = useNavigate();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Dữ liệu gửi lên:", { username, password });
+
+    try {
+      const data = await loginAuth(username, password);
+      console.log("Dữ liệu trả về từ server:", data);
+
+      localStorage.setItem("username", username);
+      const { access_token } = data;
+      localStorage.setItem("userToken", access_token);
+      toast.success("Đăng nhập thành công!");
+      navigate("/home");
+    } catch (error: any) {
+      console.error("Lỗi khi đăng nhập:", error);
+      console.log("Chi tiết lỗi từ server:", error.response?.data);
+      toast.error("Đăng nhập thất bại. Vui lòng thử lại.");
+    }
+  };
+
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md text-center">
@@ -27,18 +53,46 @@ const Login = () => {
           <span className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-white px-2 text-gray-500">Hoặc</span>
         </div>
 
-        {/* Email & Password Login */}
-        <form className="space-y-4">
+        {/* Username & Password Login */}
+        <form className="space-y-4" onSubmit={handleLogin}>
           <div>
-            <label className="block text-left text-sm font-medium">Email</label>
-            <input type="email" className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring" />
+            <label className="block text-left text-sm font-medium">Tên người dùng</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)} // Cập nhật state username
+              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring"
+              required
+            />
           </div>
           <div>
             <label className="block text-left text-sm font-medium">Mật khẩu</label>
-            <input type="password" className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring" />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)} // Cập nhật state password
+              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring"
+              required
+            />
           </div>
-          <button className="w-full bg-black text-white py-2 rounded-md" onClick={() => { toast.success("Đăng nhập thành công"); navigate("/home") }}>Đăng nhập</button>
+          <button
+            type="submit"
+            className="w-full bg-black text-white py-2 rounded-md"
+
+          >
+            Đăng nhập
+          </button>
         </form>
+        {/* Link to SignUp */}
+    <p className="mt-4 text-sm text-gray-500">
+      Chưa có tài khoản?{" "}
+      <span
+        className="text-blue-500 cursor-pointer hover:underline"
+        onClick={() => navigate("/signup")}
+      >
+        Đăng ký ngay
+      </span>
+    </p>
       </div>
     </div>
   );

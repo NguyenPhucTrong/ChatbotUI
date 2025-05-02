@@ -104,6 +104,7 @@ export default function Header() {
                                     </li >
                                     <li className="p-3 hover:bg-gray-100 cursor-pointer">Settings</li>
                                     <li className="p-3 hover:bg-gray-100 cursor-pointer" onClick={() => {
+                                        localStorage.clear();
                                         toast.success("Đăng xuất thành công");
                                         navigate("/login");
                                     }} >Logout</li>

@@ -30,7 +30,7 @@ const MainLandingPage = () => {
           Nền tảng quản lý dự án tích hợp AI giúp đọc, tóm tắt và phân tích tài liệu.
           Tối ưu hóa quy trình làm việc của team của bạn.
         </p>
-        <button className="mt-6 px-6 py-3 text-lg bg-black text-white hover:bg-gray-800 rounded" onClick={() => navigate("/home")}>Dùng thử miễn phí</button>
+        <button className="mt-6 px-6 py-3 text-lg bg-black text-white hover:bg-gray-800 rounded" onClick={() => navigate("/signup")}>Đăng ký ngay</button>
       </main >
 
       {/* Features Section */}

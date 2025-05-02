@@ -162,6 +162,7 @@ export default function ProjectManagement() {
             }));
 
             toast.success('Task đã được thêm thành công!');
+            window.location.reload();
         } catch (error) {
             console.error('Lỗi khi thêm task:', error);
             // toast.error('Không thể thêm task.');

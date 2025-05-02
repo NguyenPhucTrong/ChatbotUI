@@ -6,16 +6,19 @@ import { createUser } from '../services/UserServices';
 export default function SignUp() {
     const navigate = useNavigate();
     const [username, setUsername] = useState('');
+    const [fullname, setFullname] = useState('');
+    const [email, setEmail] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [passwordError, setPasswordError] = useState(''); // Lưu lỗi mật khẩu không khớp
+    const [passwordError, setPasswordError] = useState('');
 
     const handleSignUp = async (e: React.FormEvent) => {
         e.preventDefault();
 
         // Kiểm tra dữ liệu đầu vào
-        if (!username.trim() || !password.trim() || !confirmPassword.trim()) {
+        if (!username.trim() || !fullname.trim() || !email.trim() || !phoneNumber.trim() || !password.trim() || !confirmPassword.trim()) {
             toast.error('Vui lòng điền đầy đủ thông tin.');
             return;
         }
@@ -28,6 +31,9 @@ export default function SignUp() {
         try {
             const newUser = {
                 username: username.trim(),
+                fullname: fullname.trim(),
+                email: email.trim(),
+                phone_number: phoneNumber.trim(),
                 password: password.trim(),
                 role: 'user',
                 permission: 'none',
@@ -36,20 +42,21 @@ export default function SignUp() {
             console.log('Dữ liệu gửi lên API:', newUser);
 
             await createUser(newUser);
+            console.log('API createUser gọi thành công');
             toast.success('Đăng ký thành công!');
             navigate('/login');
         } catch (error: any) {
             console.error('Lỗi khi đăng ký:', error);
 
-            if (error.response?.data?.detail) {
-                toast.error(`Lỗi: ${error.response.data.detail}`);
+            if (error.response?.data) {
+                console.log('Chi tiết lỗi từ API:', error.response.data);
+                toast.error(`Lỗi: ${error.response.data.detail || 'Dữ liệu không hợp lệ.'}`);
             } else {
                 toast.error('Đăng ký thất bại. Vui lòng thử lại.');
             }
         }
     };
 
-    // Kiểm tra mật khẩu nhập lại
     const handleConfirmPasswordChange = (value: string) => {
         setConfirmPassword(value);
         if (value !== password) {
@@ -71,6 +78,36 @@ export default function SignUp() {
                             type="text"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
+                            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-left text-sm font-medium">Họ và tên</label>
+                        <input
+                            type="text"
+                            value={fullname}
+                            onChange={(e) => setFullname(e.target.value)}
+                            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-left text-sm font-medium">Email</label>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-left text-sm font-medium">Số điện thoại</label>
+                        <input
+                            type="text"
+                            value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(e.target.value)}
                             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring"
                             required
                         />
@@ -101,9 +138,8 @@ export default function SignUp() {
                                 type="password"
                                 value={confirmPassword}
                                 onChange={(e) => handleConfirmPasswordChange(e.target.value)}
-                                className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring ${
-                                    passwordError ? 'border-red-500' : ''
-                                }`}
+                                className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring ${passwordError ? 'border-red-500' : ''
+                                    }`}
                                 required
                             />
                             {passwordError && (
@@ -114,7 +150,7 @@ export default function SignUp() {
                     <button
                         type="submit"
                         className="w-full bg-black text-white py-2 rounded-md"
-                        disabled={!!passwordError} // Vô hiệu hóa nút nếu có lỗi
+                        disabled={!!passwordError}
                     >
                         Đăng ký
                     </button>

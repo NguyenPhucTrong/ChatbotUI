@@ -30,14 +30,14 @@ export default function SignUp() {
 
         try {
             const newUser = {
-                username: username.trim(),
-                fullname: fullname.trim(),
-                email: email.trim(),
-                phone_number: phoneNumber.trim(),
-                password: password.trim(),
-                role: 'user',
-                permission: 'none',
-            };
+                Username: username.trim(),
+                Fullname: fullname.trim(),
+                Email: email.trim(),
+                Password: password.trim(),
+                PhoneNumber: phoneNumber.trim(),
+                Role: "user",
+                Permission: "none",
+              };
 
             console.log('Dữ liệu gửi lên API:', newUser);
 

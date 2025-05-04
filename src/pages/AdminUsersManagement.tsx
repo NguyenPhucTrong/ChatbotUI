@@ -249,7 +249,7 @@ const AdminUsersManagement: React.FC = () => {
       },
       title: {
         display: true,
-        text: 'Số lượng Người dùng theo Trạng thái',
+        text: 'Số lượng Người dùng',
       },
     },
   };
@@ -361,13 +361,118 @@ const AdminUsersManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* Add User Modal */}
-      {showAddModal && (
+           {/* Add User Modal */}
+           {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
             <h2 className="text-xl font-bold mb-4">Add New User</h2>
             <form onSubmit={handleAddUser} className="space-y-4">
-              {/* ... (keep your existing add modal form fields) ... */}
+              <div>
+                <label className="block text-sm font-medium mb-1">Username</label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full px-3 py-2 border rounded"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Full Name</label>
+                <input
+                  type="text"
+                  value={fullname}
+                  onChange={(e) => setFullname(e.target.value)}
+                  className="w-full px-3 py-2 border rounded"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-3 py-2 border rounded"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Phone Number</label>
+                <input
+                  type="text"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  className="w-full px-3 py-2 border rounded"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Role</label>
+                <select
+                  value={role}
+                  onChange={(e) => setRole(e.target.value as 'user' | 'admin')}
+                  className="w-full px-3 py-2 border rounded"
+                >
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-3 py-2 border rounded"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-2 top-2 text-sm text-gray-500"
+                  >
+                    {showPassword ? 'Hide' : 'Show'}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Confirm Password</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => handleConfirmPasswordChange(e.target.value)}
+                  className={`w-full px-3 py-2 border rounded ${
+                    passwordError ? 'border-red-500' : ''
+                  }`}
+                  required
+                />
+                {passwordError && (
+                  <p className="text-red-500 text-sm mt-1">{passwordError}</p>
+                )}
+              </div>
+              <div className="flex justify-end space-x-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddModal(false);
+                    resetForm();
+                  }}
+                  className="px-4 py-2 border rounded hover:bg-gray-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
+                  disabled={!!passwordError}
+                >
+                  Add User
+                </button>
+              </div>
             </form>
           </div>
         </div>

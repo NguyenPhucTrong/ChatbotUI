@@ -7,13 +7,17 @@ export const getUsersPagination = async (page: number, size: number) => {
     });
 };
 
-const getCurrentUser = async () => {
-    return await axios.get('/api/auth/me', {
-        headers: {
-            Authorization: `Bearer ${localStorage.getItem('userToken')}`,
-        },
-    })
-}
+export const getAllUsers = async () => {
+    return await axios.get('/api/users'); 
+};
+
+// const getCurrentUser = async () => {
+//     return await axios.get('/api/auth/me', {
+//         headers: {
+//             Authorization: `Bearer ${localStorage.getItem('userToken')}`,
+//         },
+//     })
+// }
 
 
 // Tạo user mới
@@ -45,9 +49,14 @@ export const updateUser = async (
         password?: string;
         role?: string;
         permission?: string; // Tùy chọn
-    }
+    },
+    token: string | null // Thêm tham số token
 ) => {
-    return await axios.put(`/api/users/${id}`, user);
+    return await axios.put(`/api/users/${id}`, user, { // Thêm config object
+        headers: {
+            Authorization: `Bearer ${token}`, // Truyền token vào header
+        },
+    });
 };
 
 // Xóa user theo ID

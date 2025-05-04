@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { MdSearch, MdEdit, MdDelete } from 'react-icons/md';
+import Custom_axios from '../services/Custom_axios';
 
 interface Company {
     id: string;
@@ -9,15 +10,27 @@ interface Company {
 }
 
 const AdminCompanyManagement = () => {
-    const [companies, setCompanies] = useState<Company[]>([
-        { id: 'COMP_01', name: 'ABC Corporation', tenants: 12, createdDate: '01/01/2024' },
-        { id: 'COMP_02', name: 'XYZ Enterprise', tenants: 8, createdDate: '15/01/2024' },
-    ]);
-
+    const [companies, setCompanies] = useState<Company[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [showOptions, setShowOptions] = useState<{ companyId: string | null }>({ companyId: null });
 
     useEffect(() => {
+        const fetchCompanies = async () => {
+            try {
+                const token = localStorage.getItem("userToken");
+                const response = await Custom_axios.get('/api/companies', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                setCompanies(response.data);
+            } catch (error) {
+                console.error("Error fetching companies:", error);
+            }
+        };
+
+        fetchCompanies();
+
         if (showOptions.companyId !== null) {
             const timer = setTimeout(() => { setShowOptions({ companyId: null }) }, 2000);
             return () => clearTimeout(timer);
@@ -94,7 +107,7 @@ const AdminCompanyManagement = () => {
                                 <td className="py-2 px-4 border-b text-center">{company.createdDate}</td>
                                 <td className="py-2 px-4 border-b text-center relative">
                                     <div className="flex items-center justify-center">
-                                        <span 
+                                        <span
                                             className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-300 cursor-pointer leading-none"
                                             onClick={() => toggleOptions(company.id)}
                                         >
@@ -106,7 +119,7 @@ const AdminCompanyManagement = () => {
                                                     <li className="p-3 hover:bg-gray-100 cursor-pointer flex items-center">
                                                         <MdEdit className="mr-2" /> Edit
                                                     </li>
-                                                    <li 
+                                                    <li
                                                         className="p-3 hover:bg-gray-100 cursor-pointer flex items-center"
                                                         onClick={() => deleteCompany(company.id)}
                                                     >

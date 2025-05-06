@@ -50,7 +50,7 @@ const Dashboard = () => {
         labels: Object.keys(taskStatusCounts),
         datasets: [
             {
-                label: 'Số lượng Tasks',
+                label: 'Số lượng trạng thái',
                 data: Object.values(taskStatusCounts),
                 backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
             },

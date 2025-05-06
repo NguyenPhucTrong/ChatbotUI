@@ -4,6 +4,8 @@ import { getAllProjects } from '../services/ProjectsServices';
 import { createTask, getAllTasks, updateTask, deleteTaskAPI } from '../services/TaskServices';
 import { toast } from 'react-toastify';
 import { Navigate } from 'react-router-dom';
+import ReactDatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 interface Task {
     id: number;
@@ -12,6 +14,7 @@ interface Task {
     dueDate: string;
     priority: string;
     assignee: string;
+    createdAt: string;
     projectId: number; // Added projectId property
 }
 
@@ -53,6 +56,16 @@ export default function ProjectManagement() {
         return <Navigate to="/" />;
     }
 
+    const mapStatusToBackend = (status: string): string => {
+        if (status === 'Not Started') return 'Blocked';
+        return status;
+    };
+
+    const mapStatusToFrontend = (status: string): string => {
+        if (status === 'Blocked') return 'Not Started';
+        return status;
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -71,8 +84,7 @@ export default function ProjectManagement() {
                 const tasksData = taskResponse.data.data.map((task: any) => ({
                     id: task.IdTask,
                     title: task.Title,
-                    status: task.Status,
-                    dueDate: task.DueDate,
+                    status: mapStatusToFrontend(task.Status), dueDate: task.DueDate,
                     priority: task.Priority,
                     assignee: 'Unassigned', // Nếu API không trả về assignee
                     projectId: task.IdProject,
@@ -126,48 +138,148 @@ export default function ProjectManagement() {
     };
 
     const addTask = async (projectId: number) => {
-
         const newTask: Task = {
             id: 0, // Tạo ID mới cho task
             title: 'New Task', // Tên mặc định
-            status: 'Not Started', // Trạng thái mặc định
+            status: 'Pending', // Trạng thái mặc định (chỉ dùng trên frontend)
             dueDate: '01/01/2025', // Ngày hết hạn mặc định
             priority: 'Low', // Mức độ ưu tiên mặc định
             assignee: 'Unassigned', // Người được giao mặc định
             projectId: projectId, // ID dự án
+            createdAt: new Date().toISOString(), // Thời gian tạo task
         };
 
         try {
-            // Gọi API để lưu task vào database
-            const response = await createTask({
+            // Ánh xạ giá trị Status trước khi gửi đến backend
+            const payload = {
                 Title: newTask.title,
-                Status: newTask.status as 'Pending' | 'In Progress' | 'Completed' | 'Blocked',
+                Status: mapStatusToBackend(newTask.status), // Chuyển đổi giá trị Status
                 DueDate: newTask.dueDate,
                 Priority: newTask.priority as 'Low' | 'Medium' | 'High',
                 IdProject: newTask.projectId,
-            });
+                CreatedAt: newTask.createdAt, // Gửi thời gian tạo task đến backend
+            };
+
+            console.log('Payload gửi đến API:', payload); // Debug payload
+
+            // Gọi API để lưu task vào database
+            const response = await createTask(payload);
 
             // Backend trả về task đã được lưu (bao gồm ID mới)
             const savedTask = response.data;
 
             // Cập nhật state `projects` với task mới
-            setProjects(projects.map((project) => {
-                if (project.id === projectId) {
-                    return {
-                        ...project,
-                        tasks: [...project.tasks, { ...newTask, id: savedTask.IdTask }],
-                    };
-                }
-                return project;
-            }));
+            setProjects((prevProjects) =>
+                prevProjects.map((project) => {
+                    if (project.id === projectId) {
+                        return {
+                            ...project,
+                            tasks: [...project.tasks, { ...newTask, id: savedTask.IdTask }],
+                        };
+                    }
+                    return project;
+                })
+            );
 
             toast.success('Task đã được thêm thành công!');
-            window.location.reload();
         } catch (error) {
             console.error('Lỗi khi thêm task:', error);
-            // toast.error('Không thể thêm task.');
+            toast.error('Không thể thêm task.');
+        }
+    };
+
+    // Hàm chỉnh sửa tiêu đề (title)
+    const handleEditTitle = async (projectId: number, taskId: number, newTitle: string) => {
+        const updatedTask = projects
+            .find((project) => project.id === projectId)
+            ?.tasks.find((task) => task.id === taskId);
+
+        if (!updatedTask) {
+            toast.error('Không tìm thấy task để cập nhật.');
+            return;
         }
 
+        const payload = {
+            Title: newTitle,
+            Status: mapStatusToBackend(updatedTask.status), // Chuyển đổi giá trị Status
+            DueDate: updatedTask.dueDate,
+            Priority: updatedTask.priority as "Low" | "Medium" | "High" | undefined,
+            IdProject: updatedTask.projectId,
+        };
+
+        try {
+            console.log('Payload gửi đến API:', payload); // Debug payload
+            await updateTask(taskId, payload);
+            // Cập nhật state `projects` để phản ánh thay đổi
+            setProjects((prevProjects) =>
+                prevProjects.map((project) => {
+                    if (project.id === projectId) {
+                        return {
+                            ...project,
+                            tasks: project.tasks.map((task) =>
+                                task.id === taskId ? { ...task, title: newTitle } : task
+                            ),
+                        };
+                    }
+                    return project;
+                })
+            );
+            toast.success('Cập nhật tiêu đề thành công!');
+        } catch (error) {
+            console.error('Lỗi khi cập nhật tiêu đề:', error);
+            toast.error('Không thể cập nhật tiêu đề.');
+        }
+    };
+
+    // Hàm chỉnh sửa ngày đến hạn (DueDate)
+
+    const handleEditDueDate = async (projectId: number, taskId: number, newDueDate: string) => {
+        if (!newDueDate || isNaN(Date.parse(newDueDate))) {
+            toast.error('Ngày hết hạn không hợp lệ.');
+            return;
+        }
+
+        const updatedTask = projects
+            .find((project) => project.id === projectId)
+            ?.tasks.find((task) => task.id === taskId);
+
+        if (!updatedTask) {
+            toast.error('Không tìm thấy task để cập nhật.');
+            return;
+        }
+
+        const payload = {
+            Title: updatedTask.title,
+            Status: mapStatusToBackend(updatedTask.status), // Chuyển đổi giá trị Status
+            DueDate: newDueDate,
+            Priority: updatedTask.priority as "Low" | "Medium" | "High" | undefined,
+            IdProject: updatedTask.projectId,
+        };
+
+        try {
+            console.log('Payload gửi đến API:', payload); // Debug payload
+            await updateTask(taskId, payload);
+
+            // Cập nhật state `projects` để phản ánh thay đổi
+            setProjects((prevProjects) =>
+                prevProjects.map((project) => {
+                    if (project.id === projectId) {
+                        return {
+                            ...project,
+                            tasks: project.tasks.map((task) =>
+                                task.id === taskId ? { ...task, dueDate: newDueDate } : task
+                            ),
+                        };
+                    }
+                    return project;
+                })
+            );
+
+            toast.success('Cập nhật ngày hết hạn thành công!');
+        } catch (error) {
+            console.error('Lỗi khi cập nhật ngày hết hạn:', error);
+            toast.error('Không thể cập nhật ngày hết hạn.');
+        }
     };
 
 
@@ -213,64 +325,23 @@ export default function ProjectManagement() {
         }
     };
 
-    const updateTaskStatus = async (projectId: number, taskId: number) => {
-        const statuses = ['Not Started', 'In Progress', 'Pending', 'Completed'];
-        setProjects(projects.map(project => {
-            if (project.id === projectId) {
-                return {
-                    ...project,
-                    tasks: project.tasks.map(task => {
-                        if (task.id === taskId) {
-                            const currentIndex = statuses.indexOf(task.status);
-                            const nextIndex = (currentIndex + 1) % statuses.length;
-                            return { ...task, status: statuses[nextIndex] };
-                        }
-                        return task;
-                    }),
-                };
-            }
-            return project;
-        }));
-        try {
-            const updatedTask = projects.find(project => project.id === projectId)?.tasks.find(task => task.id === taskId);
-            if (updatedTask) {
-                await updateTask(taskId, {
-                    Title: updatedTask.title,
-                    Status: updatedTask.status as "Pending" | "In Progress" | "Completed" | "Blocked" | undefined,
-                    DueDate: updatedTask.dueDate,
-                    Priority: updatedTask.priority as "Low" | "Medium" | "High" | undefined,
-                    IdProject: updatedTask.projectId,
-                });
-                console.log('Cập nhật task thành công:', updatedTask);
-                toast.success('Cập nhật task thành công');
-            }
-        } catch (error) {
-            console.error(`Failed to update task ${taskId}:`, error);
-            toast.error('Cập nhật task thất bại');
-        }
-    };
+    const updateTaskStatus = async (projectId: number, taskId: number, newStatus: string) => {
+        const backendStatus = mapStatusToBackend(newStatus); // Chuyển đổi giá trị cho backend
 
+        setProjects((prevProjects) =>
+            prevProjects.map((project) => {
+                if (project.id === projectId) {
+                    return {
+                        ...project,
+                        tasks: project.tasks.map((task) =>
+                            task.id === taskId ? { ...task, status: newStatus } : task
+                        ),
+                    };
+                }
+                return project;
+            })
+        );
 
-
-    const updateTaskPriority = async (projectId: number, taskId: number) => {
-        const priorities = ['Low', 'Medium', 'High'];
-        setProjects(projects.map(project => {
-            if (project.id === projectId) {
-                return {
-                    ...project,
-                    tasks: project.tasks.map(task => {
-                        if (task.id === taskId) {
-
-                            const currentIndex = priorities.indexOf(task.priority);
-                            const nextIndex = (currentIndex + 1) % priorities.length;
-                            return { ...task, priority: priorities[nextIndex] };
-                        }
-                        return task;
-                    }),
-                };
-            }
-            return project;
-        }));
         try {
             const updatedTask = projects
                 .find((project) => project.id === projectId)
@@ -279,17 +350,59 @@ export default function ProjectManagement() {
             if (updatedTask) {
                 await updateTask(taskId, {
                     Title: updatedTask.title,
-                    Status: updatedTask.status as "Pending" | "In Progress" | "Completed" | "Blocked" | undefined,
+                    Status: backendStatus as "Pending" | "In Progress" | "Completed" | "Blocked",
                     DueDate: updatedTask.dueDate,
-                    Priority: updatedTask.priority as "Low" | "Medium" | "High" | undefined,
+                    Priority: updatedTask.priority as "Low" | "Medium" | "High",
                     IdProject: updatedTask.projectId,
                 });
-                console.log(`Task ${taskId} priority updated successfully`);
-                toast.success('Cập nhật task thành công');
+                toast.success('Cập nhật trạng thái thành công!');
+            }
+        } catch (error) {
+            console.error(`Failed to update task ${taskId} status:`, error);
+            toast.error('Cập nhật trạng thái thất bại');
+        }
+    };
+
+
+
+    // Removed duplicate declaration of updateTaskPriority
+
+    const updateTaskPriority = async (projectId: number, taskId: number, newPriority: string) => {
+        setProjects((prevProjects) =>
+            prevProjects.map((project) => {
+                if (project.id === projectId) {
+                    return {
+                        ...project,
+                        tasks: project.tasks.map((task) =>
+                            task.id === taskId ? { ...task, priority: newPriority } : task
+                        ),
+                    };
+                }
+                return project;
+            })
+        );
+
+        try {
+            const updatedTask = projects
+                .find((project) => project.id === projectId)
+                ?.tasks.find((task) => task.id === taskId);
+
+            if (updatedTask) {
+                const payload = {
+                    Title: updatedTask.title,
+                    Status: mapStatusToBackend(updatedTask.status), // Chuyển đổi giá trị Status
+                    DueDate: updatedTask.dueDate,
+                    Priority: newPriority as "Low" | "Medium" | "High",
+                    IdProject: updatedTask.projectId,
+                };
+
+                console.log('Payload gửi đến API:', payload); // Debug payload
+                await updateTask(taskId, payload);
+                toast.success('Cập nhật mức độ ưu tiên thành công!');
             }
         } catch (error) {
             console.error(`Failed to update task ${taskId} priority:`, error);
-            toast.error('Cập nhật task thất bại');
+            toast.error('Cập nhật mức độ ưu tiên thất bại');
         }
     };
 
@@ -335,17 +448,7 @@ export default function ProjectManagement() {
 
             {/* Search Input and Filter Options */}
             <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
-                {/* <div className="flex gap-4 "> */}
 
-
-                {/* Create New Table Button */}
-                {/* <button
-                        onClick={createNewTable}
-                        className=" bg-blue-500 text-white px-5 py-3 rounded-lg hover:bg-blue-700"
-                    >
-                        Create New Table
-                    </button>
-                </div> */}
                 <div className="relative w-full md:w-1/2">
                     <input
                         type="text"
@@ -402,6 +505,7 @@ export default function ProjectManagement() {
                         <thead>
                             <tr>
                                 <th className="px-4 py-2 min-w-[333px] bg-gray-200">Task</th>
+                                <th className="border px-4 py-2 min-w-[200px] bg-gray-200">Created At</th>
                                 <th className="border px-4 py-2 min-w-[200px] bg-gray-200">Status</th>
                                 <th className="border px-4 py-2 min-w-[200px] bg-gray-200">Due Date</th>
                                 <th className="border px-4 py-2 min-w-[200px] bg-gray-200">Priority</th>
@@ -422,12 +526,12 @@ export default function ProjectManagement() {
                                                 onChange={(e) => setEditedTitle(e.target.value)}
                                                 onKeyDown={(e) => {
                                                     if (e.key === 'Enter') {
-                                                        handleEditTask(project.id, task.id, 'title', editedTitle);
+                                                        handleEditTitle(project.id, task.id, editedTitle);
                                                         setIsEditing({ tableId: null, taskId: null, field: null });
                                                     }
                                                 }}
                                                 onBlur={() => {
-                                                    handleEditTask(project.id, task.id, 'title', editedTitle);
+                                                    handleEditTitle(project.id, task.id, editedTitle);
                                                     setIsEditing({ tableId: null, taskId: null, field: null });
                                                 }}
                                                 className="border px-2 py-1 rounded w-full"
@@ -435,7 +539,10 @@ export default function ProjectManagement() {
                                             />
                                         ) : (
                                             <span
-                                                onClick={() => setIsEditing({ tableId: project.id, taskId: task.id, field: 'title' })}
+                                                onClick={() => {
+                                                    setEditedTitle(task.title); // Đặt giá trị hiện tại vào input
+                                                    setIsEditing({ tableId: project.id, taskId: task.id, field: 'title' });
+                                                }}
                                                 className="cursor-pointer"
                                             >
                                                 {task.title}
@@ -443,32 +550,36 @@ export default function ProjectManagement() {
                                         )}
                                     </td>
 
-                                    <td className="border-b px-6 py-4"
-                                        onClick={() => updateTaskStatus(project.id, task.id)
+                                    {/* Cột CreatedAt */}
+                                    <td className="border-b px-6 py-4">
+                                        {new Date(task.createdAt).toLocaleString()} {/* Hiển thị thời gian tạo task */}
+                                    </td>
 
-                                        }>
-                                        <span className={`px-4 py-2 rounded-full ${statusColors[task.status]}`}>{task.status}</span>
+                                    {/* Cột Status */}
+                                    <td className="border-b px-6 py-4">
+                                        <select
+                                            value={task.status}
+                                            onChange={(e) => updateTaskStatus(project.id, task.id, e.target.value)}
+                                            className={`px-4 py-2 rounded-full ${statusColors[task.status]} appearance-none`}
+                                        >
+                                            <option value="Not Started">Not Started</option>
+                                            <option value="In Progress">In Progress</option>
+                                            <option value="Pending">Pending</option>
+                                            <option value="Completed">Completed</option>
+                                        </select>
                                     </td>
 
                                     {/* Cột DueDate */}
                                     <td className="border-b px-6 py-4">
                                         {isEditing?.tableId === project.id && isEditing?.taskId === task.id && isEditing?.field === 'dueDate' ? (
-                                            <input
-                                                type="date"
-                                                value={task.dueDate}
-                                                onChange={(e) => {
-                                                    if (!isComposing) {
-                                                        handleEditTask(project.id, task.id, 'title', e.target.value);
+                                            <ReactDatePicker
+                                                selected={new Date(task.dueDate)} // Chuyển đổi `dueDate` thành đối tượng Date
+                                                onChange={(date: Date | null) => {
+                                                    if (date) {
+                                                        const formattedDate = date.toISOString().split('T')[0]; // Định dạng thành `YYYY-MM-DD`
+                                                        handleEditDueDate(project.id, task.id, formattedDate);
                                                     }
-                                                }}
-                                                onCompositionStart={() => setIsComposing(true)}
-                                                onCompositionEnd={(e) => {
-                                                    setIsComposing(false);
-                                                    handleEditTask(project.id, task.id, 'title', (e.target as HTMLInputElement).value);
-                                                }} onKeyDown={(e) => {
-                                                    if (e.key === 'Enter') {
-                                                        setIsEditing({ tableId: null, taskId: null, field: null });
-                                                    }
+                                                    setIsEditing({ tableId: null, taskId: null, field: null });
                                                 }}
                                                 onBlur={() => setIsEditing({ tableId: null, taskId: null, field: null })}
                                                 className="border px-2 py-1 rounded w-full"
@@ -483,10 +594,17 @@ export default function ProjectManagement() {
                                             </span>
                                         )}
                                     </td>
-                                    <td className="border-b px-6 py-4"
-                                        onClick={() => updateTaskPriority(project.id, task.id)}
-                                    >
-                                        <span className={`px-4 py-2 rounded-full ${priorityColors[task.priority]}`}>{task.priority}</span>
+
+                                    <td className="border-b px-6 py-4">
+                                        <select
+                                            value={task.priority}
+                                            onChange={(e) => updateTaskPriority(project.id, task.id, e.target.value)}
+                                            className={`px-4 py-2 rounded-full text-center items-center ${priorityColors[task.priority]} appearance-none`}
+                                        >
+                                            <option value="Low">Low</option>
+                                            <option value="Medium">Medium</option>
+                                            <option value="High">High</option>
+                                        </select>
                                     </td>
 
                                     {/* Cột Assignee */}
@@ -534,7 +652,7 @@ export default function ProjectManagement() {
                                 </tr>
                             ))}
                             <tr>
-                                <td colSpan={6} className="border px-4 py-2 text-center bg-gray-200 hover:bg-gray-300 cursor-pointer"
+                                <td colSpan={7} className="border px-4 py-2 text-center bg-gray-200 hover:bg-gray-300 cursor-pointer"
                                     onClick={() => addTask(project.id)}>
                                     ➕ Add Task
                                 </td>

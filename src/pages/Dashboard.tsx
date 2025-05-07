@@ -11,9 +11,10 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 const Dashboard = () => {
     const [projects, setProjects] = useState<any[]>([]);
     const [tasks, setTasks] = useState<any[]>([]);
+    const [tasksByProject, setTasksByProject] = useState<any>({});
 
     const token = localStorage.getItem('userToken');
-    console.log(token);
+    console.log('Token:', token);
     if (!token) {
         toast.error('Vui lòng đăng nhập để truy cập trang này.');
         return <Navigate to="/" />;
@@ -25,13 +26,34 @@ const Dashboard = () => {
                 const projectsResponse = await getAllProjects();
                 const tasksResponse = await getAllTasks();
 
-                console.log('Dữ liệu Projects:', projectsResponse.data.data);
-                console.log('Dữ liệu Tasks:', tasksResponse.data.data);
+                const projectsData = projectsResponse.data?.data || [];
+                const tasksData = tasksResponse.data?.data || [];
 
-                setProjects(projectsResponse.data.data || []);
-                setTasks(tasksResponse.data.data || []);
+                console.log('Dữ liệu Projects:', projectsData);
+                console.log('Dữ liệu Tasks:', tasksData);
+
+                setProjects(projectsData);
+                setTasks(tasksData);
+
+                // Nhóm Tasks theo IdProject
+                const groupedTasks = tasksData.reduce((acc: any, task: any) => {
+                    if (!task.IdProject) {
+                        console.warn('Task không có IdProject:', task);
+                        return acc;
+                    }
+                    const projectId = String(task.IdProject);
+                    if (!acc[projectId]) {
+                        acc[projectId] = [];
+                    }
+                    acc[projectId].push(task);
+                    return acc;
+                }, {});
+
+                console.log('Tasks được nhóm theo IdProject:', groupedTasks);
+                setTasksByProject(groupedTasks);
             } catch (error) {
                 console.error('Lỗi khi lấy dữ liệu:', error);
+                toast.error('Không thể tải dữ liệu. Vui lòng thử lại sau.');
             }
         };
 
@@ -41,7 +63,9 @@ const Dashboard = () => {
     // Dữ liệu cho biểu đồ tasks theo trạng thái
     const taskStatusCounts = Array.isArray(tasks)
         ? tasks.reduce((acc: any, task: any) => {
-            acc[task.Status] = (acc[task.Status] || 0) + 1;
+            if (task.Status) {
+                acc[task.Status] = (acc[task.Status] || 0) + 1;
+            }
             return acc;
         }, {})
         : {};
@@ -71,12 +95,20 @@ const Dashboard = () => {
     };
 
     // Dữ liệu cho biểu đồ tasks theo dự án
+    console.log('TasksByProject:', tasksByProject);
+    Object.keys(tasksByProject).forEach((projectId) => {
+        console.log(`Project ID: ${projectId}, Tasks:`, tasksByProject[projectId]);
+    });
+
     const projectTaskCounts = projects.map((project) => {
-        const taskCount = Array.isArray(tasks)
-            ? tasks.filter((task) => task.IdProject === project.Id).length
-            : 0;
+        const projectId = String(project.IdProject); // Sử dụng IdProject thay vì Id
+        console.log(`Processing Project ID: ${projectId}, Name: ${project.ProjectName}`);
+        const taskCount = tasksByProject[projectId]?.length || 0;
+        console.log(`Task Count for Project ID ${projectId}:`, taskCount);
         return { projectName: project.ProjectName, taskCount };
     });
+
+    console.log('Dữ liệu projectTaskCounts:', projectTaskCounts);
 
     const projectChartData = {
         labels: projectTaskCounts.map((item) => item.projectName),
@@ -88,6 +120,8 @@ const Dashboard = () => {
             },
         ],
     };
+
+    console.log('Dữ liệu projectChartData:', projectChartData);
 
     const projectChartOptions = {
         responsive: true,
@@ -110,12 +144,20 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 {/* Biểu đồ số lượng tasks theo trạng thái */}
                 <div>
-                    <Bar data={chartData} options={chartOptions} />
+                    {Object.keys(taskStatusCounts).length > 0 ? (
+                        <Bar data={chartData} options={chartOptions} />
+                    ) : (
+                        <p>Không có dữ liệu để hiển thị biểu đồ trạng thái tasks.</p>
+                    )}
                 </div>
 
                 {/* Biểu đồ số lượng tasks theo dự án */}
                 <div>
-                    <Bar data={projectChartData} options={projectChartOptions} />
+                    {projectTaskCounts.length > 0 ? (
+                        <Bar data={projectChartData} options={projectChartOptions} />
+                    ) : (
+                        <p>Không có dữ liệu để hiển thị biểu đồ tasks theo dự án.</p>
+                    )}
                 </div>
             </div>
 
@@ -140,15 +182,13 @@ const Dashboard = () => {
                         </tr>
                     ) : (
                         projects.map((project, index) => {
-                            const taskCount = Array.isArray(tasks)
-                                ? tasks.filter((task) => task.IdProject === project.Id).length
-                                : 0;
+                            const taskCount = tasksByProject[String(project.Id)]?.length || 0;
                             return (
                                 <tr key={index} className="hover:bg-gray-100">
                                     <td className="px-6 py-4 text-center border-b">{project.ProjectName}</td>
-                                    <td className="px-6 py-4 text-center border-b">{project.Priority}</td>
-                                    <td className="px-6 py-4 text-center border-b">{project.DateCreate}</td>
-                                    <td className="px-6 py-4 text-center border-b">{project.Status}</td>
+                                    <td className="px-6 py-4 text-center border-b">{project.Priority || 'N/A'}</td>
+                                    <td className="px-6 py-4 text-center border-b">{project.DateCreate || 'N/A'}</td>
+                                    <td className="px-6 py-4 text-center border-b">{project.Status || 'N/A'}</td>
                                     <td className="px-6 py-4 text-center border-b">{taskCount}</td>
                                 </tr>
                             );

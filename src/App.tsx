@@ -17,6 +17,7 @@ import Login from "./pages/Login";
 import { ToastContainer } from "react-toastify";
 import UploadFile from "./pages/UploadFile";
 import SignUp from "./pages/SignUp";
+import ProjectMembers from "./pages/ProjectMembers";
 
 // Định nghĩa interface cho Message
 interface Message {
@@ -123,6 +124,7 @@ function App() {
             <Route path="/mainlanding" element={<MainLanding />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
+            <Route path="/project-members" element={<ProjectMembers />} />
 
             <Route path="/upload" element={<UploadFile />} />
 

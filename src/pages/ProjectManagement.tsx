@@ -75,6 +75,24 @@ export default function ProjectManagement() {
     return status;
   };
 
+  const normalizeDate = (dateString: string): string => {
+    // Kiểm tra nếu định dạng là DD-MM-YYYY
+    if (/^\d{2}-\d{2}-\d{4}$/.test(dateString)) {
+      const [day, month, year] = dateString.split("-");
+      return `${year}-${month}-${day}`; // Chuyển thành YYYY-MM-DD
+    }
+
+    // Kiểm tra nếu định dạng là DD/MM/YYYY
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
+      const [day, month, year] = dateString.split("/");
+      return `${year}-${month}-${day}`; // Chuyển thành YYYY-MM-DD
+    }
+
+    // Nếu không khớp định dạng, trả về giá trị mặc định
+    console.warn("Invalid date format:", dateString);
+    return new Date().toISOString().split("T")[0]; // Ngày hiện tại
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -93,16 +111,19 @@ export default function ProjectManagement() {
 
         // Lấy danh sách task
         const taskResponse = await getAllTasks();
-        const tasksData = taskResponse.data.data.map((task: any) => ({
-          id: task.IdTask,
-          title: task.Title,
-          status: mapStatusToFrontend(task.Status),
-          dueDate: task.DueDate,
-          priority: task.Priority,
-          assignee: "Unassigned", // Nếu API không trả về assignee
-          projectId: task.IdProject,
-          createdAt: task.DateCreate, // Thay đổi tên thuộc tính cho phù hợp với API
-        }));
+        const tasksData = taskResponse.data.data.map((task: any) => {
+          console.log("Task DueDate:", task.DueDate); // Debug giá trị DueDate
+          return {
+            id: task.IdTask,
+            title: task.Title,
+            status: mapStatusToFrontend(task.Status),
+            dueDate: task.DueDate ? normalizeDate(task.DueDate) : new Date().toISOString().split("T")[0], // Chuẩn hóa DueDate
+            priority: task.Priority,
+            assignee: "Unassigned", // Nếu API không trả về assignee
+            projectId: task.IdProject,
+            createdAt: task.DateCreate, // Thay đổi tên thuộc tính cho phù hợp với API
+          };
+        });
 
         // Gắn task vào dự án tương ứng
         const projectsWithTasks = projectsData.map((project: Project) => ({
@@ -154,6 +175,7 @@ export default function ProjectManagement() {
 
   const addTask = async (projectId: number) => {
     const newTask: Task = {
+      id: Date.now(), // Tạo ID tạm thời để React nhận diện
       title: "New Task", // Tên mặc định
       status: "Pending", // Trạng thái mặc định (chỉ dùng trên frontend)
       dueDate: "01/01/2025", // Ngày hết hạn mặc định
@@ -165,8 +187,7 @@ export default function ProjectManagement() {
 
     try {
       // Format DateCreate để phù hợp với backend
-      const formattedDateCreate = new Date().toLocaleDateString("en-GB"); // Format: DD/MM/YYYY
-
+      const formattedDateCreate = new Date().toISOString().split("T")[0]; // Format: YYYY-MM-DD
       // Tạo payload gửi lên backend
       const payload = {
         Title: newTask.title,
@@ -265,6 +286,19 @@ export default function ProjectManagement() {
       return;
     }
 
+    // Kiểm tra nếu ngày mới nằm trong quá khứ
+    const today = new Date();
+    const selectedDate = new Date(newDueDate);
+    if (selectedDate.getTime() < today.setHours(0, 0, 0, 0)) {
+      toast.error("Ngày hết hạn không thể là ngày trong quá khứ.");
+      return;
+    }
+
+    // Định dạng lại ngày thành DD-MM-YYYY
+    const formattedDueDate = `${String(selectedDate.getDate()).padStart(2, "0")}-${String(
+      selectedDate.getMonth() + 1
+    ).padStart(2, "0")}-${selectedDate.getFullYear()}`;
+
     const updatedTask = projects
       .find((project) => project.id === projectId)
       ?.tasks.find((task) => task.id === taskId);
@@ -277,7 +311,7 @@ export default function ProjectManagement() {
     const payload = {
       Title: updatedTask.title,
       Status: mapStatusToBackend(updatedTask.status), // Chuyển đổi giá trị Status
-      DueDate: newDueDate,
+      DueDate: formattedDueDate, // Sử dụng ngày đã định dạng
       Priority: updatedTask.priority as "Low" | "Medium" | "High" | undefined,
       IdProject: updatedTask.projectId,
       DateCreate: updatedTask.createdAt,
@@ -294,7 +328,7 @@ export default function ProjectManagement() {
             return {
               ...project,
               tasks: project.tasks.map((task) =>
-                task.id === taskId ? { ...task, dueDate: newDueDate } : task
+                task.id === taskId ? { ...task, dueDate: formattedDueDate } : task
               ),
             };
           }
@@ -594,8 +628,8 @@ export default function ProjectManagement() {
                   {/* Cột Task */}
                   <td className="border-b px-6 py-4">
                     {isEditing?.tableId === project.id &&
-                    isEditing?.taskId === task.id &&
-                    isEditing?.field === "title" ? (
+                      isEditing?.taskId === task.id &&
+                      isEditing?.field === "title" ? (
                       <input
                         type="text"
                         value={editedTitle}
@@ -651,9 +685,8 @@ export default function ProjectManagement() {
                       onChange={(e) =>
                         updateTaskStatus(project.id, task.id, e.target.value)
                       }
-                      className={`px-4 py-2 rounded-full ${
-                        statusColors[task.status]
-                      } appearance-none`}
+                      className={`px-4 py-2 rounded-full ${statusColors[task.status]
+                        } appearance-none`}
                     >
                       <option value="Not Started">Not Started</option>
                       <option value="In Progress">In Progress</option>
@@ -665,8 +698,8 @@ export default function ProjectManagement() {
                   {/* Cột DueDate */}
                   <td className="border-b px-6 py-4">
                     {isEditing?.tableId === project.id &&
-                    isEditing?.taskId === task.id &&
-                    isEditing?.field === "dueDate" ? (
+                      isEditing?.taskId === task.id &&
+                      isEditing?.field === "dueDate" ? (
                       <ReactDatePicker
                         selected={new Date(task.dueDate)} // Chuyển đổi `dueDate` thành đối tượng Date
                         onChange={(date: Date | null) => {
@@ -718,9 +751,8 @@ export default function ProjectManagement() {
                       onChange={(e) =>
                         updateTaskPriority(project.id, task.id, e.target.value)
                       }
-                      className={`px-4 py-2 rounded-full text-center items-center ${
-                        priorityColors[task.priority]
-                      } appearance-none`}
+                      className={`px-4 py-2 rounded-full text-center items-center ${priorityColors[task.priority]
+                        } appearance-none`}
                     >
                       <option value="Low">Low</option>
                       <option value="Medium">Medium</option>
@@ -731,8 +763,8 @@ export default function ProjectManagement() {
                   {/* Cột Assignee */}
                   <td className="border-b px-6 py-4">
                     {isEditing?.tableId === project.id &&
-                    isEditing?.taskId === task.id &&
-                    isEditing?.field === "assignee" ? (
+                      isEditing?.taskId === task.id &&
+                      isEditing?.field === "assignee" ? (
                       <input
                         type="text"
                         value={task.assignee}
@@ -783,36 +815,4 @@ export default function ProjectManagement() {
                             taskId: task.id,
                             field: "assignee",
                           })
-                        }
-                        className="cursor-pointer"
-                      >
-                        {task.assignee}
-                      </span>
-                    )}
-                  </td>
-                  <td className="border-b px-6 py-4">
-                    <button
-                      onClick={() => deleteTask(project.id, task.id)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      🗑️
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              <tr>
-                <td
-                  colSpan={7}
-                  className="border px-4 py-2 text-center bg-gray-200 hover:bg-gray-300 cursor-pointer"
-                  onClick={() => addTask(project.id)}
-                >
-                  ➕ Add Task
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      ))}
-    </div>
-  );
-}
+              

@@ -815,4 +815,36 @@ export default function ProjectManagement() {
                             taskId: task.id,
                             field: "assignee",
                           })
-              
+                        }
+                        className="cursor-pointer"
+                      >
+                        {task.assignee}
+                      </span>
+                    )}
+                  </td>
+                  <td className="border-b px-6 py-4">
+                    <button
+                      onClick={() => deleteTask(project.id, task.id)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      🗑️
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              <tr>
+                <td
+                  colSpan={7}
+                  className="border px-4 py-2 text-center bg-gray-200 hover:bg-gray-300 cursor-pointer"
+                  onClick={() => addTask(project.id)}
+                >
+                  ➕ Add Task
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      ))}
+    </div>
+  );
+}

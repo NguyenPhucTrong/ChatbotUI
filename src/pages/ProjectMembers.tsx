@@ -201,4 +201,30 @@ const ProjectMembersManagement: React.FC = () => {
                                         <td className="px-6 py-4 border-b">
                                             {user.projectId ? (
                                                 <span className="text-gray-500">In Project {user.projectId}</span>
-                                            ) 
+                                            ) : (
+                                                <button
+                                                    onClick={() => handleAddUserToProject(user.id)}
+                                                    className="text-blue-500 hover:text-blue-700 px-2 py-1 border border-blue-500 rounded hover:bg-blue-50"
+                                                >
+                                                    Add to Project
+                                                </button>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={4} className="text-center py-4">
+                                        No users available.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default ProjectMembersManagement;

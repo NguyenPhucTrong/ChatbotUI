@@ -1,12 +1,17 @@
-import axios from './Custom_axios';
+import axios from "./Custom_axios";
 
 export const getProjectMembers = (projectId: number) => {
-    return axios.get(`/api/members/${projectId}`); // Sử dụng đúng endpoint
+  return axios.get(`/api/members/`);
 };
 
-export const addMemberToProject = (projectId: number, userId: number) => {
-    return axios.post(`/api/members/`, {
-        IdProject: projectId,
-        IdUser: userId, // Thay đổi payload để phù hợp với backend
-    });
+export const addMemberToProject = (
+  projectId: number,
+  userId: number,
+  role: string
+) => {
+  return axios.post(`/api/members/`, {
+    IdProject: projectId,
+    IdUser: userId, // Thay đổi payload để phù hợp với backend
+    UserRole: role,
+  });
 };

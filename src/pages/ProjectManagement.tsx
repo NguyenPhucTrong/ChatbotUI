@@ -11,6 +11,7 @@ import { toast } from "react-toastify";
 import { Navigate } from "react-router-dom";
 import ReactDatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { getProjectMembers } from "../services/ProjectMembers";
 
 interface Task {
   id: number;
@@ -28,6 +29,14 @@ interface Project {
   name: string;
   tableName: string; // Added tableName property
   tasks: Task[];
+}
+
+interface Member {
+  id: number;
+  fullname: string;
+  email: string;
+  phoneNumber: string;
+  role: string; // UserRole trong ProjectMembers
 }
 
 const priorityColors: { [key: string]: string } = {
@@ -52,11 +61,14 @@ export default function ProjectManagement() {
     field: keyof Task | null;
   }>({ tableId: null, taskId: null, field: null });
   const [editedTitle, setEditedTitle] = useState("");
-  const [isComposing, setIsComposing] = useState(false);
-
+  const [editingAssignee, setEditingAssignee] = useState<{
+    projectId: number | null;
+    taskId: number | null;
+  } | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
   const [filterPriority, setFilterPriority] = useState("All");
+  const [members, setMembers] = useState<Member[]>([]);
 
   const token = localStorage.getItem("userToken");
 
@@ -142,36 +154,42 @@ export default function ProjectManagement() {
     fetchData();
   }, []);
 
-  // const startEditing = (tableId: number, taskId: number, currentAssignee: string) => {
-  //     setIsEditing({ tableId, taskId });
-  //     setEditAssignee(currentAssignee);
-  // };
 
-  // const createNewTable = () => {
-  //     const tableName = prompt('Enter table name:');
-  //     if (tableName) {
-  //         const newTable: Project = {
-  //             id: projects.length + 1, // Tạo ID mới cho bảng
-  //             name: tableName, // Tên bảng do người dùng nhập
-  //             tableName: `Table ${tableName}`, // Tên hiển thị của bảng
-  //             tasks: [
-  //                 {
-  //                     id: 1, // ID mặc định cho task đầu tiên
-  //                     title: 'New Task', // Tên mặc định
-  //                     status: 'Not Started', // Trạng thái mặc định
-  //                     dueDate: '01/01/2025', // Ngày hết hạn mặc định
-  //                     priority: 'Low', // Mức độ ưu tiên mặc định
-  //                     assignee: 'Unassigned', // Người được giao mặc định
-  //                     projectId: projects.length + 1, // ID của bảng mới
-  //                 },
-  //             ], // Danh sách task mặc định
-  //         };
+  useEffect(() => {
+    const fetchMembersForProject = async () => {
+      if (!projects.length) return;
 
-  //         // Cập nhật state `projects` để thêm bảng mới
-  //         setProjects([...projects, newTable]);
-  //         toast.success(`Bảng "${tableName}" đã được tạo thành công với một task mặc định!`);
-  //     }
-  // };
+      // Lấy danh sách thành viên cho dự án đầu tiên (hoặc dự án được chọn)
+      const firstProjectId = projects[0].id;
+      try {
+        const response = await getProjectMembers(firstProjectId);
+        const membersData = response.data;
+
+        // Kiểm tra nếu `membersData` là một mảng
+        if (!Array.isArray(membersData)) {
+          console.warn("Invalid response format:", membersData);
+          setMembers([]); // Đặt danh sách thành viên rỗng nếu không có dữ liệu
+          return;
+        }
+
+        // Ánh xạ dữ liệu trả về
+        const data = membersData.map((member: any) => ({
+          id: member.IdUser,
+          fullname: member.Fullname,
+          email: member.Email,
+          phoneNumber: member.PhoneNumber,
+          role: member.UserRole,
+        }));
+
+        setMembers(data); // Cập nhật state members
+      } catch (error) {
+        console.error("Error fetching members:", error);
+        toast.error("Failed to load project members.");
+      }
+    };
+
+    fetchMembersForProject();
+  }, [projects]); // Chạy lại khi danh sách dự án thay đổi
 
   const addTask = async (projectId: number) => {
     const newTask: Task = {
@@ -233,6 +251,12 @@ export default function ProjectManagement() {
     taskId: number,
     newTitle: string
   ) => {
+
+    if (!newTitle.trim()) {
+      toast.error("Tiêu đề không được để trống.");
+      return;
+    }
+
     const updatedTask = projects
       .find((project) => project.id === projectId)
       ?.tasks.find((task) => task.id === taskId);
@@ -344,64 +368,6 @@ export default function ProjectManagement() {
     }
   };
 
-  const handleEditTask = (
-    projectId: number,
-    taskId: number,
-    field: keyof Task,
-    value: string
-  ) => {
-    setProjects((prevProjects) =>
-      prevProjects.map((project) => {
-        if (project.id === projectId) {
-          return {
-            ...project,
-            tasks: project.tasks.map((task) => {
-              if (task.id === taskId) {
-                return { ...task, [field]: value };
-              }
-              return task;
-            }),
-          };
-        }
-        return project;
-      })
-    );
-
-    // Gọi API để lưu thay đổi vào backend
-    try {
-      const updatedTask = projects
-        .find((project) => project.id === projectId)
-        ?.tasks.find((task) => task.id === taskId);
-      if (updatedTask) {
-        console.log("Payload gửi đến API:", {
-          Title: updatedTask.title,
-          Status: updatedTask.status,
-          DueDate: updatedTask.dueDate,
-          Priority: updatedTask.priority,
-          IdProject: updatedTask.projectId,
-        });
-        updateTask(taskId, {
-          Title: updatedTask.title,
-          Status: updatedTask.status as
-            | "Pending"
-            | "In Progress"
-            | "Completed"
-            | "Blocked"
-            | undefined,
-          DueDate: updatedTask.dueDate,
-          Priority: updatedTask.priority as
-            | "Low"
-            | "Medium"
-            | "High"
-            | undefined,
-          IdProject: updatedTask.projectId,
-        });
-      }
-    } catch (error) {
-      console.error("Lỗi khi cập nhật task:", error);
-    }
-  };
-
   const updateTaskStatus = async (
     projectId: number,
     taskId: number,
@@ -492,6 +458,56 @@ export default function ProjectManagement() {
     } catch (error) {
       console.error(`Failed to update task ${taskId} priority:`, error);
       toast.error("Cập nhật mức độ ưu tiên thất bại");
+    }
+  };
+
+  const handleAssignMemberToTask = async (
+    projectId: number,
+    taskId: number,
+    assignee: string
+  ) => {
+    const updatedTask = projects
+      .find((project) => project.id === projectId)
+      ?.tasks.find((task) => task.id === taskId);
+
+    if (!updatedTask) {
+      toast.error("Task không tồn tại.");
+      return;
+    }
+
+    const payload = {
+      Title: updatedTask.title,
+      Status: mapStatusToBackend(updatedTask.status),
+      DueDate: updatedTask.dueDate,
+      Priority: updatedTask.priority as "Low" | "Medium" | "High",
+      IdProject: updatedTask.projectId,
+      DateCreate: updatedTask.createdAt,
+      Assignee: assignee, // Thêm Assignee vào payload
+    };
+
+    try {
+      console.log("Payload gửi đến API:", payload);
+      await updateTask(taskId, payload);
+
+      // Cập nhật state `projects` để phản ánh thay đổi
+      setProjects((prevProjects) =>
+        prevProjects.map((project) => {
+          if (project.id === projectId) {
+            return {
+              ...project,
+              tasks: project.tasks.map((task) =>
+                task.id === taskId ? { ...task, assignee } : task
+              ),
+            };
+          }
+          return project;
+        })
+      );
+
+      toast.success("Gán thành viên thành công!");
+    } catch (error) {
+      console.error("Lỗi khi gán thành viên:", error);
+      toast.error("Không thể gán thành viên.");
     }
   };
 
@@ -763,63 +779,34 @@ export default function ProjectManagement() {
 
                   {/* Cột Assignee */}
                   <td className="border-b px-6 py-4">
-                    {isEditing?.tableId === project.id &&
-                      isEditing?.taskId === task.id &&
-                      isEditing?.field === "assignee" ? (
-                      <input
-                        type="text"
-                        value={task.assignee}
+                    {editingAssignee?.projectId === project.id &&
+                      editingAssignee?.taskId === task.id ? (
+                      <select
+                        value={task.assignee || ""}
                         onChange={(e) => {
-                          if (!isComposing) {
-                            handleEditTask(
-                              project.id,
-                              task.id,
-                              "assignee",
-                              (e.target as HTMLInputElement).value
-                            );
-                          }
+                          handleAssignMemberToTask(project.id, task.id, e.target.value);
+                          setEditingAssignee(null); // Đóng dropdown sau khi chọn
                         }}
-                        onCompositionStart={() => setIsComposing(true)}
-                        onCompositionEnd={(e) => {
-                          setIsComposing(false);
-                          handleEditTask(
-                            project.id,
-                            task.id,
-                            "assignee",
-                            (e.target as HTMLInputElement).value
-                          );
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            setIsEditing({
-                              tableId: null,
-                              taskId: null,
-                              field: null,
-                            });
-                          }
-                        }}
-                        onBlur={() =>
-                          setIsEditing({
-                            tableId: null,
-                            taskId: null,
-                            field: null,
-                          })
-                        }
+                        onBlur={() => setEditingAssignee(null)} // Đóng dropdown nếu mất focus
                         className="border px-2 py-1 rounded w-full"
-                        autoFocus
-                      />
+                      >
+                        <option value="" disabled>
+                          Select Member
+                        </option>
+                        {members.map((member) => (
+                          <option key={member.id} value={member.fullname}>
+                            {member.fullname}
+                          </option>
+                        ))}
+                      </select>
                     ) : (
                       <span
                         onClick={() =>
-                          setIsEditing({
-                            tableId: project.id,
-                            taskId: task.id,
-                            field: "assignee",
-                          })
+                          setEditingAssignee({ projectId: project.id, taskId: task.id })
                         }
-                        className="cursor-pointer"
+                        className="cursor-pointer text-blue-500 hover:underline"
                       >
-                        {task.assignee}
+                        {task.assignee || "Unassigned"}
                       </span>
                     )}
                   </td>
@@ -845,7 +832,8 @@ export default function ProjectManagement() {
             </tbody>
           </table>
         </div>
-      ))}
-    </div>
+      ))
+      }
+    </div >
   );
 }

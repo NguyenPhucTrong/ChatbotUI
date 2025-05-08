@@ -1,7 +1,7 @@
 import axios from "./Custom_axios";
 
-export const getProjectMembers = (projectId: number) => {
-  return axios.get(`/api/members/`);
+export const getProjectMembers = (id: number) => {
+  return axios.get(`/api/members/${id}`);
 };
 
 export const addMemberToProject = (

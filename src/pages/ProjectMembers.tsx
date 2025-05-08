@@ -76,29 +76,39 @@ const ProjectMembersManagement: React.FC = () => {
     fetchUsers();
   }, []);
 
-  const fetchMembers = async (projectId: number) => {
+  const fetchMembers = async (id: number) => {
     try {
-      const response = await getProjectMembers(projectId);
+      const response = await getProjectMembers(id);
+      console.log("API Response for getProjectMembers:", response.data); // Debug toàn bộ response
+
       const membersData = response.data;
-      let data = membersData.data
-        .filter((member: any) => member.IdProject === projectId)
-        .map((member: any) => ({
-          id: member.IdUser,
-          fullname: member.Fullname,
-          email: member.Email,
-          phoneNumber: member.PhoneNumber,
-          role: member.UserRole,
-        }));
-      setMembers(data);
+
+      // Kiểm tra nếu `membersData` là một mảng
+      if (!Array.isArray(membersData)) {
+        console.warn("Invalid response format:", membersData);
+        setMembers([]); // Đặt danh sách thành viên rỗng nếu không có dữ liệu
+        return;
+      }
+
+      // Ánh xạ dữ liệu trả về
+      const data = membersData.map((member: any) => ({
+        id: member.IdUser,
+        fullname: member.Fullname,
+        email: member.Email,
+        phoneNumber: member.PhoneNumber,
+        role: member.UserRole,
+      }));
+
+      setMembers(data); // Cập nhật state members
     } catch (error) {
       console.error("Error fetching members:", error);
       toast.error("Failed to load project members.");
     }
   };
 
-  const handleProjectChange = (projectId: number) => {
-    setSelectedProjectId(projectId);
-    fetchMembers(projectId);
+  const handleProjectChange = (id: number) => {
+    setSelectedProjectId(id);
+    fetchMembers(id);
   };
 
   const handleRoleChange = (userId: number, role: string) => {
@@ -137,6 +147,15 @@ const ProjectMembersManagement: React.FC = () => {
     }
   };
 
+  const roles = [
+    "Frontend Developer",
+    "Tester",
+    "UI/UX Designer",
+    "Backend Developer",
+    "Business Analysis",
+    "AI Researcher",
+  ];
+
   return (
     <div className="p-6 flex-1 max-w-[1493px] mx-auto overflow-hidden">
       <h1 className="text-3xl font-semibold my-6 text-gray-800">
@@ -174,14 +193,11 @@ const ProjectMembersManagement: React.FC = () => {
           <h2 className="text-2xl font-semibold mb-4">Project Members</h2>
           <ul className="list-disc pl-6">
             {members.length > 0 ? (
-              members.map((member) => {
-                console.log("Member:", members);
-                return (
-                  <li key={member.id}>
-                    {member.fullname} ({member.email}) Role: {member.role}
-                  </li>
-                );
-              })
+              members.map((member) => (
+                <li key={member.id}>
+                  {member.fullname} ({member.email}) Role: {member.role}
+                </li>
+              ))
             ) : (
               <p>No members in this project.</p>
             )}
@@ -222,17 +238,18 @@ const ProjectMembersManagement: React.FC = () => {
                     <td className="px-6 py-4 border-b">{user.phoneNumber}</td>
                     <td className="px-6 py-4 border-b">
                       <select
-                        onChange={(e) =>
-                          handleRoleChange(user.id, e.target.value)
-                        }
+                        value={user.selectedRole || ""}
+                        onChange={(e) => handleRoleChange(user.id, e.target.value)}
                         className="border border-gray-300 rounded px-2 py-1"
                       >
-                        <option value="" disabled selected>
+                        <option value="" disabled>
                           Select Role
                         </option>
-                        <option value="Admin">Admin</option>
-                        <option value="Member">Member</option>
-                        <option value="Viewer">Viewer</option>
+                        {roles.map((role) => (
+                          <option key={role} value={role}>
+                            {role}
+                          </option>
+                        ))}
                       </select>
                     </td>
                     <td className="px-6 py-4 border-b">

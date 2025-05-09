@@ -2,16 +2,19 @@ import React, { useEffect, useState } from "react";
 import { MdSearch, MdEdit, MdDelete } from "react-icons/md";
 import { getAllProjects } from "../services/ProjectsServices";
 import {
-  createTask,
   getAllTasks,
   updateTask,
   deleteTaskAPI,
+  createTask,
 } from "../services/TaskServices";
+
 import { toast } from "react-toastify";
 import { Navigate } from "react-router-dom";
 import ReactDatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { getProjectMembers } from "../services/ProjectMembers";
+import SearchAndFilters from "../components/SearchAndFilters";
+import ProjectTable from "../components/ProjectTable";
 
 interface Task {
   id: number;
@@ -129,7 +132,9 @@ export default function ProjectManagement() {
             id: task.IdTask,
             title: task.Title,
             status: mapStatusToFrontend(task.Status),
-            dueDate: task.DueDate ? normalizeDate(task.DueDate) : new Date().toISOString().split("T")[0], // Chuẩn hóa DueDate
+            dueDate: task.DueDate
+              ? normalizeDate(task.DueDate)
+              : new Date().toISOString().split("T")[0], // Chuẩn hóa DueDate
             priority: task.Priority,
             assignee: "Unassigned", // Nếu API không trả về assignee
             projectId: task.IdProject,
@@ -153,7 +158,6 @@ export default function ProjectManagement() {
 
     fetchData();
   }, []);
-
 
   useEffect(() => {
     const fetchMembersForProject = async () => {
@@ -251,7 +255,6 @@ export default function ProjectManagement() {
     taskId: number,
     newTitle: string
   ) => {
-
     if (!newTitle.trim()) {
       toast.error("Tiêu đề không được để trống.");
       return;
@@ -320,9 +323,13 @@ export default function ProjectManagement() {
     }
 
     // Định dạng lại ngày thành DD-MM-YYYY
-    const formattedDueDate = `${String(selectedDate.getDate()).padStart(2, "0")}-${String(
-      selectedDate.getMonth() + 1
-    ).padStart(2, "0")}-${selectedDate.getFullYear()}`;
+    const formattedDueDate = `${String(selectedDate.getDate()).padStart(
+      2,
+      "0"
+    )}-${String(selectedDate.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}-${selectedDate.getFullYear()}`;
 
     const updatedTask = projects
       .find((project) => project.id === projectId)
@@ -353,7 +360,9 @@ export default function ProjectManagement() {
             return {
               ...project,
               tasks: project.tasks.map((task) =>
-                task.id === taskId ? { ...task, dueDate: formattedDueDate } : task
+                task.id === taskId
+                  ? { ...task, dueDate: formattedDueDate }
+                  : task
               ),
             };
           }
@@ -547,293 +556,37 @@ export default function ProjectManagement() {
   };
 
   return (
-    <div className="  p-6 flex-1 max-w-[1493px] mx-auto overflow-hidden">
+    <div className="p-6 flex-1 max-w-[1493px] mx-auto overflow-hidden">
       <h1 className="text-3xl font-semibold my-6 text-gray-800">
         Task Management
       </h1>
 
-      {/* Search Input and Filter Options */}
-      <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
-        <div className="relative w-full md:w-1/2">
-          <input
-            type="text"
-            placeholder="Search tasks..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-12 p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          <MdSearch
-            size={24}
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-          />
-        </div>
-        <div className="flex flex-row gap-4 w-full md:w-auto">
-          <div className="relative w-full md:w-auto">
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full appearance-none pl-3 pr-6 py-3 border border-gray-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-700"
-            >
-              <option value="All">All Statuses</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Pending">Pending</option>
-              <option value="Not Started">Not Started</option>
-              <option value="Completed">Completed</option>
-            </select>
-            {/* Custom arrow icon */}
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none">
-              ▼
-            </div>
-          </div>
-          <div className="relative w-full md:w-auto">
-            <select
-              value={filterPriority}
-              onChange={(e) => setFilterPriority(e.target.value)}
-              className="w-full appearance-none pl-3 pr-6 py-3 border border-gray-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-700"
-            >
-              <option value="All">All Priorities</option>
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
-            </select>
-            {/* Custom arrow icon */}
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none">
-              ▼
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Search and Filters */}
+      <SearchAndFilters
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        filterStatus={filterStatus}
+        setFilterStatus={setFilterStatus}
+        filterPriority={filterPriority}
+        setFilterPriority={setFilterPriority}
+      />
 
-      {/* Project Table */}
+      {/* Project Tables */}
       {projects.map((project) => (
-        <div
+        <ProjectTable
           key={project.id}
-          className="w-full overflow-x-auto mx-auto mt-6 mb-6"
-        >
-          <h2 className="text-2xl font-semibold mb-4">{project.name}</h2>
-
-          <table className="min-w-full bg-white border border-gray-300 rounded shadow border-collapse">
-            <thead>
-              <tr>
-                <th className="px-4 py-2 min-w-[333px] bg-gray-200">Task</th>
-                <th className="border px-4 py-2 min-w-[200px] bg-gray-200">
-                  Created At
-                </th>
-                <th className="border px-4 py-2 min-w-[200px] bg-gray-200">
-                  Status
-                </th>
-                <th className="border px-4 py-2 min-w-[200px] bg-gray-200">
-                  Due Date
-                </th>
-                <th className="border px-4 py-2 min-w-[200px] bg-gray-200">
-                  Priority
-                </th>
-                <th className="border px-4 py-2 min-w-[200px] bg-gray-200">
-                  Assignee
-                </th>
-                <th className="border px-4 py-2 min-w-[200px] bg-gray-200">
-                  Delete
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredTasks(project.tasks).map((task) => (
-                <tr
-                  key={task.id}
-                  className="hover:bg-gray-100 text-center items-center"
-                >
-                  {/* Cột Task */}
-                  <td className="border-b px-6 py-4">
-                    {isEditing?.tableId === project.id &&
-                      isEditing?.taskId === task.id &&
-                      isEditing?.field === "title" ? (
-                      <input
-                        type="text"
-                        value={editedTitle}
-                        onChange={(e) => setEditedTitle(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            handleEditTitle(project.id, task.id, editedTitle);
-                            setIsEditing({
-                              tableId: null,
-                              taskId: null,
-                              field: null,
-                            });
-                          }
-                        }}
-                        onBlur={() => {
-                          handleEditTitle(project.id, task.id, editedTitle);
-                          setIsEditing({
-                            tableId: null,
-                            taskId: null,
-                            field: null,
-                          });
-                        }}
-                        className="border px-2 py-1 rounded w-full"
-                        autoFocus
-                      />
-                    ) : (
-                      <span
-                        onClick={() => {
-                          setEditedTitle(task.title); // Đặt giá trị hiện tại vào input
-                          setIsEditing({
-                            tableId: project.id,
-                            taskId: task.id,
-                            field: "title",
-                          });
-                        }}
-                        className="cursor-pointer"
-                      >
-                        {task.title}
-                      </span>
-                    )}
-                  </td>
-
-                  {/* Cột CreatedAt */}
-                  <td className="border-b px-6 py-4">
-                    {new Date(task.createdAt).toLocaleString()}{" "}
-                    {/* Hiển thị thời gian tạo task */}
-                  </td>
-
-                  {/* Cột Status */}
-                  <td className="border-b px-6 py-4">
-                    <select
-                      value={task.status}
-                      onChange={(e) =>
-                        updateTaskStatus(project.id, task.id, e.target.value)
-                      }
-                      className={`px-4 py-2 rounded-full ${statusColors[task.status]
-                        } appearance-none`}
-                    >
-                      <option value="Not Started">Not Started</option>
-                      <option value="In Progress">In Progress</option>
-                      <option value="Pending">Pending</option>
-                      <option value="Completed">Completed</option>
-                    </select>
-                  </td>
-
-                  {/* Cột DueDate */}
-                  <td className="border-b px-6 py-4">
-                    {isEditing?.tableId === project.id &&
-                      isEditing?.taskId === task.id &&
-                      isEditing?.field === "dueDate" ? (
-                      <ReactDatePicker
-                        selected={new Date(task.dueDate)} // Chuyển đổi `dueDate` thành đối tượng Date
-                        onChange={(date: Date | null) => {
-                          if (date) {
-                            const formattedDate = date
-                              .toISOString()
-                              .split("T")[0]; // Định dạng thành `YYYY-MM-DD`
-                            handleEditDueDate(
-                              project.id,
-                              task.id,
-                              formattedDate
-                            );
-                          }
-                          setIsEditing({
-                            tableId: null,
-                            taskId: null,
-                            field: null,
-                          });
-                        }}
-                        onBlur={() =>
-                          setIsEditing({
-                            tableId: null,
-                            taskId: null,
-                            field: null,
-                          })
-                        }
-                        className="border px-2 py-1 rounded w-full"
-                        autoFocus
-                      />
-                    ) : (
-                      <span
-                        onClick={() =>
-                          setIsEditing({
-                            tableId: project.id,
-                            taskId: task.id,
-                            field: "dueDate",
-                          })
-                        }
-                        className="cursor-pointer"
-                      >
-                        {task.dueDate}
-                      </span>
-                    )}
-                  </td>
-
-                  <td className="border-b px-6 py-4">
-                    <select
-                      value={task.priority}
-                      onChange={(e) =>
-                        updateTaskPriority(project.id, task.id, e.target.value)
-                      }
-                      className={`px-4 py-2 rounded-full text-center items-center ${priorityColors[task.priority]
-                        } appearance-none`}
-                    >
-                      <option value="Low">Low</option>
-                      <option value="Medium">Medium</option>
-                      <option value="High">High</option>
-                    </select>
-                  </td>
-
-                  {/* Cột Assignee */}
-                  <td className="border-b px-6 py-4">
-                    {editingAssignee?.projectId === project.id &&
-                      editingAssignee?.taskId === task.id ? (
-                      <select
-                        value={task.assignee || ""}
-                        onChange={(e) => {
-                          handleAssignMemberToTask(project.id, task.id, e.target.value);
-                          setEditingAssignee(null); // Đóng dropdown sau khi chọn
-                        }}
-                        onBlur={() => setEditingAssignee(null)} // Đóng dropdown nếu mất focus
-                        className="border px-2 py-1 rounded w-full"
-                      >
-                        <option value="" disabled>
-                          Select Member
-                        </option>
-                        {members.map((member) => (
-                          <option key={member.id} value={member.fullname}>
-                            {member.fullname}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <span
-                        onClick={() =>
-                          setEditingAssignee({ projectId: project.id, taskId: task.id })
-                        }
-                        className="cursor-pointer text-blue-500 hover:underline"
-                      >
-                        {task.assignee || "Unassigned"}
-                      </span>
-                    )}
-                  </td>
-                  <td className="border-b px-6 py-4">
-                    <button
-                      onClick={() => deleteTask(project.id, task.id)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      🗑️
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              <tr>
-                <td
-                  colSpan={7}
-                  className="border px-4 py-2 text-center bg-gray-200 hover:bg-gray-300 cursor-pointer"
-                  onClick={() => addTask(project.id)}
-                >
-                  ➕ Add Task
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      ))
-      }
-    </div >
+          project={project}
+          members={members}
+          filteredTasks={filteredTasks}
+          handleEditTitle={handleEditTitle}
+          handleEditDueDate={handleEditDueDate}
+          updateTaskStatus={updateTaskStatus}
+          updateTaskPriority={updateTaskPriority}
+          handleAssignMemberToTask={handleAssignMemberToTask}
+          deleteTask={deleteTask}
+          addTask={addTask}
+        />
+      ))}
+    </div>
   );
 }

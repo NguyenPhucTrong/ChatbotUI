@@ -84,15 +84,15 @@ const Login = () => {
           </button>
         </form>
         {/* Link to SignUp */}
-    <p className="mt-4 text-sm text-gray-500">
-      Chưa có tài khoản?{" "}
-      <span
-        className="text-blue-500 cursor-pointer hover:underline"
-        onClick={() => navigate("/signup")}
-      >
-        Đăng ký ngay
-      </span>
-    </p>
+        <p className="mt-4 text-sm text-gray-500">
+          Chưa có tài khoản?{" "}
+          <span
+            className="text-blue-500 cursor-pointer hover:underline"
+            onClick={() => navigate("/signup")}
+          >
+            Đăng ký ngay
+          </span>
+        </p>
       </div>
     </div>
   );

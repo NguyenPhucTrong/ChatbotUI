@@ -19,7 +19,7 @@ export default function SideBar({ onOpenChatHistory }: { onOpenChatHistory: () =
                     {isOpen ? <FaBars className="w-6 h-6" /> : <MdMenu className="w-6 h-6" />}
                 </button>
                 {isOpen && (
-                    <>
+                    <> 
                         <NavLink to="/" className="flex flex-row items-center justify-center gap-5 p-5">
                             <img src={flower2} alt="Chatbot" className="w-16 h-16 rounded-full cursor-pointer" />
                             <h1 className='text-2xl font-bold'>Chatbot</h1>
@@ -78,14 +78,14 @@ export default function SideBar({ onOpenChatHistory }: { onOpenChatHistory: () =
                                 </NavLink>
                             </li>
 
-                            <li>
+                            {/* <li>
                                 <NavLink to="/company-management"
                                     className={({ isActive }) => `flex flex-row items-center p-3 pl-5 rounded ${isActive ? 'bg-blue-900' : 'hover:bg-gray-700'}`}
                                 >
                                     <FaBuilding className="w-6 h-6 mr-2" />
                                     <h1 className='text-lg font-light'>Company Management</h1>
                                 </NavLink>
-                            </li>
+                            </li> */}
 
                             <li>
                                 <NavLink to="/user-management"
@@ -95,22 +95,22 @@ export default function SideBar({ onOpenChatHistory }: { onOpenChatHistory: () =
                                     <h1 className='text-lg font-light'>User Management</h1>
                                 </NavLink>
                             </li>
-                            <li>
+                            {/* <li>
                                 <NavLink to="/notification"
                                     className={({ isActive }) => `flex flex-row items-center p-3 pl-5 rounded ${isActive ? 'bg-blue-900' : 'hover:bg-gray-700'}`}
                                 >
                                     <FaBell className="w-6 h-6 mr-2" />
                                     <h1 className='text-lg font-light'>Notification</h1>
-                                </NavLink>
-                            </li>
-                            <li>
+                                </NavLink>  
+                            </li> */}
+                            {/* <li>
                                 <NavLink to="/superadmin"
                                     className={({ isActive }) => `flex flex-row items-center p-3 pl-5 rounded ${isActive ? 'bg-blue-900' : 'hover:bg-gray-700'}`}
                                 >
                                     <FaUserShield className="w-6 h-6 mr-2" />
                                     <h1 className='text-lg font-light'>Super Admin</h1>
                                 </NavLink>
-                            </li>
+                            </li> */}
 
                             
                         </ul >

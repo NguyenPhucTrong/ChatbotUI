@@ -17,6 +17,7 @@ import Login from "./pages/Login";
 import { ToastContainer } from "react-toastify";
 import UploadFile from "./pages/UploadFile";
 import SignUp from "./pages/SignUp";
+import { askQuestion } from './services/AIService';
 
 // Định nghĩa interface cho Message
 interface Message {
@@ -42,6 +43,8 @@ function App() {
   const FMessages: Message[] = [
     { text: "Hi! How can I help you?", sender: "bot" },
   ];
+
+
 
   // Đoạn chat mẫu để thêm vào lịch sử chat
   const sampleChat: Message[] = [
@@ -89,9 +92,29 @@ function App() {
   };
 
   // Hàm xử lý khi gửi tin nhắn mới
-  const handleMessages = (text: any) => {
+  const handleMessages = async (text: string) => {
     setMessages([...messages, { text, sender: "me" }]);
-  };
+
+    try {
+        const question = {
+          idProject: 1,
+          query: text
+        }
+        let res = await askQuestion(question); // Gửi query trực tiếp
+        console.log("Response:", res);
+        if (res.status === 200) {
+            const botMessage = res.data.Answer; // Lấy câu trả lời từ response
+            setMessages((prevMessages) => [
+                ...prevMessages,
+                { text: botMessage, sender: "bot" },
+            ]);
+        } else {
+            console.error("Error:", res.data.message);
+        }
+    } catch (e) {
+        console.error("Error:", e.response?.data || e.message);
+    }
+};
 
   return (
     <div className="flex h-screen">
@@ -116,10 +139,10 @@ function App() {
             } />
             <Route path="/dashboard" element={<Dashboard />} />
 
-            <Route path="/company-management" element={<AdminCompanyManagement />} />
+            {/* <Route path="/company-management" element={<AdminCompanyManagement />} /> */}
             <Route path="/user-management" element={<AdminUsersManagement />} />
-            <Route path="/notification" element={<AdminSMSFacebook />} />
-            <Route path="/superadmin" element={<SuperadminManagement />} />
+            {/* <Route path="/notification" element={<AdminSMSFacebook />} /> */}
+            {/* <Route path="/superadmin" element={<SuperadminManagement />} /> */}
             <Route path="/mainlanding" element={<MainLanding />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />

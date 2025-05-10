@@ -7,11 +7,15 @@ export const getProjectMembers = (id: number) => {
 export const addMemberToProject = (
   projectId: number,
   userId: number,
-  role: string
+  userole: string
 ) => {
   return axios.post(`/api/members/`, {
     IdProject: projectId,
     IdUser: userId, // Thay đổi payload để phù hợp với backend
-    UserRole: role,
+    UserRole: userole,
   });
+};
+
+export const removeMemberFromProject = (userId: number) => {
+  return axios.delete(`/api/members/${userId}`);
 };

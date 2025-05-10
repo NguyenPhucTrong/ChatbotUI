@@ -18,6 +18,7 @@ import { ToastContainer } from "react-toastify";
 import UploadFile from "./pages/UploadFile";
 import SignUp from "./pages/SignUp";
 import ProjectMembers from "./pages/ProjectMembers";
+import { AvatarProvider } from "./components/AvatarContext";
 
 // Định nghĩa interface cho Message
 interface Message {
@@ -95,57 +96,60 @@ function App() {
   };
 
   return (
-    <div className="flex h-screen">
-      {!isMainLanding && !isLogin && !isSignUp && <SideBar onOpenChatHistory={handleOpenChatHistory} />}
-      {/* <SideBar onOpenChatHistory={handleOpenChatHistory} /> */}
-      <div className="flex-1 flex flex-col">
-        {!isMainLanding && !isLogin && !isSignUp && <Header />}
-        {/* <Header /> */}
-        <div className="flex-1 overflow-auto">
-          <Routes>
-            <Route path="/home" element={<Home />} />
-            <Route path="/" element={<MainLanding />} />
-            <Route path="/project-management" element={<ProjectManagement />} />
-            <Route path="/chatbot" element={
-              <ChatAI
-                messages={messages}
-                onNewChat={handleNewChat}
-                onSend={handleMessages}
-                chatHistory={chatHistory}
-                onSelectChat={handleSelectChat}
-              />
-            } />
-            <Route path="/dashboard" element={<Dashboard />} />
+    <AvatarProvider>
+      <div className="flex h-screen">
+        {!isMainLanding && !isLogin && !isSignUp && <SideBar onOpenChatHistory={handleOpenChatHistory} />}
+        {/* <SideBar onOpenChatHistory={handleOpenChatHistory} /> */}
+        <div className="flex-1 flex flex-col">
+          {!isMainLanding && !isLogin && !isSignUp && <Header />}
+          {/* <Header /> */}
+          <div className="flex-1 overflow-auto">
+            <Routes>
+              <Route path="/home" element={<Home />} />
+              <Route path="/" element={<MainLanding />} />
+              <Route path="/project-management" element={<ProjectManagement />} />
+              <Route path="/chatbot" element={
+                <ChatAI
+                  messages={messages}
+                  onNewChat={handleNewChat}
+                  onSend={handleMessages}
+                  chatHistory={chatHistory}
+                  onSelectChat={handleSelectChat}
+                />
+              } />
+              <Route path="/dashboard" element={<Dashboard />} />
 
-            <Route path="/company-management" element={<AdminCompanyManagement />} />
-            <Route path="/user-management" element={<AdminUsersManagement />} />
-            <Route path="/notification" element={<AdminSMSFacebook />} />
-            <Route path="/superadmin" element={<SuperadminManagement />} />
-            <Route path="/mainlanding" element={<MainLanding />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/project-members" element={<ProjectMembers />} />
+              <Route path="/company-management" element={<AdminCompanyManagement />} />
+              <Route path="/user-management" element={<AdminUsersManagement />} />
+              <Route path="/notification" element={<AdminSMSFacebook />} />
+              <Route path="/superadmin" element={<SuperadminManagement />} />
+              <Route path="/mainlanding" element={<MainLanding />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<SignUp />} />
+              <Route path="/project-members" element={<ProjectMembers />} />
 
-            <Route path="/upload" element={<UploadFile />} />
+              <Route path="/upload" element={<UploadFile />} />
 
-            <Route path="/profile" element={<Profile />} />
+              <Route path="/profile" element={<Profile />} />
 
-          </Routes>
+            </Routes>
+          </div>
         </div>
+
+
+        {/* Modal lịch sử chat */}
+        <ChatHistoryModal
+          isOpen={isChatHistoryOpen}
+          onClose={handleCloseChatHistory}
+          chatHistory={chatHistory}
+          onSelectChat={handleSelectChat}
+        />
+        <ToastContainer />
       </div>
-
-
-      {/* Modal lịch sử chat */}
-      <ChatHistoryModal
-        isOpen={isChatHistoryOpen}
-        onClose={handleCloseChatHistory}
-        chatHistory={chatHistory}
-        onSelectChat={handleSelectChat}
-      />
-      <ToastContainer />
-    </div>
+    </AvatarProvider>
   );
+
 }
 
-// Xuất component App
+
 export default App;

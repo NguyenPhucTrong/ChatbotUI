@@ -8,7 +8,7 @@ export const getUsersPagination = async (page: number, size: number) => {
 };
 
 export const getAllUsers = async () => {
-    return await axios.get('/api/users'); 
+    return await axios.get('/api/users');
 };
 
 // const getCurrentUser = async () => {

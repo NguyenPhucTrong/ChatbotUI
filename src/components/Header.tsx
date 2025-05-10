@@ -3,8 +3,10 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import flower1 from "../assets/image/flower1.png";
 import { MdNotifications, MdHelp, MdSettings, MdSearch } from "react-icons/md";
 import { toast, ToastContainer } from "react-toastify";
+import { useAvatar } from "./AvatarContext";
 
 export default function Header() {
+  const { avatar } = useAvatar();
   const [showOptions, setShowOptions] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showChatbot, setShowChatbot] = useState(false);
@@ -104,7 +106,7 @@ export default function Header() {
             onMouseLeave={() => setShowOptions(false)}
           >
             <img
-              src={flower1}
+              src={avatar || flower1}
               alt="Chatbot"
               className="w-14 h-14 rounded-full mr-10 cursor-pointer"
             />

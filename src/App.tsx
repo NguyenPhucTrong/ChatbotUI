@@ -17,6 +17,8 @@ import Login from "./pages/Login";
 import { ToastContainer } from "react-toastify";
 import UploadFile from "./pages/UploadFile";
 import SignUp from "./pages/SignUp";
+import { askQuestion } from "./services/AIService";
+import { AvatarProvider } from "./components/AvatarContext";
 
 // Định nghĩa interface cho Message
 interface Message {

@@ -16,8 +16,8 @@ const UploadFile = () => {
     const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
     const [isUploading, setIsUploading] = useState(false);
 
-    const CLOUDINARY_URL = process.env.REACT_APP_CLOUDINARY_URL!;
-    const CLOUDINARY_UPLOAD_PRESET = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET!;
+    const CLOUDINARY_URL = import.meta.env.VITE_CLOUDINARY_URL!;
+    const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET!;
 
     // Xử lý kéo và thả file
     const onDrop = (acceptedFiles: File[]) => {

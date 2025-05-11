@@ -19,6 +19,7 @@ import UploadFile from "./pages/UploadFile";
 import SignUp from "./pages/SignUp";
 import { askQuestion } from "./services/AIService";
 import { AvatarProvider } from "./components/AvatarContext";
+import ProjectMembersManagement from "./pages/ProjectMembers";
 
 // Định nghĩa interface cho Message
 interface Message {
@@ -148,6 +149,7 @@ function App() {
               <Route path="/mainlanding" element={<MainLanding />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<SignUp />} />
+              <Route path="/project-members" element={<ProjectMembersManagement />} />
 
               <Route path="/upload" element={<UploadFile />} />
 

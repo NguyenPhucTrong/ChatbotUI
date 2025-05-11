@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import ReactDatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 interface Task {
   id: number;
@@ -82,7 +84,9 @@ const TaskRow: React.FC<TaskRowProps> = ({
     field: "title" | "dueDate" | null;
   }>({ field: null });
   const [editedTitle, setEditedTitle] = useState(task.title);
-  const [editedDueDate, setEditedDueDate] = useState(task.dueDate);
+  const [editedDueDate, setEditedDueDate] = useState<Date | null>(
+    task.dueDate ? new Date(task.dueDate) : null
+  );
   return (
     <tr className="hover:bg-gray-100 text-center items-center">
       <td className="border-b px-6 py-4">
@@ -130,18 +134,25 @@ const TaskRow: React.FC<TaskRowProps> = ({
       </td>
       <td className="border-b px-6 py-4">
         {isEditing.field === "dueDate" ? (
-          <input
-            type="date"
-            value={editedDueDate}
-            onChange={(e) => setEditedDueDate(e.target.value)}
+          <ReactDatePicker
+            selected={editedDueDate}
+            onChange={(date) => setEditedDueDate(date as Date)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                handleEditDueDate(projectId, task.id, editedDueDate);
+                handleEditDueDate(
+                  projectId,
+                  task.id,
+                  editedDueDate ? editedDueDate.toISOString().split("T")[0] : ""
+                );
                 setIsEditing({ field: null });
               }
             }}
             onBlur={() => {
-              handleEditDueDate(projectId, task.id, editedDueDate);
+              handleEditDueDate(
+                projectId,
+                task.id,
+                editedDueDate ? editedDueDate.toISOString().split("T")[0] : ""
+              );
               setIsEditing({ field: null });
             }}
             className="border px-2 py-1 rounded w-full"

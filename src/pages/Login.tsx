@@ -136,4 +136,4 @@ const Login = () => {
   );
 };
 
-export defaul
+export default Login;

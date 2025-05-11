@@ -211,4 +211,28 @@ const TaskRow: React.FC<TaskRowProps> = ({
         </td>
       ) : (
         <td className="border-b px-6 py-4">
-     
+
+          <span>{task.priority}</span>
+        </td>
+      )}
+
+      {permissionsList.includes("DELETE: Tasks") ? (
+        <td className="border-b px-6 py-4">
+          <button
+            onClick={() => deleteTask(projectId, task.id)}
+            className="text-red-500 hover:text-red-700"
+          >
+            🗑️
+          </button>
+        </td>
+      ) : (
+        <td className="border-b px-6 py-4">
+          <span>🗑️</span>
+        </td>
+      )}
+    </tr>
+  );
+}
+export default TaskRow;
+
+

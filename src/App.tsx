@@ -17,7 +17,6 @@ import Login from "./pages/Login";
 import { ToastContainer } from "react-toastify";
 import UploadFile from "./pages/UploadFile";
 import SignUp from "./pages/SignUp";
-import { askQuestion } from './services/AIService';
 
 // Định nghĩa interface cho Message
 interface Message {
@@ -96,77 +95,80 @@ function App() {
     setMessages([...messages, { text, sender: "me" }]);
 
     try {
-        const question = {
-          idProject: 1,
-          query: text
-        }
-        let res = await askQuestion(question); // Gửi query trực tiếp
-        console.log("Response:", res);
-        if (res.status === 200) {
-            const botMessage = res.data.Answer; // Lấy câu trả lời từ response
-            setMessages((prevMessages) => [
-                ...prevMessages,
-                { text: botMessage, sender: "bot" },
-            ]);
-        } else {
-            console.error("Error:", res.data.message);
-        }
+      const question = {
+        idProject: 1,
+        query: text
+      }
+      let res = await askQuestion(question); // Gửi query trực tiếp
+      console.log("Response:", res);
+      if (res.status === 200) {
+        const botMessage = res.data.Answer; // Lấy câu trả lời từ response
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { text: botMessage, sender: "bot" },
+        ]);
+      } else {
+        console.error("Error:", res.data.message);
+      }
     } catch (e) {
-        console.error("Error:", e.response?.data || e.message);
+      console.error("Error:", e.response?.data || e.message);
     }
-};
+  };
 
   return (
-    <div className="flex h-screen">
-      {!isMainLanding && !isLogin && !isSignUp && <SideBar onOpenChatHistory={handleOpenChatHistory} />}
-      {/* <SideBar onOpenChatHistory={handleOpenChatHistory} /> */}
-      <div className="flex-1 flex flex-col">
-        {!isMainLanding && !isLogin && !isSignUp && <Header />}
-        {/* <Header /> */}
-        <div className="flex-1 overflow-auto">
-          <Routes>
-            <Route path="/home" element={<Home />} />
-            <Route path="/" element={<MainLanding />} />
-            <Route path="/project-management" element={<ProjectManagement />} />
-            <Route path="/chatbot" element={
-              <ChatAI
-                messages={messages}
-                onNewChat={handleNewChat}
-                onSend={handleMessages}
-                chatHistory={chatHistory}
-                onSelectChat={handleSelectChat}
-              />
-            } />
-            <Route path="/dashboard" element={<Dashboard />} />
+    <AvatarProvider>
+      <div className="flex h-screen">
+        {!isMainLanding && !isLogin && !isSignUp && <SideBar onOpenChatHistory={handleOpenChatHistory} />}
+        {/* <SideBar onOpenChatHistory={handleOpenChatHistory} /> */}
+        <div className="flex-1 flex flex-col">
+          {!isMainLanding && !isLogin && !isSignUp && <Header />}
+          {/* <Header /> */}
+          <div className="flex-1 overflow-auto">
+            <Routes>
+              <Route path="/home" element={<Home />} />
+              <Route path="/" element={<MainLanding />} />
+              <Route path="/project-management" element={<ProjectManagement />} />
+              <Route path="/chatbot" element={
+                <ChatAI
+                  messages={messages}
+                  onNewChat={handleNewChat}
+                  onSend={handleMessages}
+                  chatHistory={chatHistory}
+                  onSelectChat={handleSelectChat}
+                />
+              } />
+              <Route path="/dashboard" element={<Dashboard />} />
 
-            {/* <Route path="/company-management" element={<AdminCompanyManagement />} /> */}
-            <Route path="/user-management" element={<AdminUsersManagement />} />
-            {/* <Route path="/notification" element={<AdminSMSFacebook />} /> */}
-            {/* <Route path="/superadmin" element={<SuperadminManagement />} /> */}
-            <Route path="/mainlanding" element={<MainLanding />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<SignUp />} />
+              <Route path="/company-management" element={<AdminCompanyManagement />} />
+              <Route path="/user-management" element={<AdminUsersManagement />} />
+              <Route path="/notification" element={<AdminSMSFacebook />} />
+              <Route path="/superadmin" element={<SuperadminManagement />} />
+              <Route path="/mainlanding" element={<MainLanding />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<SignUp />} />
 
-            <Route path="/upload" element={<UploadFile />} />
+              <Route path="/upload" element={<UploadFile />} />
 
-            <Route path="/profile" element={<Profile />} />
+              <Route path="/profile" element={<Profile />} />
 
-          </Routes>
+            </Routes>
+          </div>
         </div>
+
+
+        {/* Modal lịch sử chat */}
+        <ChatHistoryModal
+          isOpen={isChatHistoryOpen}
+          onClose={handleCloseChatHistory}
+          chatHistory={chatHistory}
+          onSelectChat={handleSelectChat}
+        />
+        <ToastContainer />
       </div>
-
-
-      {/* Modal lịch sử chat */}
-      <ChatHistoryModal
-        isOpen={isChatHistoryOpen}
-        onClose={handleCloseChatHistory}
-        chatHistory={chatHistory}
-        onSelectChat={handleSelectChat}
-      />
-      <ToastContainer />
-    </div>
+    </AvatarProvider>
   );
+
 }
 
-// Xuất component App
+
 export default App;

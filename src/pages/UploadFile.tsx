@@ -16,8 +16,8 @@ const UploadFile = () => {
     const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
     const [isUploading, setIsUploading] = useState(false);
 
-    const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/dac0p28ms/auto/upload'; // auto để nó tự xử lý file
-    const CLOUDINARY_UPLOAD_PRESET = 'unsigned_preset';
+    const CLOUDINARY_URL = process.env.REACT_APP_CLOUDINARY_URL!;
+    const CLOUDINARY_UPLOAD_PRESET = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET!;
 
     // Xử lý kéo và thả file
     const onDrop = (acceptedFiles: File[]) => {

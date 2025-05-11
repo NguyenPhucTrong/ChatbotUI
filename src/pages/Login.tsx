@@ -4,6 +4,7 @@ import { FaGoogle, FaGithub, FaMicrosoft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { loginAuth } from "../services/AuthServices";
+import { getUserByUsername } from "../services/UserServices";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -21,15 +22,21 @@ const Login = () => {
       localStorage.setItem("username", username);
       const { access_token } = data;
       localStorage.setItem("userToken", access_token);
+      const response = await getUserByUsername(username);
       toast.success("Đăng nhập thành công!");
-      navigate("/home");
+      if (response.data.Role === "Super Admin") {
+        navigate("/home");
+      } else if (response.data.Role === "Admin") {
+        navigate("/project-management");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (error: any) {
       console.error("Lỗi khi đăng nhập:", error);
       console.log("Chi tiết lỗi từ server:", error.response?.data);
       toast.error("Đăng nhập thất bại. Vui lòng thử lại.");
     }
   };
-
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -39,24 +46,37 @@ const Login = () => {
         {/* Social Login Buttons */}
         <div className="space-y-3">
           <button className="flex items-center w-full px-4 py-2 border rounded-md">
-            <FaGoogle className="mr-2" onClick={() => { toast.success("Đăng nhập thành công"); navigate("/home") }} /> Đăng nhập với Google
+            <FaGoogle
+              className="mr-2"
+              onClick={() => {
+                toast.success("Đăng nhập thành công");
+                navigate("/home");
+              }}
+            />{" "}
+            Đăng nhập với Google
           </button>
           <button className="flex items-center w-full px-4 py-2 border rounded-md">
-            <FaGithub className="mr-2" onClick={() => navigate("/home")} /> Đăng nhập với Github
+            <FaGithub className="mr-2" onClick={() => navigate("/home")} /> Đăng
+            nhập với Github
           </button>
           <button className="flex items-center w-full px-4 py-2 border rounded-md">
-            <FaMicrosoft className="mr-2" onClick={() => navigate("/home")} /> Đăng nhập với Microsoft
+            <FaMicrosoft className="mr-2" onClick={() => navigate("/home")} />{" "}
+            Đăng nhập với Microsoft
           </button>
         </div>
 
         <div className="my-4 border-t relative">
-          <span className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-white px-2 text-gray-500">Hoặc</span>
+          <span className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-white px-2 text-gray-500">
+            Hoặc
+          </span>
         </div>
 
         {/* Username & Password Login */}
         <form className="space-y-4" onSubmit={handleLogin}>
           <div>
-            <label className="block text-left text-sm font-medium">Tên người dùng</label>
+            <label className="block text-left text-sm font-medium">
+              Tên người dùng
+            </label>
             <input
               type="text"
               value={username}
@@ -66,7 +86,9 @@ const Login = () => {
             />
           </div>
           <div>
-            <label className="block text-left text-sm font-medium">Mật khẩu</label>
+            <label className="block text-left text-sm font-medium">
+              Mật khẩu
+            </label>
             <input
               type="password"
               value={password}
@@ -78,21 +100,20 @@ const Login = () => {
           <button
             type="submit"
             className="w-full bg-black text-white py-2 rounded-md"
-
           >
             Đăng nhập
           </button>
         </form>
         {/* Link to SignUp */}
-    <p className="mt-4 text-sm text-gray-500">
-      Chưa có tài khoản?{" "}
-      <span
-        className="text-blue-500 cursor-pointer hover:underline"
-        onClick={() => navigate("/signup")}
-      >
-        Đăng ký ngay
-      </span>
-    </p>
+        <p className="mt-4 text-sm text-gray-500">
+          Chưa có tài khoản?{" "}
+          <span
+            className="text-blue-500 cursor-pointer hover:underline"
+            onClick={() => navigate("/signup")}
+          >
+            Đăng ký ngay
+          </span>
+        </p>
       </div>
     </div>
   );

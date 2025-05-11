@@ -35,9 +35,9 @@ export default function SignUp() {
                 Email: email.trim(),
                 Password: password.trim(),
                 PhoneNumber: phoneNumber.trim(),
-                Role: "user",
+                Role: "User",
                 Permission: "none",
-              };
+            };
 
             console.log('Dữ liệu gửi lên API:', newUser);
 

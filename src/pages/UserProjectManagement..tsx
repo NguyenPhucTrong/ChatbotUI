@@ -5,6 +5,7 @@ import { getAllProjects } from "../services/ProjectsServices";
 import { getProjectMembers } from "../services/ProjectMembers";
 import SearchAndFilters from "../components/SearchAndFilters";
 import ProjectTable from "../components/ProjectTable";
+import { getAllTasks } from "../services/TaskServices";
 
 interface Task {
     id: number;
@@ -49,11 +50,12 @@ export default function UserProjectManagement() {
         return <Navigate to="/" />;
     }
 
+
+
     const fetchProjectsForUser = async () => {
         try {
             const projectResponse = await getAllProjects();
             console.log("Dự án trả về từ API:", projectResponse.data.data);
-
             const projectsData = projectResponse.data.data.map((project: any) => ({
                 id: project.IdProject,
                 name: project.ProjectName,
@@ -62,7 +64,6 @@ export default function UserProjectManagement() {
 
             const memberPromises = projectsData.map(async (project: Project) => {
                 const response = await getProjectMembers(project.id);
-                console.log(`Thành viên của dự án ${project.id}:`, response.data);
                 return {
                     projectId: project.id,
                     members: response.data.map((member: any) => member.IdUser),
@@ -71,9 +72,13 @@ export default function UserProjectManagement() {
 
             const projectMembers = await Promise.all(memberPromises);
             console.log("Danh sách thành viên của các dự án:", projectMembers);
-
             const currentUserId = Number(localStorage.getItem("userId"));
-            console.log("ID người dùng hiện tại:", currentUserId);
+            console.log("ID người dùng hiện tại:", currentUserId);  // Debugging the value
+
+            if (!currentUserId || currentUserId === 0) {
+                toast.error("User ID is not valid.");
+                return;
+            }
 
             const filteredProjects: Project[] = projectsData.filter((project: Project) =>
                 projectMembers.some(
@@ -81,8 +86,27 @@ export default function UserProjectManagement() {
                 )
             );
 
-            console.log("Dự án của người dùng hiện tại:", filteredProjects);
-            setProjects(filteredProjects);
+            // Lấy danh sách task và gắn vào từng project
+            const taskResponse = await getAllTasks();
+
+            const tasksData = taskResponse.data.data.map((task: any) => ({
+                id: task.IdTask,
+                title: task.Title,
+                status: task.Status,
+                dueDate: task.DueDate,
+                priority: task.Priority,
+                assignee: "Unassigned", // Nếu API không trả về assignee
+                projectId: task.IdProject,
+                createdAt: task.DateCreate,
+            }));
+            console.log("Danh sách task:", tasksData);
+            const projectsWithTasks = filteredProjects.map((project: Project) => ({
+                ...project,
+                tasks: tasksData.filter((task: Task) => task.projectId === project.id),
+            }));
+
+            console.log("Dự án của người dùng hiện tại (kèm task):", projectsWithTasks);
+            setProjects(projectsWithTasks);
         } catch (error) {
             console.error("Lỗi khi lấy dữ liệu:", error);
             toast.error("Không thể tải danh sách dự án.");

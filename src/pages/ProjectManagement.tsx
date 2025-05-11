@@ -115,7 +115,7 @@ export default function ProjectManagement() {
     const fetchData = async () => {
       try {
         // Lấy danh sách dự án
-        const projectResponse = await getAllProjects();
+        const projectResponse = await getAllProjects()
         console.log(
           "Dữ liệu trả về từ API getAllProjects:",
           projectResponse.data.data

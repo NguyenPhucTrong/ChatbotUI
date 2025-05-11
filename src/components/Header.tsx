@@ -47,6 +47,9 @@ export default function Header() {
     case "/upload":
       pageTitle = "UploadFile";
       break;
+    case "/permissions":
+      pageTitle = "Permissions";
+      break;
     case "/project-members":
       pageTitle = "Project-Members";
       break;

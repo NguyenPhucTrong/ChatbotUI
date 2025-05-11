@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ReactDatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -87,6 +87,19 @@ const TaskRow: React.FC<TaskRowProps> = ({
   const [editedDueDate, setEditedDueDate] = useState<Date | null>(
     task.dueDate ? new Date(task.dueDate) : null
   );
+
+  const [permissionsList, setPermissionsList] = useState<string[]>([]);
+
+
+  useEffect(() => {
+    const fetchPermissionsList = async () => {
+      const permissions = localStorage.getItem('Permission');
+      setPermissionsList(permissions ? permissions.split(',') : []);
+    };
+
+    fetchPermissionsList();
+  }, []);
+
   return (
     <tr className="hover:bg-gray-100 text-center items-center">
       <td className="border-b px-6 py-4">

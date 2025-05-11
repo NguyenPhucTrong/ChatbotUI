@@ -60,8 +60,16 @@ export const updateUser = async (
 };
 
 // Xóa user theo ID
-export const deleteUser = async (id: number) => {
-    return await axios.delete(`/api/users/${id}`);
+export const deleteUser = async (id: number, token: string | null) => {
+    if (!token) {
+        throw new Error('Token is required');
+    }
+    return await axios.delete(`/api/users/${id}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            // Add any additional headers if needed
+        },
+    });
 };
 
 // Lấy thông tin user theo email

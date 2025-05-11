@@ -14,13 +14,15 @@ import { MdSearch } from 'react-icons/md';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
+type Role = 'Super Admin' | 'Admin' | 'User';
+
 interface User {
   IdUser: number;
   Username: string;
   Fullname: string;
   Email: string;
   PhoneNumber: string;
-  Role: 'user' | 'admin' ;
+  Role: Role;
   Password?: string | null;
 }
 
@@ -40,7 +42,7 @@ const AdminUsersManagement: React.FC = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState<'user' | 'admin'>('user');
+  const [role, setRole] = useState<Role>('User');
   const [showPassword, setShowPassword] = useState(false);
   const [passwordError, setPasswordError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -124,64 +126,63 @@ const AdminUsersManagement: React.FC = () => {
   };
 
   const handleUpdateUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!currentUser) return;
+  e.preventDefault();
+  if (!currentUser) return;
 
-    try {
-      const updatedUser: any = {
-        Username: username.trim(),
-        Fullname: fullname.trim(),
-        Email: email.trim(),
-        PhoneNumber: phoneNumber.trim(),
-        Role: role,
-        Permission: 'default_permission',
-      };
+  try {
+    const updatedUser: any = {
+      Username: username.trim(),
+      Fullname: fullname.trim(),
+      Email: email.trim(),
+      PhoneNumber: phoneNumber.trim(),
+      Role: role,
+      Permission: 'default_permission', // Thêm trường này nếu backend yêu cầu
+    };
 
-      if (password && password.trim() !== '') {
-        if (password !== confirmPassword) {
-          toast.error('Passwords do not match');
-          return;
-        }
-        updatedUser.Password = password.trim();
+    if (password && password.trim() !== '') {
+      if (password !== confirmPassword) {
+        toast.error('Passwords do not match');
+        return;
       }
-
-      await updateUser(currentUser.IdUser, updatedUser, token);
-      toast.success('User updated successfully');
-      setShowEditModal(false);
-      resetForm();
-      fetchUsers();
-    } catch (error: any) {
-      console.error('Error updating user:', error);
-      if (Array.isArray(error.response?.data?.detail)) {
-        const errorMessages = error.response.data.detail.map((err: any) => {
-          const fieldName = err.loc && err.loc.length > 1 ? err.loc[1] : 'Trường';
-          return `${fieldName}: ${err.msg}`;
-        }).join('\n');
-        toast.error(`The following fields are in error.:\n${errorMessages}`);
-      } else if (error.response?.data?.detail) {
-        toast.error(`Error from API: ${error.response.data.detail}`);
-      } else {
-        toast.error(error.response?.data?.message || 'Failed to update user');
-      }
+      updatedUser.Password = password.trim();
     }
-  };
 
-  const handleDeleteUser = async (IdUser: number) => {
+    await updateUser(currentUser.IdUser, updatedUser, token);
+    toast.success('User updated successfully');
+    setShowEditModal(false);
+    resetForm();
+    fetchUsers();
+  } catch (error: any) {
+    console.error('Error updating user:', error);
+    if (error.response?.status === 422) {
+      // Xử lý lỗi validation
+      const errorDetails = error.response.data.detail;
+      if (Array.isArray(errorDetails)) {
+        const errorMessages = errorDetails.map((err: any) => {
+          const field = err.loc?.[1] || 'field';
+          return `${field}: ${err.msg}`;
+        }).join('\n');
+        toast.error(`Validation errors:\n${errorMessages}`);
+      } else {
+        toast.error(errorDetails || 'Invalid data format');
+      }
+    } else {
+      toast.error(error.response?.data?.message || 'Failed to update user');
+    }
+  }
+};
+  const handleDeleteUser = async (userId: number) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
-        await deleteUser(IdUser);
+        await deleteUser(userId, token);
         toast.success('User deleted successfully');
-        if (users.length === 1 && currentPage > 1) {
-          setCurrentPage(currentPage - 1);
-        } else {
-          fetchUsers();
-        }
+        fetchUsers();
       } catch (error: any) {
         toast.error(error.response?.data?.message || 'Failed to delete user');
       }
     }
   };
-
+  
   const openEditModal = (user: User) => {
     setCurrentUser(user);
     setUsername(user.Username);
@@ -201,7 +202,7 @@ const AdminUsersManagement: React.FC = () => {
     setPhoneNumber('');
     setPassword('');
     setConfirmPassword('');
-    setRole('user');
+    setRole('User');
     setCurrentUser(null);
   };  
 
@@ -231,7 +232,7 @@ const AdminUsersManagement: React.FC = () => {
       {
         label: 'Number of users',
         data: Object.values(userRoleCounts),
-        backgroundColor: ['#FF6384', '#36A2EB'],
+        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
       },
     ],
   };
@@ -306,7 +307,7 @@ const AdminUsersManagement: React.FC = () => {
                   <td className="px-6 py-4 border-b">{user.Fullname}</td>
                   <td className="px-6 py-4 border-b">{user.Email}</td>
                   <td className="px-6 py-4 border-b">{user.PhoneNumber}</td>
-                  <td className="px-6 py-4 border-b capitalize">{user.Role}</td>
+                  <td className="px-6 py-4 border-b">{user.Role}</td>
                   <td className="px-6 py-4 border-b">
                     <div className="flex space-x-2">
                       <button
@@ -416,11 +417,13 @@ const AdminUsersManagement: React.FC = () => {
                 <label className="block text-sm font-medium mb-1">Role</label>
                 <select
                   value={role}
-                  onChange={(e) => setRole(e.target.value as 'user' | 'admin')}
+                  onChange={(e) => setRole(e.target.value as Role)}
                   className="w-full px-3 py-2 border rounded"
+                  
                 >
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
+                  <option value="User">User</option>
+                  <option value="Admin">Admin</option>
+                  <option value="Super Admin">Super Admin</option>
                 </select>
               </div>
               <div>
@@ -542,12 +545,19 @@ const AdminUsersManagement: React.FC = () => {
                 <label className="block text-sm font-medium mb-1">Role</label>
                 <select
                   value={role}
-                  onChange={(e) => setRole(e.target.value as 'user' | 'admin')}
+                  onChange={(e) => setRole(e.target.value as Role)}
                   className="w-full px-3 py-2 border rounded"
+                  // disabled={currentUser?.Role === 'User' | 'Admin'}
                 >
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
+                  <option value="User">User</option>
+                  <option value="Admin">Admin</option>
+                  <option value="Super Admin">Super Admin</option>
                 </select>
+                {/* {currentUser?.Role === 'Admin' | 'Super Admin' && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    Role cannot be changed for Admin users.
+                  </p>
+                )} */}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">

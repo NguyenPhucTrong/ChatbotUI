@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SideBar from "./components/SideBar";
 import Header from "./components/Header";
 import Home from "./pages/Home";
@@ -20,6 +20,8 @@ import SignUp from "./pages/SignUp";
 import { askQuestion } from "./services/AIService";
 import { AvatarProvider } from "./components/AvatarContext";
 import ProjectMembersManagement from "./pages/ProjectMembers";
+import UserProjectManagement from "./pages/UserProjectManagement.";
+import { getUserByUsername } from "./services/UserServices";
 
 // Định nghĩa interface cho Message
 interface Message {
@@ -36,6 +38,18 @@ interface ChatHistory {
 
 function App() {
 
+  const [role, setRole] = useState("");
+
+  useEffect(() => {
+    fetchUser();
+    async function fetchUser() {
+      const username = localStorage.getItem("username") || "";
+      const response = await getUserByUsername(username);
+      setRole(response.data.Role);
+      console.log("Role:", response.data.Role);
+    }
+  }, []);
+
   const location = useLocation();
   const isMainLanding = location.pathname === "/"
   const isLogin = location.pathname === "/login"
@@ -45,6 +59,7 @@ function App() {
   const FMessages: Message[] = [
     { text: "Hi! How can I help you?", sender: "bot" },
   ];
+
 
 
 
@@ -130,8 +145,11 @@ function App() {
             <Routes>
               <Route path="/home" element={<Home />} />
               <Route path="/" element={<MainLanding />} />
-              <Route path="/project-management" element={<ProjectManagement />} />
-              <Route path="/chatbot" element={
+              {role === "Admin" || role === "Super Admin" ? (
+                <Route path="/project-management" element={<ProjectManagement />} />
+              ) : (
+                <Route path="/project-management" element={<UserProjectManagement />} />
+              )}              <Route path="/chatbot" element={
                 <ChatAI
                   messages={messages}
                   onNewChat={handleNewChat}

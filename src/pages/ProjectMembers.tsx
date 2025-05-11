@@ -5,7 +5,7 @@ import {
   addMemberToProject,
   removeMemberFromProject,
 } from "../services/ProjectMembers";
-import { getAllUsers } from "../services/UserServices";
+import { getUsersPagination } from "../services/UserServices";
 import { getAllProjects } from "../services/ProjectsServices";
 
 interface Project {
@@ -39,12 +39,16 @@ const ProjectMembersManagement: React.FC = () => {
   );
   const [members, setMembers] = useState<Member[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10); // Số lượng người dùng mỗi trang
+  const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
     // Fetch all projects
     const fetchProjects = async () => {
       try {
         const response = await getAllProjects();
+        console.log("API Response:", response.data);
         setProjects(
           response.data.data.map((project: any) => ({
             id: project.IdProject,
@@ -57,20 +61,34 @@ const ProjectMembersManagement: React.FC = () => {
       }
     };
 
-    // Fetch all users
-    const fetchUsers = async () => {
+    // Fetch users with pagination
+    const fetchUsers = async (page: number = 1, pageSize: number = 10) => {
       try {
-        const response = await getAllUsers();
-        setUsers(
-          response.data.data.map((user: any) => ({
-            id: user.IdUser,
-            fullname: user.Fullname,
-            email: user.Email,
-            phoneNumber: user.PhoneNumber,
-            role: user.Role, // Gán Role từ API
+        const response = await getUsersPagination(page, pageSize);
+        console.log("API Response:", response.data);
 
-          }))
-        );
+        if (!response.data || !response.data.data) {
+          console.warn("Invalid response format:", response.data);
+          setUsers([]);
+          setTotalPages(0);
+          return;
+        }
+
+        const fetchedUsers = response.data.data.map((user: any) => ({
+          id: user.IdUser,
+          fullname: user.Fullname,
+          email: user.Email,
+          phoneNumber: user.PhoneNumber,
+          role: user.Role,
+        }));
+
+        setUsers(fetchedUsers);
+        setTotalPages(response.data.totalPages || 0);
+
+        // Nếu không còn user nào và đang ở trang > 1, chuyển về trang trước
+        if (fetchedUsers.length === 0 && page > 1) {
+          setCurrentPage((prev) => Math.max(prev - 1, 1));
+        }
       } catch (error) {
         console.error("Error fetching users:", error);
         toast.error("Failed to load users.");
@@ -78,36 +96,28 @@ const ProjectMembersManagement: React.FC = () => {
     };
 
     fetchProjects();
-    fetchUsers();
-  }, []);
+    fetchUsers(currentPage, pageSize);
+  }, [currentPage, pageSize]);
 
   const fetchMembers = async (id: number) => {
     try {
-      const [membersResponse, usersResponse] = await Promise.all([
-        getProjectMembers(id), // Lấy danh sách thành viên dự án
-        getAllUsers(), // Lấy danh sách tất cả người dùng
-      ]);
+      const membersResponse = await getProjectMembers(id);
 
       const membersData = membersResponse.data;
-      const usersData = usersResponse.data.data;
 
-      if (!Array.isArray(membersData) || !Array.isArray(usersData)) {
-        console.warn("Invalid response format:", membersData, usersData);
+      if (!Array.isArray(membersData)) {
+        console.warn("Invalid response format:", membersData);
         setMembers([]);
         return;
       }
 
-      const data = membersData.map((member: any) => {
-        const user = usersData.find((u: any) => u.IdUser === member.IdUser);
-        return {
-          id: member.IdUser,
-          fullname: member.Fullname,
-          email: member.Email,
-          phoneNumber: member.PhoneNumber,
-          userole: member.UserRole,
-          role: user?.Role || "Unknown", // Lấy Role từ users hoặc đặt mặc định là "Unknown"
-        };
-      });
+      const data = membersData.map((member: any) => ({
+        id: member.IdUser,
+        fullname: member.Fullname,
+        email: member.Email,
+        phoneNumber: member.PhoneNumber,
+        userole: member.UserRole,
+      }));
 
       setMembers(data);
     } catch (error) {
@@ -144,13 +154,9 @@ const ProjectMembersManagement: React.FC = () => {
       await addMemberToProject(selectedProjectId, userId, user.selectedRole);
       toast.success("User added to project successfully!");
       fetchMembers(selectedProjectId); // Refresh members list
-      setUsers((prevUsers) =>
-        prevUsers.map((u) =>
-          u.id === userId
-            ? { ...u, projectId: selectedProjectId, selectedRole: undefined }
-            : u
-        )
-      );
+
+      // Gửi sự kiện để cập nhật danh sách dự án trong ProjectManagement
+      window.dispatchEvent(new Event("projectUpdated"));
     } catch (error) {
       console.error("Error adding user to project:", error);
       toast.error("Failed to add user to project.");
@@ -175,10 +181,10 @@ const ProjectMembersManagement: React.FC = () => {
     const isMember = members.some((member) => member.id === user.id);
     const isAdminOrSuperAdmin = user.role === "Admin" || user.role === "Super Admin";
 
-    console.log(`User: ${user.fullname}, Role: ${user.role}, IsMember: ${isMember}, IsAdminOrSuperAdmin: ${isAdminOrSuperAdmin}`);
-
     return !isMember && !isAdminOrSuperAdmin;
   });
+
+  console.log("Filtered Users:", filteredUsers);
 
   const roles = [
     "Frontend Developer",
@@ -221,7 +227,6 @@ const ProjectMembersManagement: React.FC = () => {
       </div>
 
       {/* Members List */}
-      {/* Members List */}
       {selectedProjectId && (
         <div className="mb-6">
           <h2 className="text-2xl font-semibold mb-4">Project Members</h2>
@@ -248,67 +253,95 @@ const ProjectMembersManagement: React.FC = () => {
       )}
 
       {/* Users List */}
-      {selectedProjectId && filteredUsers.length > 0 && (
+      {selectedProjectId && (
         <div>
           <h2 className="text-2xl font-semibold mb-4">All Users</h2>
           <div className="overflow-x-auto">
-            <table className="min-w-full bg-white border border-gray-300 rounded shadow">
-              <thead>
-                <tr className="bg-gray-300">
-                  <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
-                    Full Name
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
-                    Email
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
-                    Phone Number
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
-                    Role
-                  </th>
-                  <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-100">
-                    <td className="px-6 py-4 border-b">{user.fullname}</td>
-                    <td className="px-6 py-4 border-b">{user.email}</td>
-                    <td className="px-6 py-4 border-b">{user.phoneNumber}</td>
-                    <td className="px-6 py-4 border-b">
-                      <select
-                        value={user.selectedRole || ""}
-                        onChange={(e) =>
-                          handleRoleChange(user.id, e.target.value)
-                        }
-                        className="border border-gray-300 rounded px-2 py-1"
-                      >
-                        <option value="" disabled>
-                          Select Role
-                        </option>
-                        {roles.map((role) => (
-                          <option key={role} value={role}>
-                            {role}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="px-6 py-4 border-b">
-                      <button
-                        onClick={() => handleAddUserToProject(user.id)}
-                        className="text-blue-500 hover:text-blue-700 px-2 py-1 border border-blue-500 rounded hover:bg-blue-50"
-                      >
-                        Add to Project
-                      </button>
-                    </td>
+            {filteredUsers.length > 0 ? (
+              <table className="min-w-full bg-white border border-gray-300 rounded shadow">
+                <thead>
+                  <tr className="bg-gray-300">
+                    <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
+                      Full Name
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
+                      Email
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
+                      Phone Number
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
+                      Role
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filteredUsers.map((user) => (
+                    <tr key={user.id} className="hover:bg-gray-100">
+                      <td className="px-6 py-4 border-b">{user.fullname}</td>
+                      <td className="px-6 py-4 border-b">{user.email}</td>
+                      <td className="px-6 py-4 border-b">{user.phoneNumber}</td>
+                      <td className="px-6 py-4 border-b">
+                        <select
+                          value={user.selectedRole || ""}
+                          onChange={(e) =>
+                            handleRoleChange(user.id, e.target.value)
+                          }
+                          className="border border-gray-300 rounded px-2 py-1"
+                        >
+                          <option value="" disabled>
+                            Select Role
+                          </option>
+                          {roles.map((role) => (
+                            <option key={role} value={role}>
+                              {role}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="px-6 py-4 border-b">
+                        <button
+                          onClick={() => handleAddUserToProject(user.id)}
+                          className="text-blue-500 hover:text-blue-700 px-2 py-1 border border-blue-500 rounded hover:bg-blue-50"
+                        >
+                          Add to Project
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p className="text-gray-500">No users available to add to this project.</p>
+            )}
           </div>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="pagination mt-4 flex justify-between">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <span>
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={currentPage === totalPages || totalPages === 1}
+                className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

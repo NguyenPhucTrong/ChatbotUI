@@ -175,6 +175,19 @@ export default function SideBar({
 
                   <li>
                     <NavLink
+                      to="/project-management"
+                      className={({ isActive }) =>
+                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                        }`
+                      }
+                    >
+                      <FaProjectDiagram className="w-6 h-6 mr-2" />
+                      <h1 className="text-lg font-light">My Projects</h1>
+                    </NavLink>
+                  </li>
+
+                  <li>
+                    <NavLink
                       to="/chatbot"
                       className={({ isActive }) =>
                         `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"

@@ -1,12 +1,11 @@
 import axios from './Custom_axios';
 
 // Lấy danh sách user với phân trang
-export const getUsersPagination = async (page: number, size: number) => {
-    return await axios.get(`/api/users`, {
-        params: { page, size },
+export const getUsersPagination = async (page: number, size: number, searchTerm: string = '') => {
+    return await axios.get(`/api/users/`, {
+        params: { page, pageSize: size, searchTerm },
     });
 };
-
 export const getAllUsers = async () => {
     return await axios.get('/api/users');
 };

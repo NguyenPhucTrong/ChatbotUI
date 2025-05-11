@@ -80,90 +80,120 @@ export default function SideBar({
             <ul className="space-y-6">
               {role === "Super Admin" ? (
                 <>
-                  <li>
-                    <NavLink
-                      to="/superadmin"
-                      className={({ isActive }) =>
-                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
-                        }`
-                      }
-                    >
-                      <FaUserShield className="w-6 h-6 mr-2" />
-                      <h1 className="text-lg font-light">Super Admin</h1>
-                    </NavLink>
-                  </li>
-                  <li>
-                    <NavLink
-                      to="/home"
-                      className={({ isActive }) =>
-                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
-                        }`
-                      }
-                    >
-                      <AiFillHome className="w-6 h-6 mr-2" />
-                      <h1 className="text-lg font-light">Home</h1>
-                    </NavLink>
-                  </li>
-                  <li>
-                    <NavLink
-                      to="/permissions"
-                      className={({ isActive }) =>
-                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
-                        }`
-                      }
-                    >
-                      <FaKey className="w-6 h-6 mr-2" />
-                      <h1 className="text-lg font-light">Permission</h1>
-                    </NavLink>
-                  </li>
+                  {permissionsList.includes("GET: SuperAdmin") ? (
+                    <li>
+                      <NavLink
+                        to="/superadmin"
+                        className={({ isActive }) =>
+                          `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                          }`
+                        }
+                      >
+                        <FaUserShield className="w-6 h-6 mr-2" />
+                        <h1 className="text-lg font-light">Super Admin</h1>
+                      </NavLink>
+                    </li>
+                  ) : (
+                    <li>No Permission</li>
+                  )}
+
+                  {permissionsList.includes("GET: Home") ? (
+                    <li>
+                      <NavLink
+                        to="/home"
+                        className={({ isActive }) =>
+                          `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                          }`
+                        }
+                      >
+                        <AiFillHome className="w-6 h-6 mr-2" />
+                        <h1 className="text-lg font-light">Home</h1>
+                      </NavLink>
+                    </li>
+                  ) : (
+                    <li>No Permission</li>
+                  )}
+
+                  {permissionsList.includes("GET: Permissions") ? (
+                    <li>
+                      <NavLink
+                        to="/permissions"
+                        className={({ isActive }) =>
+                          `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                          }`
+                        }
+                      >
+                        <FaKey className="w-6 h-6 mr-2" />
+                        <h1 className="text-lg font-light">Permission</h1>
+                      </NavLink>
+                    </li>
+                  ) : (
+                    <li>No Permission</li>
+                  )}
                 </>
               ) : (
                 <span></span>
               )}
               {role === "Admin" ? (
                 <>
-                  <li>
-                    <NavLink
-                      to="/upload"
-                      className={({ isActive }) =>
-                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
-                        }`
-                      }
-                    >
-                      <MdUploadFile className="w-6 h-6 mr-2" />
-                      <h1 className="text-lg font-light">UploadFile</h1>
-                    </NavLink>
-                  </li>
-                  <li>
-                    <NavLink
-                      to="/user-management"
-                      className={({ isActive }) =>
-                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
-                        }`
-                      }
-                    >
-                      <FaUsers className="w-6 h-6 mr-2" />
-                      <h1 className="text-lg font-light">User Management</h1>
-                    </NavLink>
-                  </li>
-                  <li>
-                    <NavLink
-                      to="/notification"
-                      className={({ isActive }) =>
-                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
-                        }`
-                      }
-                    >
-                      <FaBell className="w-6 h-6 mr-2" />
-                      <h1 className="text-lg font-light">Notification</h1>
-                    </NavLink>
-                  </li>
+                  {permissionsList.includes("GET: Upload") ? (
+                    <li>
+                      <NavLink
+                        to="/upload"
+                        className={({ isActive }) =>
+                          `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                          }`
+                        }
+                      >
+                        <MdUploadFile className="w-6 h-6 mr-2" />
+                        <h1 className="text-lg font-light">Upload File</h1>
+                      </NavLink>
+                    </li>
+                  ) : (
+                    <li>No Permission</li>
+                  )}
+
+                  {permissionsList.includes("GET: Users") ? (
+                    <li>
+                      <NavLink
+                        to="/user-management"
+                        className={({ isActive }) =>
+                          `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                          }`
+                        }
+                      >
+                        <FaUsers className="w-6 h-6 mr-2" />
+                        <h1 className="text-lg font-light">User Management</h1>
+                      </NavLink>
+                    </li>
+                  ) : (
+                    <li>No Permission</li>
+                  )}
+
+                  {permissionsList.includes("GET: Notifications") ? (
+                    <li>
+                      <NavLink
+                        to="/notification"
+                        className={({ isActive }) =>
+                          `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                          }`
+                        }
+                      >
+                        <FaBell className="w-6 h-6 mr-2" />
+                        <h1 className="text-lg font-light">Notification</h1>
+                      </NavLink>
+                    </li>
+                  ) : (
+                    <li>No Permission</li>
+                  )}
+
                   {permissionsList.includes("GET: Projects") ? (
                     <li>
                       <NavLink
                         to="/project-management"
                         className={({ isActive }) =>
-                          `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"}`
+                          `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                          }`
                         }
                       >
                         <FaProjectDiagram className="w-6 h-6 mr-2" />
@@ -173,30 +203,40 @@ export default function SideBar({
                   ) : (
                     <li>No Permission</li>
                   )}
-                  <li>
-                    <NavLink
-                      to="/project-members"
-                      className={({ isActive }) =>
-                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
-                        }`
-                      }
-                    >
-                      <FaProjectDiagram className="w-6 h-6 mr-2" />
-                      <h1 className="text-lg font-light">Project Member</h1>
-                    </NavLink>
-                  </li>
-                  <li>
-                    <NavLink
-                      to="/dashboard"
-                      className={({ isActive }) =>
-                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
-                        }`
-                      }
-                    >
-                      <MdDashboard className="w-6 h-6 mr-2" />
-                      <h1 className="text-lg font-light">Dashboard</h1>
-                    </NavLink>
-                  </li>
+
+                  {permissionsList.includes("GET: Project Members") ? (
+                    <li>
+                      <NavLink
+                        to="/project-members"
+                        className={({ isActive }) =>
+                          `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                          }`
+                        }
+                      >
+                        <FaProjectDiagram className="w-6 h-6 mr-2" />
+                        <h1 className="text-lg font-light">Project Members</h1>
+                      </NavLink>
+                    </li>
+                  ) : (
+                    <li>No Permission</li>
+                  )}
+
+                  {permissionsList.includes("GET: Dashboard") ? (
+                    <li>
+                      <NavLink
+                        to="/dashboard"
+                        className={({ isActive }) =>
+                          `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                          }`
+                        }
+                      >
+                        <MdDashboard className="w-6 h-6 mr-2" />
+                        <h1 className="text-lg font-light">Dashboard</h1>
+                      </NavLink>
+                    </li>
+                  ) : (
+                    <li>No Permission</li>
+                  )}
                 </>
               ) : (
                 <span></span>
@@ -204,41 +244,36 @@ export default function SideBar({
 
               {role === "User" ? (
                 <>
-                  <li>
-                    <button
-                      className="flex flex-row w-full text-left p-3 pl-5 rounded hover:bg-gray-700"
-                      onClick={onOpenChatHistory}
-                    >
-                      <FaHistory className="w-6 h-6 mr-2" />
-                      <h1 className="text-lg font-light">History chat</h1>
-                    </button>
-                  </li>
+                  {permissionsList.includes("GET: History") ? (
+                    <li>
+                      <button
+                        className="flex flex-row w-full text-left p-3 pl-5 rounded hover:bg-gray-700"
+                        onClick={onOpenChatHistory}
+                      >
+                        <FaHistory className="w-6 h-6 mr-2" />
+                        <h1 className="text-lg font-light">History Chat</h1>
+                      </button>
+                    </li>
+                  ) : (
+                    <li>No Permission</li>
+                  )}
 
-                  <li>
-                    <NavLink
-                      to="/project-management"
-                      className={({ isActive }) =>
-                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
-                        }`
-                      }
-                    >
-                      <FaProjectDiagram className="w-6 h-6 mr-2" />
-                      <h1 className="text-lg font-light">My Projects</h1>
-                    </NavLink>
-                  </li>
-
-                  <li>
-                    <NavLink
-                      to="/chatbot"
-                      className={({ isActive }) =>
-                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
-                        }`
-                      }
-                    >
-                      <FaRobot className="w-6 h-6 mr-2" />
-                      <h1 className="text-lg font-light">ChatBot Q&A</h1>
-                    </NavLink>
-                  </li>
+                  {permissionsList.includes("GET: ChatBot") ? (
+                    <li>
+                      <NavLink
+                        to="/chatbot"
+                        className={({ isActive }) =>
+                          `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                          }`
+                        }
+                      >
+                        <FaRobot className="w-6 h-6 mr-2" />
+                        <h1 className="text-lg font-light">ChatBot Q&A</h1>
+                      </NavLink>
+                    </li>
+                  ) : (
+                    <li>No Permission</li>
+                  )}
 
                 </>
               ) : (

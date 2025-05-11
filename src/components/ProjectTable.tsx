@@ -37,6 +37,7 @@ interface ProjectTableProps {
     handleAssignMemberToTask: (projectId: number, taskId: number, assignee: string) => void;
     deleteTask: (projectId: number, taskId: number) => void;
     addTask: (projectId: number) => void;
+    permissionsList: string[];
 }
 
 const ProjectTable: React.FC<ProjectTableProps> = ({
@@ -50,6 +51,7 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
     handleAssignMemberToTask,
     deleteTask,
     addTask,
+    permissionsList
 }) => {
     return (
         <div className="w-full overflow-x-auto mx-auto mt-6 mb-6">
@@ -79,16 +81,28 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
                             updateTaskPriority={updateTaskPriority}
                             handleAssignMemberToTask={handleAssignMemberToTask}
                             deleteTask={deleteTask}
+                            permissionsList={permissionsList}
                         />
                     ))}
                     <tr>
-                        <td
-                            colSpan={7}
-                            className="border px-4 py-2 text-center bg-gray-200 hover:bg-gray-300 cursor-pointer"
-                            onClick={() => addTask(project.id)}
-                        >
-                            ➕ Add Task
-                        </td>
+                        {permissionsList.includes("PUT: Tasks") ? (
+                            <td
+                                colSpan={7}
+                                className="border px-4 py-2 text-center bg-gray-200 hover:bg-gray-300 cursor-pointer"
+                                onClick={() => addTask(project.id)}
+                            >
+                                ➕ Add Task
+                            </td>
+                        ) : (
+                            <td
+                                colSpan={7}
+                                className="border px-4 py-2 text-center bg-gray-200 hover:bg-gray-300 cursor-pointer"
+
+                            >
+                                ➕ Add Task
+                            </td>
+                        )}
+
                     </tr>
                 </tbody>
             </table>

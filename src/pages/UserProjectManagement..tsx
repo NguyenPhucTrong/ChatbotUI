@@ -160,7 +160,4 @@ export default function UserProjectManagement() {
                 ))
             ) : (
                 <p className="text-gray-500">No projects available.</p>
-            )}
-        </div>
-    );
-}
+  

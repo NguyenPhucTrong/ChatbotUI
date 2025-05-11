@@ -80,7 +80,19 @@ export default function ProjectManagement() {
     toast.error("Vui lòng đăng nhập để truy cập trang này.");
     return <Navigate to="/" />;
   }
+  const [permissionsList, setPermissionsList] = useState<string[]>([]);
 
+
+  useEffect(() => {
+    const fetchPermissionsList = async () => {
+      const permissions = localStorage.getItem('Permission');
+      setPermissionsList(permissions ? permissions.split(',') : []);
+    };
+
+    fetchPermissionsList();
+
+    console.log("Quyền truy cập của người dùng:", permissionsList);
+  }, []);
 
 
   const mapStatusToBackend = (status: string): string => {
@@ -588,6 +600,7 @@ export default function ProjectManagement() {
           handleAssignMemberToTask={handleAssignMemberToTask}
           deleteTask={deleteTask}
           addTask={addTask}
+          permissionsList={permissionsList}
         />
       ))}
     </div>

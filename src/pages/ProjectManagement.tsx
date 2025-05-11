@@ -72,6 +72,7 @@ export default function ProjectManagement() {
   const [filterStatus, setFilterStatus] = useState("All");
   const [filterPriority, setFilterPriority] = useState("All");
   const [members, setMembers] = useState<Member[]>([]);
+  const [role, setRole] = useState<string | null>(null);
 
   const token = localStorage.getItem("userToken");
 
@@ -79,6 +80,8 @@ export default function ProjectManagement() {
     toast.error("Vui lòng đăng nhập để truy cập trang này.");
     return <Navigate to="/" />;
   }
+
+
 
   const mapStatusToBackend = (status: string): string => {
     if (status === "Not Started") return "Blocked";

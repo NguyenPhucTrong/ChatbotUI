@@ -154,18 +154,9 @@ const ProjectMembersManagement: React.FC = () => {
       await addMemberToProject(selectedProjectId, userId, user.selectedRole);
       toast.success("User added to project successfully!");
       fetchMembers(selectedProjectId); // Refresh members list
-      const updatedUsers = users.filter((u) => u.id !== userId);
-      setUsers(updatedUsers);
-      if (updatedUsers.length === 0 && currentPage > 1) {
-        setCurrentPage((prev) => Math.max(prev - 1, 1));
-      }
-      setUsers((prevUsers) =>
-        prevUsers.map((u) =>
-          u.id === userId
-            ? { ...u, projectId: selectedProjectId, selectedRole: undefined }
-            : u
-        )
-      );
+
+      // Gửi sự kiện để cập nhật danh sách dự án trong ProjectManagement
+      window.dispatchEvent(new Event("projectUpdated"));
     } catch (error) {
       console.error("Error adding user to project:", error);
       toast.error("Failed to add user to project.");

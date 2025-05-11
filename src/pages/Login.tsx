@@ -19,9 +19,19 @@ const Login = () => {
       const data = await loginAuth(username, password);
       console.log("Dữ liệu trả về từ server:", data);
 
+      const { access_token, userId } = data; // Đảm bảo API trả về userId
+      if (!userId) {
+        console.error("API không trả về userId.");
+        return;
+      }
+
       localStorage.setItem("username", username);
-      const { access_token } = data;
       localStorage.setItem("userToken", access_token);
+      localStorage.setItem("userId", userId.toString()); // Lưu userId dưới dạng chuỗi
+
+      console.log("Token:", access_token);
+      console.log("UserId:", userId);
+
       const response = await getUserByUsername(username);
       toast.success("Đăng nhập thành công!");
       if (response.data.Role === "Super Admin") {

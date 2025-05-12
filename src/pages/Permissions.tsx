@@ -42,6 +42,21 @@ export default function SuperAdmin() {
     const [pageSize] = useState(10); // Số lượng người dùng mỗi trang
     const [totalPages, setTotalPages] = useState(0);
 
+
+    const [permissionsList, setPermissionsList] = useState<string[]>([]);
+
+
+    useEffect(() => {
+        const fetchPermissionsList = async () => {
+            const permissions = localStorage.getItem('Permission');
+            setPermissionsList(permissions ? permissions.split(',') : []);
+        };
+
+        fetchPermissionsList();
+        console.log("Permissions List:", permissionsList);
+    }, []);
+
+
     // Lấy danh sách user
     useEffect(() => {
         const fetchUsers = async (page: number = 1, pageSize: number = 10) => {

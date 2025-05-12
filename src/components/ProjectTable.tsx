@@ -51,8 +51,12 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
     handleAssignMemberToTask,
     deleteTask,
     addTask,
-    permissionsList
+    permissionsList,
+
+
 }) => {
+
+    console.log("permissionsList", permissionsList);
     return (
         <div className="w-full overflow-x-auto mx-auto mt-6 mb-6">
             <h2 className="text-2xl font-semibold mb-4">{project.name}</h2>
@@ -64,7 +68,7 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
                         <th className="px-4 py-2 bg-gray-200">Status</th>
                         <th className="px-4 py-2 bg-gray-200">Due Date</th>
                         <th className="px-4 py-2 bg-gray-200">Priority</th>
-                        <th className="px-4 py-2 bg-gray-200">Assignee</th>
+
                         <th className="px-4 py-2 bg-gray-200">Delete</th>
                     </tr>
                 </thead>
@@ -84,7 +88,7 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
                             permissionsList={permissionsList}
                         />
                     ))}
-                    <tr>
+                    {/* <tr>
                         {permissionsList.includes("PUT: Tasks") ? (
                             <td
                                 colSpan={7}
@@ -103,6 +107,15 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
                             </td>
                         )}
 
+                    </tr> */}
+                    <tr>
+                        <td
+                            colSpan={7}
+                            className="border px-4 py-2 text-center bg-gray-200 hover:bg-gray-300 cursor-pointer"
+                            onClick={() => addTask(project.id)}
+                        >
+                            ➕ Add Task
+                        </td>
                     </tr>
                 </tbody>
             </table>

@@ -53,6 +53,9 @@ export default function Header() {
     case "/project-members":
       pageTitle = "Project-Members";
       break;
+    case "/user-project-management":
+      pageTitle = "User Project Management";
+      break;
     default:
       pageTitle = "404 Not Found";
       break;

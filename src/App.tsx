@@ -150,7 +150,8 @@ function App() {
                 <Route path="/project-management" element={<ProjectManagement />} />
               ) : (
                 <Route path="/project-management" element={<UserProjectManagement />} />
-              )}              <Route path="/chatbot" element={
+              )}
+              <Route path="/chatbot" element={
                 <ChatAI
                   messages={messages}
                   onNewChat={handleNewChat}

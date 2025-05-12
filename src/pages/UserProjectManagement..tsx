@@ -84,6 +84,7 @@ export default function UserProjectManagement() {
                 const projectMember = projectMembers.find((pm: ProjectMember) => pm.projectId === project.id);
                 return projectMember && projectMember.members.includes(currentUserId);
             });
+            console.log("Dự án của người dùng hiện tại:", filteredProjects);
             // Lấy danh sách task và gắn vào từng project
             const taskResponse = await getAllTasks();
 

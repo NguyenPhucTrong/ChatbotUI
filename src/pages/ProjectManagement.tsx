@@ -109,7 +109,7 @@ const UploadFileModal: React.FC<{
       formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
       formData.append('folder', folderPath);
       formData.append('tags', `project-${projectId}`);
-      
+
       const fileNameWithoutExt = file.name.split('.').slice(0, -1).join('.');
       formData.append('public_id', fileNameWithoutExt);
 
@@ -180,9 +180,8 @@ const UploadFileModal: React.FC<{
 
           <div
             {...getRootProps()}
-            className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer ${
-              isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-gray-100'
-            }`}
+            className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-gray-100'
+              }`}
           >
             <input {...getInputProps()} />
             {isDragActive ? (
@@ -223,11 +222,10 @@ const UploadFileModal: React.FC<{
             <button
               onClick={handleUpload}
               disabled={isUploading || selectedFiles.length === 0}
-              className={`px-6 py-2 rounded-lg text-white ${
-                isUploading || selectedFiles.length === 0
+              className={`px-6 py-2 rounded-lg text-white ${isUploading || selectedFiles.length === 0
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-blue-500 hover:bg-blue-700'
-              }`}
+                }`}
             >
               {isUploading ? 'Uploading...' : `Upload ${selectedFiles.length} File(s)`}
             </button>
@@ -372,6 +370,7 @@ export default function ProjectManagement() {
         }));
 
         const taskResponse = await getAllTasks();
+        console.log("Tasks data:", taskResponse.data.data);
         const tasksData = taskResponse.data.data.map((task: any) => {
           console.log("Task DueDate:", task.DueDate);
           return {
@@ -814,7 +813,7 @@ export default function ProjectManagement() {
             addTask={addTask}
             permissionsList={permissionsList}
           />
-          
+
           <div className="mt-4 flex justify-end">
             <button
               onClick={() => openUploadModal(project.id)}

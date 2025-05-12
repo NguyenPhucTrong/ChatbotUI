@@ -56,7 +56,7 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
 
 }) => {
 
-    console.log("permissionsList", permissionsList);
+    // console.log("permissionsList", permissionsList);
     return (
         <div className="w-full overflow-x-auto mx-auto mt-6 mb-6">
             <h2 className="text-2xl font-semibold mb-4">{project.name}</h2>

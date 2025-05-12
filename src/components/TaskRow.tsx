@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ReactDatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -29,6 +29,7 @@ interface TaskRowProps {
   task: Task;
   projectId: number;
   members: Member[];
+  permissionsList: string[];
   handleEditTitle: (
     projectId: number,
     taskId: number,
@@ -79,6 +80,7 @@ const TaskRow: React.FC<TaskRowProps> = ({
   updateTaskPriority,
   handleAssignMemberToTask,
   deleteTask,
+  permissionsList
 }) => {
   const [isEditing, setIsEditing] = useState<{
     field: "title" | "dueDate" | null;
@@ -87,7 +89,148 @@ const TaskRow: React.FC<TaskRowProps> = ({
   const [editedDueDate, setEditedDueDate] = useState<Date | null>(
     task.dueDate ? new Date(task.dueDate) : null
   );
+
+
+
   return (
+    // <tr className="hover:bg-gray-100 text-center items-center">
+    //   {permissionsList.includes("PUT: Tasks") ? (
+    //     <td className="border-b px-6 py-4">
+
+    //       {isEditing.field === "title" ? (
+    //         <input
+    //           type="text"
+    //           value={editedTitle}
+    //           onChange={(e) => setEditedTitle(e.target.value)}
+    //           onKeyDown={(e) => {
+    //             if (e.key === "Enter") {
+    //               handleEditTitle(projectId, task.id, editedTitle);
+    //               setIsEditing({ field: null });
+    //             }
+    //           }}
+    //           onBlur={() => {
+    //             handleEditTitle(projectId, task.id, editedTitle);
+    //             setIsEditing({ field: null });
+    //           }}
+    //           className="border px-2 py-1 rounded w-full"
+    //           autoFocus
+    //         />
+    //       ) : (
+    //         <span
+    //           onClick={() => setIsEditing({ field: "title" })}
+    //           className="cursor-pointer"
+    //         >
+    //           {task.title}
+    //         </span>
+    //       )}
+    //     </td>
+    //   ) : (
+    //     <td>
+    //       <span>{task.title}</span>
+    //     </td>
+    //   )}
+
+    //   <td className="border-b px-6 py-4">
+    //     {new Date(task.createdAt).toLocaleString()}
+    //   </td>
+
+
+    //   {permissionsList.includes("PUT: Tasks") ? (
+    //     <td className="border-b px-6 py-4">
+    //       <select
+    //         value={task.status}
+    //         onChange={(e) => updateTaskStatus(projectId, task.id, e.target.value)}
+    //         className={`${statusColors[task.status]}`}
+    //       >
+    //         <option value="Not Started">Not Started</option>
+    //         <option value="In Progress">In Progress</option>
+    //         <option value="Pending">Pending</option>
+    //         <option value="Completed">Completed</option>
+    //       </select>
+    //     </td>
+    //   ) : (
+    //     <td className="border-b px-6 py-4">
+    //       <span>{task.status}</span>
+    //     </td>
+    //   )}
+
+    //   {permissionsList.includes("PUT: Tasks") ? (
+    //     <td className="border-b px-6 py-4">
+    //       {isEditing.field === "dueDate" ? (
+    //         <ReactDatePicker
+    //           selected={editedDueDate}
+    //           onChange={(date) => setEditedDueDate(date as Date)}
+    //           onKeyDown={(e) => {
+    //             if (e.key === "Enter") {
+    //               handleEditDueDate(
+    //                 projectId,
+    //                 task.id,
+    //                 editedDueDate ? editedDueDate.toISOString().split("T")[0] : ""
+    //               );
+    //               setIsEditing({ field: null });
+    //             }
+    //           }}
+    //           onBlur={() => {
+    //             handleEditDueDate(
+    //               projectId,
+    //               task.id,
+    //               editedDueDate ? editedDueDate.toISOString().split("T")[0] : ""
+    //             );
+    //             setIsEditing({ field: null });
+    //           }}
+    //           className="border px-2 py-1 rounded w-full"
+    //           autoFocus
+    //         />
+    //       ) : (
+    //         <span
+    //           onClick={() => setIsEditing({ field: "dueDate" })}
+    //           className="cursor-pointer"
+    //         >
+    //           {task.dueDate}
+    //         </span>
+    //       )}
+    //     </td>
+    //   ) : (
+    //     <td className="border-b px-6 py-4">
+    //       <span>{task.dueDate}</span>
+    //     </td>
+    //   )}
+    //   {permissionsList.includes("PUT: Tasks") ? (
+    //     <td className="border-b px-6 py-4">
+    //       <select
+    //         value={task.priority}
+    //         onChange={(e) =>
+    //           updateTaskPriority(projectId, task.id, e.target.value)
+    //         }
+    //         className={`${priorityColors[task.priority]}`}
+    //       >
+    //         <option value="Low">Low</option>
+    //         <option value="Medium">Medium</option>
+    //         <option value="High">High</option>
+    //       </select>
+    //     </td>
+    //   ) : (
+    //     <td className="border-b px-6 py-4">
+
+    //       <span>{task.priority}</span>
+    //     </td>
+    //   )}
+
+    //   {permissionsList.includes("DELETE: Tasks") ? (
+    //     <td className="border-b px-6 py-4">
+    //       <button
+    //         onClick={() => deleteTask(projectId, task.id)}
+    //         className="text-red-500 hover:text-red-700"
+    //       >
+    //         🗑️
+    //       </button>
+    //     </td>
+    //   ) : (
+    //     <td className="border-b px-6 py-4">
+    //       <span>🗑️</span>
+    //     </td>
+    //   )}
+    // </tr>
     <tr className="hover:bg-gray-100 text-center items-center">
       <td className="border-b px-6 py-4">
         {isEditing.field === "title" ? (
@@ -180,24 +323,7 @@ const TaskRow: React.FC<TaskRowProps> = ({
           <option value="High">High</option>
         </select>
       </td>
-      <td className="border-b px-6 py-4">
-        <select
-          value={task.assignee || ""}
-          onChange={(e) =>
-            handleAssignMemberToTask(projectId, task.id, e.target.value)
-          }
-          className="border px-2 py-1 rounded w-full"
-        >
-          <option value="" disabled>
-            Select Member
-          </option>
-          {members.map((member) => (
-            <option key={member.id} value={member.fullname}>
-              {member.fullname}
-            </option>
-          ))}
-        </select>
-      </td>
+
       <td className="border-b px-6 py-4">
         <button
           onClick={() => deleteTask(projectId, task.id)}
@@ -208,6 +334,7 @@ const TaskRow: React.FC<TaskRowProps> = ({
       </td>
     </tr>
   );
-};
-
+}
 export default TaskRow;
+
+

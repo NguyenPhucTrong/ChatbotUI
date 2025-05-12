@@ -11,6 +11,7 @@ import {
   FaUsers,
   FaBell,
   FaUserShield,
+  FaKey,
 } from "react-icons/fa";
 import { MdMenu, MdDashboard, MdLogout, MdUploadFile } from "react-icons/md";
 import { getUserByUsername } from "../services/UserServices";
@@ -36,6 +37,19 @@ export default function SideBar({
     fetchPermissionsList();
     console.log('Permissions:', permissionsList);
   }, []);
+
+
+  // const [permissionsList, setPermissionsList] = useState<string[]>([]);
+
+
+  // useEffect(() => {
+  //   const fetchPermissionsList = async () => {
+  //     const permissions = localStorage.getItem('Permission');
+  //     setPermissionsList(permissions ? permissions.split(',') : []);
+  //   };
+
+  //   fetchPermissionsList();
+  // }, []);
 
 
   const [role, setRole] = useState("");
@@ -78,6 +92,7 @@ export default function SideBar({
             <ul className="space-y-6">
               {role === "Super Admin" ? (
                 <>
+
                   <li>
                     <NavLink
                       to="/user-management"
@@ -90,6 +105,9 @@ export default function SideBar({
                       <h1 className="text-lg font-light">Super Admin</h1>
                     </NavLink>
                   </li>
+
+
+
                   <li>
                     <NavLink
                       to="/home"
@@ -102,24 +120,7 @@ export default function SideBar({
                       <h1 className="text-lg font-light">Home</h1>
                     </NavLink>
                   </li>
-                </>
-              ) : (
-                <span></span>
-              )}
-              {role === "Admin" ? (
-                <>
-                  {/* <li>
-                    <NavLink
-                      to="/upload"
-                      className={({ isActive }) =>
-                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
-                        }`
-                      }
-                    >
-                      <MdUploadFile className="w-6 h-6 mr-2" />
-                      <h1 className="text-lg font-light">UploadFile</h1>
-                    </NavLink>
-                  </li> */}
+
                   <li>
                     <NavLink
                       to="/user-management"
@@ -134,6 +135,59 @@ export default function SideBar({
                   </li>
                   <li>
                     <NavLink
+                      to="/permissions"
+                      className={({ isActive }) =>
+                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                        }`
+                      }
+                    >
+                      <FaKey className="w-6 h-6 mr-2" />
+                      <h1 className="text-lg font-light">Permission</h1>
+                    </NavLink>
+                  </li>
+
+                </>
+              ) : (
+                <span></span>
+              )}
+              {role === "Admin" ? (
+                <>
+
+
+                  <li>
+
+                  {/* <li>
+
+                    <NavLink
+                      to="/upload"
+                      className={({ isActive }) =>
+                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                        }`
+                      }
+                    >
+                      <MdUploadFile className="w-6 h-6 mr-2" />
+                      <h1 className="text-lg font-light">Upload File</h1>
+                    </NavLink>
+
+                  </li> */}
+
+                  <li>
+                    <NavLink
+                      to="/user-management"
+                      className={({ isActive }) =>
+                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                        }`
+                      }
+                    >
+                      <FaUsers className="w-6 h-6 mr-2" />
+                      <h1 className="text-lg font-light">User Management</h1>
+                    </NavLink>
+                  </li>
+
+
+
+                  <li>
+                    <NavLink
                       to="/notification"
                       className={({ isActive }) =>
                         `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
@@ -144,21 +198,27 @@ export default function SideBar({
                       <h1 className="text-lg font-light">Notification</h1>
                     </NavLink>
                   </li>
-                  {permissionsList.includes("GET: Projects") ? (
-                    <li>
-                      <NavLink
-                        to="/project-management"
-                        className={({ isActive }) =>
-                          `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"}`
-                        }
-                      >
-                        <FaProjectDiagram className="w-6 h-6 mr-2" />
-                        <h1 className="text-lg font-light">Project Management</h1>
-                      </NavLink>
-                    </li>
-                  ) : (
-                    <li>No Permission</li>
-                  )}
+
+
+
+                  {/* {permissionsList.includes("GET: Tasks") ? ( */}
+                  <li>
+                    <NavLink
+                      to="/project-management"
+                      className={({ isActive }) =>
+                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                        }`
+                      }
+                    >
+                      <FaProjectDiagram className="w-6 h-6 mr-2" />
+                      <h1 className="text-lg font-light">Project Management</h1>
+                    </NavLink>
+                  </li>
+                  {/* // ) : (
+                  //   <li>No Permission</li>
+                  // )} */}
+
+
                   <li>
                     <NavLink
                       to="/project-members"
@@ -168,9 +228,25 @@ export default function SideBar({
                       }
                     >
                       <FaProjectDiagram className="w-6 h-6 mr-2" />
-                      <h1 className="text-lg font-light">Project Member</h1>
+                      <h1 className="text-lg font-light">Project Members</h1>
+                    </NavLink>
+
+
+
+                  </li>
+                  <li>
+                    <NavLink
+                      to="/dashboard"
+                      className={({ isActive }) =>
+                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                        }`
+                      }
+                    >
+                      <MdDashboard className="w-6 h-6 mr-2" />
+                      <h1 className="text-lg font-light">Dashboard</h1>
                     </NavLink>
                   </li>
+
                 </>
               ) : (
                 <span></span>
@@ -178,13 +254,14 @@ export default function SideBar({
 
               {role === "User" ? (
                 <>
+
                   <li>
                     <button
                       className="flex flex-row w-full text-left p-3 pl-5 rounded hover:bg-gray-700"
                       onClick={onOpenChatHistory}
                     >
                       <FaHistory className="w-6 h-6 mr-2" />
-                      <h1 className="text-lg font-light">History chat</h1>
+                      <h1 className="text-lg font-light">History Chat</h1>
                     </button>
                   </li>
 
@@ -201,6 +278,7 @@ export default function SideBar({
                     </NavLink>
                   </li>
 
+
                   <li>
                     <NavLink
                       to="/chatbot"
@@ -213,18 +291,8 @@ export default function SideBar({
                       <h1 className="text-lg font-light">ChatBot Q&A</h1>
                     </NavLink>
                   </li>
-                  <li>
-                    <NavLink
-                      to="/dashboard"
-                      className={({ isActive }) =>
-                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
-                        }`
-                      }
-                    >
-                      <MdDashboard className="w-6 h-6 mr-2" />
-                      <h1 className="text-lg font-light">Dashboard</h1>
-                    </NavLink>
-                  </li>
+
+
                 </>
               ) : (
                 <span></span>

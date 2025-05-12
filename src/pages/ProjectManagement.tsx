@@ -318,6 +318,21 @@ export default function ProjectManagement() {
     toast.error("Please login to access this page.");
     return <Navigate to="/" />;
   }
+  const [permissionsList, setPermissionsList] = useState<string[]>([]);
+
+
+
+  useEffect(() => {
+    const fetchPermissionsList = async () => {
+      const permissions = localStorage.getItem('Permission');
+      setPermissionsList(permissions ? permissions.split(',') : []);
+    };
+
+    fetchPermissionsList();
+
+  }, []);
+
+
 
   const mapStatusToBackend = (status: string): string => {
     if (status === "Not Started") return "Blocked";
@@ -797,6 +812,7 @@ export default function ProjectManagement() {
             handleAssignMemberToTask={handleAssignMemberToTask}
             deleteTask={deleteTask}
             addTask={addTask}
+            permissionsList={permissionsList}
           />
           
           <div className="mt-4 flex justify-end">
@@ -808,6 +824,7 @@ export default function ProjectManagement() {
             </button>
           </div>
         </div>
+
       ))}
 
       {showUploadModal && selectedProjectForUpload && (

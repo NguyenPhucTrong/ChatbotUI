@@ -37,6 +37,7 @@ interface ProjectTableProps {
     handleAssignMemberToTask: (projectId: number, taskId: number, assignee: string) => void;
     deleteTask: (projectId: number, taskId: number) => void;
     addTask: (projectId: number) => void;
+    permissionsList: string[];
 }
 
 const ProjectTable: React.FC<ProjectTableProps> = ({
@@ -50,7 +51,12 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
     handleAssignMemberToTask,
     deleteTask,
     addTask,
+    permissionsList,
+
+
 }) => {
+
+    console.log("permissionsList", permissionsList);
     return (
         <div className="w-full overflow-x-auto mx-auto mt-6 mb-6">
             <h2 className="text-2xl font-semibold mb-4">{project.name}</h2>
@@ -62,7 +68,7 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
                         <th className="px-4 py-2 bg-gray-200">Status</th>
                         <th className="px-4 py-2 bg-gray-200">Due Date</th>
                         <th className="px-4 py-2 bg-gray-200">Priority</th>
-                        <th className="px-4 py-2 bg-gray-200">Assignee</th>
+
                         <th className="px-4 py-2 bg-gray-200">Delete</th>
                     </tr>
                 </thead>
@@ -79,8 +85,29 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
                             updateTaskPriority={updateTaskPriority}
                             handleAssignMemberToTask={handleAssignMemberToTask}
                             deleteTask={deleteTask}
+                            permissionsList={permissionsList}
                         />
                     ))}
+                    {/* <tr>
+                        {permissionsList.includes("PUT: Tasks") ? (
+                            <td
+                                colSpan={7}
+                                className="border px-4 py-2 text-center bg-gray-200 hover:bg-gray-300 cursor-pointer"
+                                onClick={() => addTask(project.id)}
+                            >
+                                ➕ Add Task
+                            </td>
+                        ) : (
+                            <td
+                                colSpan={7}
+                                className="border px-4 py-2 text-center bg-gray-200 hover:bg-gray-300 cursor-pointer"
+
+                            >
+                                ➕ Add Task
+                            </td>
+                        )}
+
+                    </tr> */}
                     <tr>
                         <td
                             colSpan={7}

@@ -22,6 +22,7 @@ import { AvatarProvider } from "./components/AvatarContext";
 import ProjectMembersManagement from "./pages/ProjectMembers";
 import UserProjectManagement from "./pages/UserProjectManagement.";
 import { getUserByUsername } from "./services/UserServices";
+import Permissions from "./pages/Permissions";
 
 // Định nghĩa interface cho Message
 interface Message {
@@ -149,7 +150,8 @@ function App() {
                 <Route path="/project-management" element={<ProjectManagement />} />
               ) : (
                 <Route path="/project-management" element={<UserProjectManagement />} />
-              )}              <Route path="/chatbot" element={
+              )}
+              <Route path="/chatbot" element={
                 <ChatAI
                   messages={messages}
                   onNewChat={handleNewChat}
@@ -159,6 +161,7 @@ function App() {
                 />
               } />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/permissions" element={<Permissions />} />
 
               <Route path="/company-management" element={<AdminCompanyManagement />} />
               <Route path="/user-management" element={<AdminUsersManagement />} />

@@ -80,12 +80,10 @@ export default function UserProjectManagement() {
                 return;
             }
 
-            const filteredProjects: Project[] = projectsData.filter((project: Project) =>
-                projectMembers.some(
-                    (pm: ProjectMember) => pm.projectId === project.id && pm.members.includes(currentUserId)
-                )
-            );
-
+            const filteredProjects: Project[] = projectsData.filter((project: Project) => {
+                const projectMember = projectMembers.find((pm: ProjectMember) => pm.projectId === project.id);
+                return projectMember && projectMember.members.includes(currentUserId);
+            });
             // Lấy danh sách task và gắn vào từng project
             const taskResponse = await getAllTasks();
 
@@ -162,7 +160,9 @@ export default function UserProjectManagement() {
                 ))
             ) : (
                 <p className="text-gray-500">No projects available.</p>
+
             )}
         </div>
     );
 }
+// export default UserProjectManagement;

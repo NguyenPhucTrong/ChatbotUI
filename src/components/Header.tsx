@@ -47,8 +47,14 @@ export default function Header() {
     case "/upload":
       pageTitle = "UploadFile";
       break;
+    case "/permissions":
+      pageTitle = "Permissions";
+      break;
     case "/project-members":
       pageTitle = "Project-Members";
+      break;
+    case "/user-project-management":
+      pageTitle = "User Project Management";
       break;
     default:
       pageTitle = "404 Not Found";

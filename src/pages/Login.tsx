@@ -45,7 +45,7 @@ const Login = () => {
       } else if (response.data.Role === "Admin") {
         navigate("/project-management");
       } else {
-        navigate("/dashboard");
+        navigate("/project-management");
       }
     } catch (error: any) {
       console.error("Lỗi khi đăng nhập:", error);

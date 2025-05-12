@@ -80,7 +80,7 @@ export default function SideBar({
                 <>
                   <li>
                     <NavLink
-                      to="/superadmin"
+                      to="/user-management"
                       className={({ isActive }) =>
                         `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
                         }`
@@ -108,7 +108,7 @@ export default function SideBar({
               )}
               {role === "Admin" ? (
                 <>
-                  <li>
+                  {/* <li>
                     <NavLink
                       to="/upload"
                       className={({ isActive }) =>
@@ -119,7 +119,7 @@ export default function SideBar({
                       <MdUploadFile className="w-6 h-6 mr-2" />
                       <h1 className="text-lg font-light">UploadFile</h1>
                     </NavLink>
-                  </li>
+                  </li> */}
                   <li>
                     <NavLink
                       to="/user-management"

@@ -7,7 +7,6 @@ import {
   deleteTaskAPI,
   createTask,
 } from "../services/TaskServices";
-
 import { toast } from "react-toastify";
 import { Navigate } from "react-router-dom";
 import ReactDatePicker from "react-datepicker";
@@ -15,6 +14,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import { getProjectMembers } from "../services/ProjectMembers";
 import SearchAndFilters from "../components/SearchAndFilters";
 import ProjectTable from "../components/ProjectTable";
+import { useDropzone } from "react-dropzone";
+import axios from "axios";
 
 interface Task {
   id: number;
@@ -24,13 +25,13 @@ interface Task {
   priority: string;
   assignee: string;
   createdAt: string;
-  projectId: number; // Added projectId property
+  projectId: number;
 }
 
 interface Project {
   id: number;
   name: string;
-  tableName: string; // Added tableName property
+  tableName: string;
   tasks: Task[];
 }
 
@@ -39,7 +40,17 @@ interface Member {
   fullname: string;
   email: string;
   phoneNumber: string;
-  role: string; // UserRole trong ProjectMembers
+  role: string;
+}
+
+interface UploadedFile {
+  id: string;
+  name: string;
+  size: number;
+  uploadDate: string;
+  url: string;
+  publicId: string;
+  folder: string;
 }
 
 const priorityColors: { [key: string]: string } = {
@@ -55,9 +66,234 @@ const statusColors: { [key: string]: string } = {
   Completed: "bg-green-500 text-white",
 };
 
+const UploadFileModal: React.FC<{
+  projectId: number;
+  projectName: string;
+  onClose: () => void;
+}> = ({ projectId, projectName, onClose }) => {
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [folderPath, setFolderPath] = useState(`projects/${projectId}`);
+
+  const CLOUDINARY_URL = import.meta.env.VITE_CLOUDINARY_URL!;
+  const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET!;
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop: (acceptedFiles) => {
+      if (acceptedFiles.length > 0) {
+        setSelectedFiles((prev) => [...prev, ...acceptedFiles]);
+        toast.success(`${acceptedFiles.length} file(s) added!`);
+      }
+    },
+    multiple: true,
+    accept: {
+      'application/pdf': ['.pdf'],
+      'text/plain': ['.txt'],
+      'application/json': ['.json'],
+      'image/*': ['.png', '.jpg', '.jpeg', '.gif'],
+    },
+  });
+
+  const handleUpload = async () => {
+    if (selectedFiles.length === 0) {
+      toast.error('Please select at least one file to upload!');
+      return;
+    }
+
+    setIsUploading(true);
+
+    const uploadPromises = selectedFiles.map(async (file) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+      formData.append('folder', folderPath);
+      formData.append('tags', `project-${projectId}`);
+      
+      const fileNameWithoutExt = file.name.split('.').slice(0, -1).join('.');
+      formData.append('public_id', fileNameWithoutExt);
+
+      try {
+        const response = await axios.post(CLOUDINARY_URL, formData);
+        const uploadedFile = {
+          id: response.data.asset_id,
+          name: file.name,
+          size: file.size,
+          uploadDate: new Date().toISOString(),
+          url: response.data.secure_url,
+          publicId: response.data.public_id,
+          folder: response.data.folder || folderPath,
+        };
+
+        setUploadedFiles((prev) => [...prev, uploadedFile]);
+        toast.success(`File "${file.name}" uploaded successfully!`);
+        return uploadedFile;
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        toast.error(`Failed to upload "${file.name}".`);
+        return null;
+      }
+    });
+
+    await Promise.all(uploadPromises);
+    setSelectedFiles([]);
+    setIsUploading(false);
+  };
+
+  const removeSelectedFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeUploadedFile = (id: string) => {
+    setUploadedFiles(prev => prev.filter(file => file.id !== id));
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-4 border-b flex justify-between items-center">
+          <h2 className="text-xl font-semibold">
+            Upload Files for {projectName}
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 text-2xl"
+          >
+            &times;
+          </button>
+        </div>
+        <div className="p-6">
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+            <h2 className="text-lg font-semibold mb-2">Upload Settings</h2>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Folder Path
+              </label>
+              <input
+                type="text"
+                value={folderPath}
+                readOnly
+                className="w-full p-2 border rounded bg-gray-100"
+              />
+            </div>
+          </div>
+
+          <div
+            {...getRootProps()}
+            className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer ${
+              isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-gray-100'
+            }`}
+          >
+            <input {...getInputProps()} />
+            {isDragActive ? (
+              <p className="text-blue-500">Drop files here...</p>
+            ) : (
+              <p className="text-gray-500">
+                Drag and drop files here or <span className="text-blue-500 underline">click to browse</span>
+              </p>
+            )}
+          </div>
+
+          {selectedFiles.length > 0 && (
+            <div className="mt-4">
+              <h2 className="text-lg font-semibold mb-2">Selected Files:</h2>
+              <ul className="border rounded divide-y">
+                {selectedFiles.map((file, index) => (
+                  <li key={index} className="p-3 flex justify-between items-center">
+                    <div>
+                      <span className="font-medium">{file.name}</span>
+                      <span className="text-sm text-gray-500 ml-2">({(file.size / 1024).toFixed(2)} KB)</span>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeSelectedFile(index);
+                      }}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="mt-4 flex justify-between items-center">
+            <button
+              onClick={handleUpload}
+              disabled={isUploading || selectedFiles.length === 0}
+              className={`px-6 py-2 rounded-lg text-white ${
+                isUploading || selectedFiles.length === 0
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-blue-500 hover:bg-blue-700'
+              }`}
+            >
+              {isUploading ? 'Uploading...' : `Upload ${selectedFiles.length} File(s)`}
+            </button>
+            {selectedFiles.length > 0 && (
+              <button
+                onClick={() => setSelectedFiles([])}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                Clear Selection
+              </button>
+            )}
+          </div>
+
+          <h2 className="text-2xl font-semibold mt-8 mb-4">Uploaded Files</h2>
+          {uploadedFiles.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white border border-gray-300 rounded shadow">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="px-4 py-3 text-left">File Name</th>
+                    <th className="px-4 py-3 text-left">Size</th>
+                    <th className="px-4 py-3 text-left">Folder</th>
+                    <th className="px-4 py-3 text-left">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {uploadedFiles.map((file) => (
+                    <tr key={file.id} className="hover:bg-gray-50 border-t">
+                      <td className="px-4 py-3">
+                        <a
+                          href={file.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500 hover:underline"
+                        >
+                          {file.name}
+                        </a>
+                      </td>
+                      <td className="px-4 py-3">{(file.size / 1024).toFixed(2)} KB</td>
+                      <td className="px-4 py-3 font-mono text-sm">{file.folder}</td>
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => removeUploadedFile(file.id)}
+                          className="text-red-500 hover:text-red-700 text-sm"
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="text-center py-8 bg-gray-50 rounded-lg">
+              <p className="text-gray-500">No files have been uploaded yet.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function ProjectManagement() {
   const [projects, setProjects] = useState<Project[]>([]);
-
   const [isEditing, setIsEditing] = useState<{
     tableId: number | null;
     taskId: number | null;
@@ -73,15 +309,15 @@ export default function ProjectManagement() {
   const [filterPriority, setFilterPriority] = useState("All");
   const [members, setMembers] = useState<Member[]>([]);
   const [role, setRole] = useState<string | null>(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [selectedProjectForUpload, setSelectedProjectForUpload] = useState<number | null>(null);
 
   const token = localStorage.getItem("userToken");
 
   if (!token) {
-    toast.error("Vui lòng đăng nhập để truy cập trang này.");
+    toast.error("Please login to access this page.");
     return <Navigate to="/" />;
   }
-
-
 
   const mapStatusToBackend = (status: string): string => {
     if (status === "Not Started") return "Blocked";
@@ -94,68 +330,57 @@ export default function ProjectManagement() {
   };
 
   const normalizeDate = (dateString: string): string => {
-    // Kiểm tra nếu định dạng là DD-MM-YYYY
     if (/^\d{2}-\d{2}-\d{4}$/.test(dateString)) {
       const [day, month, year] = dateString.split("-");
-      return `${year}-${month}-${day}`; // Chuyển thành YYYY-MM-DD
+      return `${year}-${month}-${day}`;
     }
 
-    // Kiểm tra nếu định dạng là DD/MM/YYYY
     if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
       const [day, month, year] = dateString.split("/");
-      return `${year}-${month}-${day}`; // Chuyển thành YYYY-MM-DD
+      return `${year}-${month}-${day}`;
     }
 
-    // Nếu không khớp định dạng, trả về giá trị mặc định
     console.warn("Invalid date format:", dateString);
-    return new Date().toISOString().split("T")[0]; // Ngày hiện tại
+    return new Date().toISOString().split("T")[0];
   };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Lấy danh sách dự án
-        const projectResponse = await getAllProjects()
-        console.log(
-          "Dữ liệu trả về từ API getAllProjects:",
-          projectResponse.data.data
-        );
+        const projectResponse = await getAllProjects();
+        console.log("Projects data:", projectResponse.data.data);
 
         const projectsData = projectResponse.data.data.map((project: any) => ({
           id: project.IdProject,
           name: project.ProjectName,
-          tasks: [], // Sẽ gắn task sau
+          tasks: [],
         }));
 
-        // Lấy danh sách task
         const taskResponse = await getAllTasks();
         const tasksData = taskResponse.data.data.map((task: any) => {
-          console.log("Task DueDate:", task.DueDate); // Debug giá trị DueDate
+          console.log("Task DueDate:", task.DueDate);
           return {
             id: task.IdTask,
             title: task.Title,
             status: mapStatusToFrontend(task.Status),
             dueDate: task.DueDate
               ? normalizeDate(task.DueDate)
-              : new Date().toISOString().split("T")[0], // Chuẩn hóa DueDate
+              : new Date().toISOString().split("T")[0],
             priority: task.Priority,
-            assignee: "Unassigned", // Nếu API không trả về assignee
+            assignee: "Unassigned",
             projectId: task.IdProject,
-            createdAt: task.DateCreate, // Thay đổi tên thuộc tính cho phù hợp với API
+            createdAt: task.DateCreate,
           };
         });
 
-        // Gắn task vào dự án tương ứng
         const projectsWithTasks = projectsData.map((project: Project) => ({
           ...project,
-          tasks: tasksData.filter(
-            (task: Task) => task.projectId === project.id
-          ),
+          tasks: tasksData.filter((task: Task) => task.projectId === project.id),
         }));
 
         setProjects(projectsWithTasks);
       } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu:", error);
+        console.error("Error fetching data:", error);
       }
     };
 
@@ -166,20 +391,17 @@ export default function ProjectManagement() {
     const fetchMembersForProject = async () => {
       if (!projects.length) return;
 
-      // Lấy danh sách thành viên cho dự án đầu tiên (hoặc dự án được chọn)
       const firstProjectId = projects[0].id;
       try {
         const response = await getProjectMembers(firstProjectId);
         const membersData = response.data;
 
-        // Kiểm tra nếu `membersData` là một mảng
         if (!Array.isArray(membersData)) {
           console.warn("Invalid response format:", membersData);
-          setMembers([]); // Đặt danh sách thành viên rỗng nếu không có dữ liệu
+          setMembers([]);
           return;
         }
 
-        // Ánh xạ dữ liệu trả về
         const data = membersData.map((member: any) => ({
           id: member.IdUser,
           fullname: member.Fullname,
@@ -188,7 +410,7 @@ export default function ProjectManagement() {
           role: member.UserRole,
         }));
 
-        setMembers(data); // Cập nhật state members
+        setMembers(data);
       } catch (error) {
         console.error("Error fetching members:", error);
         toast.error("Failed to load project members.");
@@ -196,42 +418,35 @@ export default function ProjectManagement() {
     };
 
     fetchMembersForProject();
-  }, [projects]); // Chạy lại khi danh sách dự án thay đổi
+  }, [projects]);
 
   const addTask = async (projectId: number) => {
     const newTask: Task = {
-      id: Date.now(), // Tạo ID tạm thời để React nhận diện
-      title: "New Task", // Tên mặc định
-      status: "Pending", // Trạng thái mặc định (chỉ dùng trên frontend)
-      dueDate: "01/01/2025", // Ngày hết hạn mặc định
-      priority: "Low", // Mức độ ưu tiên mặc định
-      assignee: "Unassigned", // Người được giao mặc định
-      projectId: projectId, // ID dự án
-      createdAt: new Date().toISOString(), // Thời gian tạo task
+      id: Date.now(),
+      title: "New Task",
+      status: "Pending",
+      dueDate: "01/01/2025",
+      priority: "Low",
+      assignee: "Unassigned",
+      projectId: projectId,
+      createdAt: new Date().toISOString(),
     };
 
     try {
-      // Format DateCreate để phù hợp với backend
-      const formattedDateCreate = new Date().toISOString().split("T")[0]; // Format: YYYY-MM-DD
-      // Tạo payload gửi lên backend
+      const formattedDateCreate = new Date().toISOString().split("T")[0];
       const payload = {
         Title: newTask.title,
-        Status: mapStatusToBackend(newTask.status), // Chuyển đổi giá trị Status
+        Status: mapStatusToBackend(newTask.status),
         DueDate: newTask.dueDate,
         Priority: newTask.priority as "Low" | "Medium" | "High",
         IdProject: newTask.projectId,
-        DateCreate: formattedDateCreate, // Thêm DateCreate vào payload
+        DateCreate: formattedDateCreate,
       };
 
-      console.log("Payload gửi đến API:", payload); // Debug payload
-
-      // Gọi API để lưu task vào database
+      console.log("Payload:", payload);
       const response = await createTask(payload);
-
-      // Backend trả về task đã được lưu (bao gồm ID mới)
       const savedTask = response.data;
 
-      // Cập nhật state `projects` với task mới
       setProjects((prevProjects) =>
         prevProjects.map((project) => {
           if (project.id === projectId) {
@@ -244,22 +459,21 @@ export default function ProjectManagement() {
         })
       );
 
-      toast.success("Task đã được thêm thành công!");
+      toast.success("Task added successfully!");
       window.dispatchEvent(new Event("taskUpdated"));
     } catch (error) {
-      console.error("Lỗi khi thêm task:", error);
-      toast.error("Không thể thêm task.");
+      console.error("Error adding task:", error);
+      toast.error("Failed to add task.");
     }
   };
 
-  // Hàm chỉnh sửa tiêu đề (title)
   const handleEditTitle = async (
     projectId: number,
     taskId: number,
     newTitle: string
   ) => {
     if (!newTitle.trim()) {
-      toast.error("Tiêu đề không được để trống.");
+      toast.error("Title cannot be empty.");
       return;
     }
 
@@ -268,13 +482,13 @@ export default function ProjectManagement() {
       ?.tasks.find((task) => task.id === taskId);
 
     if (!updatedTask) {
-      toast.error("Không tìm thấy task để cập nhật.");
+      toast.error("Task not found.");
       return;
     }
 
     const payload = {
       Title: newTitle,
-      Status: mapStatusToBackend(updatedTask.status), // Chuyển đổi giá trị Status
+      Status: mapStatusToBackend(updatedTask.status),
       DueDate: updatedTask.dueDate,
       Priority: updatedTask.priority as "Low" | "Medium" | "High" | undefined,
       IdProject: updatedTask.projectId,
@@ -282,9 +496,8 @@ export default function ProjectManagement() {
     };
 
     try {
-      console.log("Payload gửi đến API:", payload); // Debug payload
+      console.log("Payload:", payload);
       await updateTask(taskId, payload);
-      // Cập nhật state `projects` để phản ánh thay đổi
       setProjects((prevProjects) =>
         prevProjects.map((project) => {
           if (project.id === projectId) {
@@ -298,14 +511,12 @@ export default function ProjectManagement() {
           return project;
         })
       );
-      toast.success("Cập nhật tiêu đề thành công!");
+      toast.success("Title updated successfully!");
     } catch (error) {
-      console.error("Lỗi khi cập nhật tiêu đề:", error);
-      toast.error("Không thể cập nhật tiêu đề.");
+      console.error("Error updating title:", error);
+      toast.error("Failed to update title.");
     }
   };
-
-  // Hàm chỉnh sửa ngày đến hạn (DueDate)
 
   const handleEditDueDate = async (
     projectId: number,
@@ -313,19 +524,17 @@ export default function ProjectManagement() {
     newDueDate: string
   ) => {
     if (!newDueDate || isNaN(Date.parse(newDueDate))) {
-      toast.error("Ngày hết hạn không hợp lệ.");
+      toast.error("Invalid due date.");
       return;
     }
 
-    // Kiểm tra nếu ngày mới nằm trong quá khứ
     const today = new Date();
     const selectedDate = new Date(newDueDate);
     if (selectedDate.getTime() < today.setHours(0, 0, 0, 0)) {
-      toast.error("Ngày hết hạn không thể là ngày trong quá khứ.");
+      toast.error("Due date cannot be in the past.");
       return;
     }
 
-    // Định dạng lại ngày thành DD-MM-YYYY
     const formattedDueDate = `${String(selectedDate.getDate()).padStart(
       2,
       "0"
@@ -339,24 +548,23 @@ export default function ProjectManagement() {
       ?.tasks.find((task) => task.id === taskId);
 
     if (!updatedTask) {
-      toast.error("Không tìm thấy task để cập nhật.");
+      toast.error("Task not found.");
       return;
     }
 
     const payload = {
       Title: updatedTask.title,
-      Status: mapStatusToBackend(updatedTask.status), // Chuyển đổi giá trị Status
-      DueDate: formattedDueDate, // Sử dụng ngày đã định dạng
+      Status: mapStatusToBackend(updatedTask.status),
+      DueDate: formattedDueDate,
       Priority: updatedTask.priority as "Low" | "Medium" | "High" | undefined,
       IdProject: updatedTask.projectId,
       DateCreate: updatedTask.createdAt,
     };
 
     try {
-      console.log("Payload gửi đến API:", payload); // Debug payload
+      console.log("Payload:", payload);
       await updateTask(taskId, payload);
 
-      // Cập nhật state `projects` để phản ánh thay đổi
       setProjects((prevProjects) =>
         prevProjects.map((project) => {
           if (project.id === projectId) {
@@ -373,10 +581,10 @@ export default function ProjectManagement() {
         })
       );
 
-      toast.success("Cập nhật ngày hết hạn thành công!");
+      toast.success("Due date updated successfully!");
     } catch (error) {
-      console.error("Lỗi khi cập nhật ngày hết hạn:", error);
-      toast.error("Không thể cập nhật ngày hết hạn.");
+      console.error("Error updating due date:", error);
+      toast.error("Failed to update due date.");
     }
   };
 
@@ -385,7 +593,7 @@ export default function ProjectManagement() {
     taskId: number,
     newStatus: string
   ) => {
-    const backendStatus = mapStatusToBackend(newStatus); // Chuyển đổi giá trị cho backend
+    const backendStatus = mapStatusToBackend(newStatus);
 
     setProjects((prevProjects) =>
       prevProjects.map((project) => {
@@ -419,15 +627,13 @@ export default function ProjectManagement() {
           IdProject: updatedTask.projectId,
           DateCreate: updatedTask.createdAt,
         });
-        toast.success("Cập nhật trạng thái thành công!");
+        toast.success("Status updated successfully!");
       }
     } catch (error) {
-      console.error(`Failed to update task ${taskId} status:`, error);
-      toast.error("Cập nhật trạng thái thất bại");
+      console.error(`Failed to update task status:`, error);
+      toast.error("Failed to update status");
     }
   };
-
-  // Removed duplicate declaration of updateTaskPriority
 
   const updateTaskPriority = async (
     projectId: number,
@@ -456,20 +662,20 @@ export default function ProjectManagement() {
       if (updatedTask) {
         const payload = {
           Title: updatedTask.title,
-          Status: mapStatusToBackend(updatedTask.status), // Chuyển đổi giá trị Status
+          Status: mapStatusToBackend(updatedTask.status),
           DueDate: updatedTask.dueDate,
           Priority: newPriority as "Low" | "Medium" | "High",
           IdProject: updatedTask.projectId,
           DateCreate: updatedTask.createdAt,
         };
 
-        console.log("Payload gửi đến API:", payload); // Debug payload
+        console.log("Payload:", payload);
         await updateTask(taskId, payload);
-        toast.success("Cập nhật mức độ ưu tiên thành công!");
+        toast.success("Priority updated successfully!");
       }
     } catch (error) {
-      console.error(`Failed to update task ${taskId} priority:`, error);
-      toast.error("Cập nhật mức độ ưu tiên thất bại");
+      console.error(`Failed to update task priority:`, error);
+      toast.error("Failed to update priority");
     }
   };
 
@@ -483,7 +689,7 @@ export default function ProjectManagement() {
       ?.tasks.find((task) => task.id === taskId);
 
     if (!updatedTask) {
-      toast.error("Task không tồn tại.");
+      toast.error("Task not found.");
       return;
     }
 
@@ -494,14 +700,13 @@ export default function ProjectManagement() {
       Priority: updatedTask.priority as "Low" | "Medium" | "High",
       IdProject: updatedTask.projectId,
       DateCreate: updatedTask.createdAt,
-      Assignee: assignee, // Thêm Assignee vào payload
+      Assignee: assignee,
     };
 
     try {
-      console.log("Payload gửi đến API:", payload);
+      console.log("Payload:", payload);
       await updateTask(taskId, payload);
 
-      // Cập nhật state `projects` để phản ánh thay đổi
       setProjects((prevProjects) =>
         prevProjects.map((project) => {
           if (project.id === projectId) {
@@ -516,10 +721,10 @@ export default function ProjectManagement() {
         })
       );
 
-      toast.success("Gán thành viên thành công!");
+      toast.success("Member assigned successfully!");
     } catch (error) {
-      console.error("Lỗi khi gán thành viên:", error);
-      toast.error("Không thể gán thành viên.");
+      console.error("Error assigning member:", error);
+      toast.error("Failed to assign member.");
     }
   };
 
@@ -535,10 +740,7 @@ export default function ProjectManagement() {
 
   const deleteTask = async (projectId: number, taskId: number) => {
     try {
-      // Gọi API để xóa task khỏi backend
-      await deleteTaskAPI(taskId); // Sử dụng hàm deleteTask từ TaskServices.ts
-
-      // Cập nhật state `projects` để xóa task khỏi giao diện
+      await deleteTaskAPI(taskId);
       setProjects((prevProjects) =>
         prevProjects.map((project) => {
           if (project.id === projectId) {
@@ -550,12 +752,21 @@ export default function ProjectManagement() {
           return project;
         })
       );
-
-      toast.success("Task đã được xóa thành công!");
+      toast.success("Task deleted successfully!");
     } catch (error) {
-      console.error("Lỗi khi xóa task:", error);
-      toast.error("Không thể xóa task.");
+      console.error("Error deleting task:", error);
+      toast.error("Failed to delete task.");
     }
+  };
+
+  const openUploadModal = (projectId: number) => {
+    setSelectedProjectForUpload(projectId);
+    setShowUploadModal(true);
+  };
+
+  const closeUploadModal = () => {
+    setShowUploadModal(false);
+    setSelectedProjectForUpload(null);
   };
 
   return (
@@ -564,7 +775,6 @@ export default function ProjectManagement() {
         Task Management
       </h1>
 
-      {/* Search and Filters */}
       <SearchAndFilters
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
@@ -574,22 +784,39 @@ export default function ProjectManagement() {
         setFilterPriority={setFilterPriority}
       />
 
-      {/* Project Tables */}
       {projects.map((project) => (
-        <ProjectTable
-          key={project.id}
-          project={project}
-          members={members}
-          filteredTasks={filteredTasks}
-          handleEditTitle={handleEditTitle}
-          handleEditDueDate={handleEditDueDate}
-          updateTaskStatus={updateTaskStatus}
-          updateTaskPriority={updateTaskPriority}
-          handleAssignMemberToTask={handleAssignMemberToTask}
-          deleteTask={deleteTask}
-          addTask={addTask}
-        />
+        <div key={project.id} className="mb-8">
+          <ProjectTable
+            project={project}
+            members={members}
+            filteredTasks={filteredTasks}
+            handleEditTitle={handleEditTitle}
+            handleEditDueDate={handleEditDueDate}
+            updateTaskStatus={updateTaskStatus}
+            updateTaskPriority={updateTaskPriority}
+            handleAssignMemberToTask={handleAssignMemberToTask}
+            deleteTask={deleteTask}
+            addTask={addTask}
+          />
+          
+          <div className="mt-4 flex justify-end">
+            <button
+              onClick={() => openUploadModal(project.id)}
+              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+            >
+              Upload Files for {project.name}
+            </button>
+          </div>
+        </div>
       ))}
+
+      {showUploadModal && selectedProjectForUpload && (
+        <UploadFileModal
+          projectId={selectedProjectForUpload}
+          projectName={projects.find(p => p.id === selectedProjectForUpload)?.name || ""}
+          onClose={closeUploadModal}
+        />
+      )}
     </div>
   );
-}
+};

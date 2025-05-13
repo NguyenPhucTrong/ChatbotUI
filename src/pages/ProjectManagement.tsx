@@ -16,6 +16,7 @@ import SearchAndFilters from "../components/SearchAndFilters";
 import ProjectTable from "../components/ProjectTable";
 import { useDropzone } from "react-dropzone";
 import axios from "axios";
+import { useNotification } from "../context/NotificationProvider";
 
 interface Task {
   id: number;
@@ -75,7 +76,7 @@ const UploadFileModal: React.FC<{
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [folderPath, setFolderPath] = useState(`projects/${projectId}`);
-
+  const { addNotificationForUser } = useNotification(); // Lấy hàm gửi thông báo từ Notification Context
   const CLOUDINARY_URL = import.meta.env.VITE_CLOUDINARY_URL!;
   const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET!;
 
@@ -223,8 +224,8 @@ const UploadFileModal: React.FC<{
               onClick={handleUpload}
               disabled={isUploading || selectedFiles.length === 0}
               className={`px-6 py-2 rounded-lg text-white ${isUploading || selectedFiles.length === 0
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-blue-500 hover:bg-blue-700'
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-blue-500 hover:bg-blue-700'
                 }`}
             >
               {isUploading ? 'Uploading...' : `Upload ${selectedFiles.length} File(s)`}
@@ -526,6 +527,17 @@ export default function ProjectManagement() {
         })
       );
       toast.success("Title updated successfully!");
+
+      const relatedMembers = members.filter(
+        (member) => member.projectId === projectId
+      )
+
+      relatedMembers.forEach((member) => {
+        addNotificationForUser(
+          member.id.toString(),
+          `The task "${newTitle}" has been updated by the admin.`
+        );
+      });
     } catch (error) {
       console.error("Error updating title:", error);
       toast.error("Failed to update title.");

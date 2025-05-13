@@ -4,16 +4,26 @@ import flower1 from "../assets/image/flower1.png";
 import { MdNotifications, MdHelp, MdSettings, MdSearch } from "react-icons/md";
 import { toast, ToastContainer } from "react-toastify";
 import { useAvatar } from "./AvatarContext";
+import { useNotification } from "../context/NotificationProvider";
 
 export default function Header() {
   const { avatar } = useAvatar();
+  const { notifications, clearNotifications } = useNotification();
   const [showOptions, setShowOptions] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showChatbot, setShowChatbot] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false); // State để hiển thị thông báo
 
   const location = useLocation();
 
+
   const navigate = useNavigate();
+
+  const userId = localStorage.getItem("userId"); // Lấy userId từ LocalStorage
+  console.log("userId từ LocalStorage:", userId);
+  const userNotifications = userId ? notifications[userId] || [] : [];
+
+
 
   // Xác định tiêu đề trang dựa trên đường dẫn hiện tại
 
@@ -94,10 +104,39 @@ export default function Header() {
         </div>
 
         <div className="flex flex-row gap-10">
-          <div className=" rounded-lg px-3 py-3 flex justify-between w-44">
-            <button>
+          <div className="rounded-lg px-3 py-3 flex justify-between w-44 relative">
+            <button
+              onClick={() => setShowNotifications(!showNotifications)} // Toggle thông báo
+            >
               <MdNotifications size={24} />
             </button>
+            {/* Dropdown danh sách thông báo */}
+
+            {showNotifications && (
+              <div className="absolute top-12 right-0 w-64 bg-white shadow-lg rounded-lg p-4 z-50">
+                <h3 className="text-lg font-bold mb-2">Notifications</h3>
+                {useNotification.length > 0 ? (
+                  <ul>
+                    {userNotifications.map((notification) => (
+                      <li
+                        key={notification.id}
+                        className="p-2 border-b last:border-b-0 text-sm"
+                      >
+                        {notification.message}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-500 text-sm">No notifications</p>
+                )}
+                <button
+                  onClick={() => clearNotifications(userId!)}
+                  className="mt-2 bg-red-500 hover:bg-red-700 text-white py-1 px-3 rounded"
+                >
+                  Clear All
+                </button>
+              </div>
+            )}
             <button>
               <MdSettings size={24} />
             </button>

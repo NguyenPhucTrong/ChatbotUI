@@ -7,12 +7,25 @@ export const getProjectMembers = (id: number) => {
 export const addMemberToProject = (
   projectId: number,
   userId: number,
-  userole: string
+  userRole: string
 ) => {
   return axios.post(`/api/members/`, {
     IdProject: projectId,
-    IdUser: userId, // Thay đổi payload để phù hợp với backend
-    UserRole: userole,
+    IdUser: userId,
+    UserRole: userRole,
+  });
+};
+
+export const updateProjectMember = (
+  memberId: number,
+  projectId: number,
+  userId: number,
+  userRole: string
+) => {
+  return axios.put(`/api/members/${memberId}`, {
+    IdProject: projectId,
+    IdUser: userId,
+    UserRole: userRole,
   });
 };
 

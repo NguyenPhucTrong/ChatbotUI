@@ -146,6 +146,38 @@ export default function SideBar({
                     </NavLink>
                   </li>
 
+                  <li>
+                    <NavLink
+                      to="/notification"
+                      className={({ isActive }) =>
+                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                        }`
+                      }
+                    >
+                      <FaBell className="w-6 h-6 mr-2" />
+                      <h1 className="text-lg font-light">Notification</h1>
+                    </NavLink>
+                  </li>
+
+
+
+                  {/* {permissionsList.includes("GET: Tasks") ? ( */}
+                  <li>
+                    <NavLink
+                      to="/project-management"
+                      className={({ isActive }) =>
+                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                        }`
+                      }
+                    >
+                      <FaProjectDiagram className="w-6 h-6 mr-2" />
+                      <h1 className="text-lg font-light">Project Management</h1>
+                    </NavLink>
+                  </li>
+                  {/* // ) : (
+                  //   <li>No Permission</li>
+                  // )} */}
+
                 </>
               ) : (
                 <span></span>

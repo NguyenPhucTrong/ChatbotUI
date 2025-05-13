@@ -3,6 +3,10 @@ import { useNotification } from '../context/NotificationProvider';
 
 const AdminSMSFacebook = () => {
   const { notifications, addNotification, clearNotifications } = useNotification();
+  const userId = localStorage.getItem("userId"); // Lấy userId từ LocalStorage
+
+  const userNotifications = userId ? notifications[userId] || [] : [];
+
 
   return (
     <div className="container max-w-4xl mx-auto px-4 mt-8">
@@ -17,7 +21,7 @@ const AdminSMSFacebook = () => {
             Add Notification
           </button>
           <button
-            onClick={clearNotifications}
+            onClick={() => clearNotifications(userId || '')}
             className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
           >
             Clear All Notifications
@@ -28,7 +32,7 @@ const AdminSMSFacebook = () => {
       {/* Notification History */}
       <div className="bg-white border border-gray-200 rounded-md p-4">
         <h2 className="text-lg font-semibold mb-2">Notification History</h2>
-        {notifications.length > 0 ? (
+        {userNotifications.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="min-w-full bg-white border border-gray-200 text-center">
               <thead>
@@ -38,7 +42,7 @@ const AdminSMSFacebook = () => {
                 </tr>
               </thead>
               <tbody>
-                {notifications.map((notification) => (
+                {userNotifications.map((notification) => (
                   <tr key={notification.id}>
                     <td className="py-3 px-6 border-b">
                       {new Date(notification.timestamp).toLocaleString()}

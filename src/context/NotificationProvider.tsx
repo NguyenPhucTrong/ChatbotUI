@@ -42,4 +42,32 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
 
     const addNotificationForUser = (userId: string, message: string) => {
-        const newNotification = { id: Date.now(), message, timestamp: new Date()
+        const newNotification = { id: Date.now(), message, timestamp: new Date() };
+        setNotifications((prev) => ({
+            ...prev,
+            [userId]: [...(prev[userId] || []), newNotification],
+        }));
+    };
+
+    const clearNotifications = (useId: string) => {
+        setNotifications((prev) => {
+            const uplated = { ...prev };
+            delete uplated[useId];
+            return uplated;
+        });
+    };
+
+    return (
+        <NotificationContext.Provider value={{ notifications, addNotification: addNotificationForUser, clearNotifications }}>
+            {children}
+        </NotificationContext.Provider>
+    );
+};
+
+export const useNotification = () => {
+    const context = useContext(NotificationContext);
+    if (!context) {
+        throw new Error("useNotification must be used within a NotificationProvider");
+    }
+    return context;
+};

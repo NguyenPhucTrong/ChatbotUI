@@ -112,7 +112,7 @@ const ProjectMembersManagement: React.FC = () => {
       }
 
       const data = membersData.map((member: any) => ({
-        id: member.IdUser,
+        id: member.IdProjectMember,
         fullname: member.Fullname,
         email: member.Email,
         phoneNumber: member.PhoneNumber,
@@ -151,6 +151,7 @@ const ProjectMembersManagement: React.FC = () => {
       return;
     }
     try {
+      console.log("Adding user to project:", selectedProjectId, userId, user.selectedRole);
       await addMemberToProject(selectedProjectId, userId, user.selectedRole);
       toast.success("User added to project successfully!");
       fetchMembers(selectedProjectId); // Refresh members list
@@ -235,7 +236,7 @@ const ProjectMembersManagement: React.FC = () => {
               members.map((member) => (
                 <li key={member.id} className="flex justify-between items-center">
                   <span>
-                    {member.fullname} ({member.email}) Role: {member.userole}
+                    {member.id} {member.fullname} ({member.email}) Role: {member.userole}
                   </span>
                   <button
                     onClick={() => handleRemoveMember(member.id)}

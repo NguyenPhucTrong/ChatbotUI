@@ -5,7 +5,7 @@ import { getAllProjects } from "../services/ProjectsServices";
 import { getProjectMembers } from "../services/ProjectMembers";
 import SearchAndFilters from "../components/SearchAndFilters";
 import ProjectTable from "../components/ProjectTable";
-import { getAllTasks } from "../services/TaskServices";
+import { getAllTasks, updateTask } from "../services/TaskServices";
 
 interface Task {
     id: number;
@@ -49,6 +49,17 @@ export default function UserProjectManagement() {
         toast.error("Vui lòng đăng nhập để truy cập trang này.");
         return <Navigate to="/" />;
     }
+
+    
+  const mapStatusToBackend = (status: string): string => {
+    if (status === "Not Started") return "Blocked";
+    return status;
+  };
+
+  const mapStatusToFrontend = (status: string): string => {
+    if (status === "Blocked") return "Not Started";
+    return status;
+  };
 
 
 
@@ -126,6 +137,53 @@ export default function UserProjectManagement() {
         });
     };
 
+      const updateTaskStatus = async (
+    projectId: number,
+    taskId: number,
+    newStatus: string
+  ) => {
+    const backendStatus = mapStatusToBackend(newStatus);
+
+    setProjects((prevProjects) =>
+      prevProjects.map((project) => {
+        if (project.id === projectId) {
+          return {
+            ...project,
+            tasks: project.tasks.map((task) =>
+              task.id === taskId ? { ...task, status: newStatus } : task
+            ),
+          };
+        }
+        return project;
+      })
+    );
+
+    try {
+      const updatedTask = projects
+        .find((project) => project.id === projectId)
+        ?.tasks.find((task) => task.id === taskId);
+
+      if (updatedTask) {
+        await updateTask(taskId, {
+          Title: updatedTask.title,
+          Status: backendStatus as
+            | "Pending"
+            | "In Progress"
+            | "Completed"
+            | "Blocked",
+          DueDate: updatedTask.dueDate,
+          Priority: updatedTask.priority as "Low" | "Medium" | "High",
+          IdProject: updatedTask.projectId,
+          DateCreate: updatedTask.createdAt,
+        });
+        toast.success("Status updated successfully!");
+      }
+    } catch (error) {
+      console.error(`Failed to update task status:`, error);
+      toast.error("Failed to update status");
+    }
+  };
+
     return (
         <div className="p-6 flex-1 max-w-[1493px] mx-auto overflow-hidden">
             <h1 className="text-3xl font-semibold my-6 text-gray-800">
@@ -152,7 +210,7 @@ export default function UserProjectManagement() {
                         filteredTasks={filteredTasks}
                         handleEditTitle={() => { }} // Không cần chỉnh sửa tiêu đề
                         handleEditDueDate={() => { }} // Không cần chỉnh sửa ngày hết hạn
-                        updateTaskStatus={() => { }} // Không cần cập nhật trạng thái
+                        updateTaskStatus={updateTaskStatus} // Không cần cập nhật trạng thái
                         updateTaskPriority={() => { }} // Không cần cập nhật mức độ ưu tiên
                         handleAssignMemberToTask={() => { }} // Không cần gán thành viên
                         deleteTask={() => { }} // Không cần xóa task

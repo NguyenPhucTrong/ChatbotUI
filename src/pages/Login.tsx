@@ -37,7 +37,7 @@ const Login = () => {
       console.log("ID người dùng:", decordToken.IdUser);
       console.log("Tên người dùng:", decordToken.sub);
       console.log("Quyền người dùng:", decordToken.Role);
-      console.log("Quyền truy cập:", decordToken.permissions);
+      // console.log("Quyền truy cập:", decordToken.permissions);
 
       toast.success("Đăng nhập thành công!");
       if (response.data.Role === "Super Admin") {

@@ -35,7 +35,7 @@ export default function SideBar({
     };
 
     fetchPermissionsList();
-    console.log('Permissions:', permissionsList);
+    // console.log('Permissions:', permissionsList);
   }, []);
 
 

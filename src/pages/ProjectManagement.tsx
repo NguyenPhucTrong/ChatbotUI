@@ -76,9 +76,10 @@ const UploadFileModal: React.FC<{
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [folderPath, setFolderPath] = useState(`projects/${projectId}`);
-  const { addNotificationForUser } = useNotification(); // Lấy hàm gửi thông báo từ Notification Context
+  // Removed unused addNotificationForUser declaration
   const CLOUDINARY_URL = import.meta.env.VITE_CLOUDINARY_URL!;
   const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET!;
+
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: (acceptedFiles) => {
@@ -311,6 +312,9 @@ export default function ProjectManagement() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedProjectForUpload, setSelectedProjectForUpload] = useState<number | null>(null);
 
+  const { addNotificationForUser } = useNotification();
+
+
   const token = localStorage.getItem("userToken");
 
   if (!token) {
@@ -354,7 +358,7 @@ export default function ProjectManagement() {
       return `${year}-${month}-${day}`;
     }
 
-    console.warn("Invalid date format:", dateString);
+    // console.warn("Invalid date format:", dateString);
     return new Date().toISOString().split("T")[0];
   };
 
@@ -373,7 +377,7 @@ export default function ProjectManagement() {
         const taskResponse = await getAllTasks();
         console.log("Tasks data:", taskResponse.data.data);
         const tasksData = taskResponse.data.data.map((task: any) => {
-          console.log("Task DueDate:", task.DueDate);
+          // console.log("Task DueDate:", task.DueDate);
           return {
             id: task.IdTask,
             title: task.Title,
@@ -512,35 +516,47 @@ export default function ProjectManagement() {
 
     try {
       console.log("Payload:", payload);
-      await updateTask(taskId, payload);
+      const updateResponse = await updateTask(taskId, payload);
+
+      if (updateResponse.status !== 200) {
+        throw new Error("Failed to update task on the server.");
+      }
+
+      const updatedTaskFromAPI = updateResponse.data;
       setProjects((prevProjects) =>
         prevProjects.map((project) => {
           if (project.id === projectId) {
             return {
               ...project,
               tasks: project.tasks.map((task) =>
-                task.id === taskId ? { ...task, title: newTitle } : task
+                task.id === taskId ? { ...task, ...updatedTaskFromAPI } : task
               ),
             };
           }
           return project;
         })
       );
-      toast.success("Title updated successfully!");
 
-      const relatedMembers = members.filter(
-        (member) => member.projectId === projectId
-      )
+      const response = await getProjectMembers(projectId);
+      if (!response.data || !Array.isArray(response.data)) {
+        throw new Error("Invalid response format from getProjectMembers API.");
+      }
 
-      relatedMembers.forEach((member) => {
+      const projectMembers = response.data;
+      console.log("Related members:", projectMembers);
+
+      projectMembers.forEach((member: { IdUser: number }) => {
+        console.log(`Sending notification to userId: ${member.IdUser}`);
         addNotificationForUser(
-          member.id.toString(),
-          `The task "${newTitle}" has been updated by the admin.`
+          member.IdUser.toString(),
+          `The task "${newTitle}" in project "${projects.find((p) => p.id === projectId)?.name}" has been updated.`
         );
       });
+      toast.success("Title updated successfully!");
+      window.dispatchEvent(new Event("taskUpdated"));
     } catch (error) {
       console.error("Error updating title:", error);
-      toast.error("Failed to update title.");
+      toast.error(error instanceof Error ? error.message : "Failed to update title.");
     }
   };
 
@@ -848,3 +864,6 @@ export default function ProjectManagement() {
     </div>
   );
 };
+
+
+

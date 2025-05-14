@@ -2,7 +2,7 @@ import React from 'react';
 import { useNotification } from '../context/NotificationProvider';
 
 const AdminSMSFacebook = () => {
-  const { notifications, addNotification, clearNotifications } = useNotification();
+  const { notifications, addNotificationForUser, clearNotifications } = useNotification();
   const userId = localStorage.getItem("userId"); // Lấy userId từ LocalStorage
 
   const userNotifications = userId ? notifications[userId] || [] : [];
@@ -15,7 +15,7 @@ const AdminSMSFacebook = () => {
         <h1 className="text-2xl font-bold">Notification Management</h1>
         <div className="flex items-center gap-4">
           <button
-            onClick={() => addNotification('This is a new notification!')}
+            onClick={() => addNotificationForUser(userId || '', 'This is a new notification!')}
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           >
             Add Notification

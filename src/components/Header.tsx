@@ -22,6 +22,7 @@ export default function Header() {
   const userId = localStorage.getItem("userId"); // Lấy userId từ LocalStorage
   console.log("userId từ LocalStorage:", userId);
   const userNotifications = userId ? notifications[userId] || [] : [];
+  console.log("Notifications for userId:", userId, userNotifications);
 
 
 

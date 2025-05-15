@@ -6,7 +6,6 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import ChatAI from "./pages/ChatAI";
 import ChatHistoryModal from "./components/ChatHistoryModal";
-import ProjectManagement from "./pages/ProjectManagement";
 import Profile from "./pages/Profile";
 import AdminCompanyManagement from "./pages/AdminCompanyManagement";
 import AdminUsersManagement from "./pages/AdminUsersManagement";
@@ -19,11 +18,11 @@ import UploadFile from "./pages/UploadFile";
 import SignUp from "./pages/SignUp";
 import { askQuestion } from "./services/AIService";
 import { AvatarProvider } from "./components/AvatarContext";
-import ProjectMembersManagement from "./pages/ProjectMembers";
 import UserProjectManagement from "./pages/UserProjectManagement.";
 import { getUserByUsername } from "./services/UserServices";
 import Permissions from "./pages/Permissions";
 import ProjectDetail from "./pages/ProjectDetail"; // Import ProjectDetail
+import ProjectManagement from "./pages/ProjectManagement";
 
 // Định nghĩa interface cho Message
 interface Message {

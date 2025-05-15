@@ -95,65 +95,6 @@ export default function Header() {
     if (userId) fetchNotifications(userId);
   }, [localStorage.getItem("userId")]);
 
-  //   function renderNotification() {
-  //   fetchNotifications(localStorage.getItem("userId"))}
-  // }
-
-  // // Gọi sayHello mỗi 2 giây
-  // const intervalId = setInterval(renderNotification, 2000);
-
-  // Xác định tiêu đề trang dựa trên đường dẫn hiện tại
-  console.log("notifications:", notifications);
-  // let pageTitle = "";
-  // switch (location.pathname) {
-  //   case "/home":
-  //     pageTitle = "Trang chủ";
-  //     break;
-  //   case "/chatbot":
-  //     pageTitle = "Chatbot";
-  //     break;
-  //   case "/dashboard":
-  //     pageTitle = "Dashboard";
-  //     break;
-  //   case "/project-management":
-  //     pageTitle = "Project Management";
-  //     break;
-  //   case "/company-management":
-  //   case "/user-management":
-  //     pageTitle = "Admin";
-  //     break;
-  //   case "/notification":
-  //     pageTitle = "Notification";
-  //     break;
-  //   case "/superadmin":
-  //     pageTitle = "Superadmin";
-  //     break;
-  //   case "/profile":
-  //     pageTitle = "Profile";
-  //     break;
-  //   case "/upload":
-  //     pageTitle = "UploadFile";
-  //     break;
-  //   case "/permissions":
-  //     pageTitle = "Permissions";
-  //     break;
-  //   case "/project-members":
-  //     pageTitle = "Project-Members";
-  //     break;
-  //   case "/user-project-management":
-  //     pageTitle = "User Project Management";
-  //     break;
-  //   default:
-  //     pageTitle = "404 Not Found";
-  //     break;
-  // }
-
-  // const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //     setSearchQuery(e.target.value);
-  //     // onSearch(e.target.value);
-  //     console.log(e.target.value);
-  // }
-
   const handleDeleteNotification = async (id: number) => {
     try {
       await axios.delete(`/api/notifications/${id}`);

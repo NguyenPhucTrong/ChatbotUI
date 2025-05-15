@@ -85,7 +85,6 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
   const [manager, setManager] = useState(project.manager);
   const [status, setStatus] = useState(project.status);
   const [priority, setPriority] = useState(project.priority);
-
   async function handleUpdateProject(prop: any) {
     let data = {
       ProjectName: project.name,
@@ -125,8 +124,10 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
             ) : (
               <></>
             )}
-            {listManager.map((manager) => (
-              <option value={manager.IdUser}>{manager.Fullname}</option>
+            {listManager?.map((manager) => (
+              <option key={manager.IdUser} value={manager.IdUser}>
+                {manager.Fullname}
+              </option>
             ))}
           </select>
           <span>Status: </span>

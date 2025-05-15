@@ -59,6 +59,7 @@ export default function ProjectDetail() {
   const [totalPages, setTotalPages] = useState(0);
   const [isChatOpen, setIsChatOpen] = useState(false); // State for ChatAI modal
   const [isAllUsersOpen, setIsAllUsersOpen] = useState(false); // State for All Users modal
+  const [manager, setManager] = useState<{ id: number; fullname: string; email: string } | null>(null); // State for project manager
 
   const CLOUDINARY_URL = import.meta.env.VITE_CLOUDINARY_URL!;
   const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET!;
@@ -80,17 +81,36 @@ export default function ProjectDetail() {
   });
 
   useEffect(() => {
-    // Fetch project details to get the project name
     const fetchProjectDetails = async () => {
       try {
         const response = await getProjectById(Number(projectId));
         setProjectName(response.data.ProjectName); // Set project name
+
+        // Lấy thông tin Manager từ project
+        const managerId = response.data.Manager;
+        if (managerId) {
+          const responseUsers = await getUsersPagination(1, 100, ""); // Lấy danh sách Users
+          const manager = responseUsers.data.data.find(
+            (user: any) => user.IdUser === managerId && user.Role === "Admin"
+          );
+          if (manager) {
+            setManager({
+              id: manager.IdUser,
+              fullname: manager.Fullname,
+              email: manager.Email,
+            });
+          }
+        }
       } catch (error) {
         console.error("Error fetching project details:", error);
         toast.error("Failed to load project details.");
       }
     };
 
+    fetchProjectDetails();
+  }, [projectId]);
+
+  useEffect(() => {
     // Fetch project members
     const fetchMembers = async () => {
       try {
@@ -128,7 +148,6 @@ export default function ProjectDetail() {
       }
     };
 
-    fetchProjectDetails();
     fetchMembers();
     fetchUsers(currentPage, pageSize);
   }, [projectId, currentPage, pageSize]);
@@ -315,6 +334,23 @@ export default function ProjectDetail() {
         </ul>
       </div>
 
+      {/* Project Manager Section */}
+      <div className="mb-6">
+        <h2 className="text-2xl font-semibold mb-4">Project Manager</h2>
+        {manager ? (
+          <div className="p-4 border rounded bg-gray-50">
+            <p>
+              <strong>Name:</strong> {manager.fullname}
+            </p>
+            <p>
+              <strong>Email:</strong> {manager.email}
+            </p>
+          </div>
+        ) : (
+          <p>No manager assigned for this project.</p>
+        )}
+      </div>
+
       {/* All Users Button */}
       <div className="mb-6">
         <button
@@ -323,7 +359,7 @@ export default function ProjectDetail() {
         >
           All Users
         </button>
-      </div>
+      </div>  
 
       {/* All Users Modal */}
       {isAllUsersOpen && (

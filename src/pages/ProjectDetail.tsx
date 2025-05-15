@@ -29,6 +29,8 @@ interface Member {
   email: string;
   phoneNumber: string;
   userole: string;
+  userId: number;
+
 }
 
 interface User {
@@ -96,7 +98,8 @@ export default function ProjectDetail() {
       try {
         const response = await getProjectMembers(Number(projectId));
         const membersData = response.data.map((member: any) => ({
-          id: member.IdUser,
+          id: member.IdProjectMember,
+          userId: member.IdUser,
           fullname: member.Fullname,
           email: member.Email,
           phoneNumber: member.PhoneNumber,
@@ -165,6 +168,7 @@ export default function ProjectDetail() {
         ...prev,
         {
           id: userId,
+          userId: user.id,
           fullname: user.fullname,
           email: user.email,
           phoneNumber: user.phoneNumber,
@@ -249,9 +253,11 @@ export default function ProjectDetail() {
   };
 
   // Filter users to exclude those already in the project
-  const filteredUsers = users.filter(
-    (user) => !members.some((member) => member.id === user.id)
-  );
+  const filteredUsers = users.filter((user) => {
+    const isMember = members.some((member) => member.userId === user.id);
+    const isAdminOrSuperAdmin = user.role === "Admin" || user.role === "Super Admin";
+    return !isMember && !isAdminOrSuperAdmin;
+  });
 
   const roles = [
     "Frontend Developer",
@@ -328,66 +334,94 @@ export default function ProjectDetail() {
                   ✖
                 </button>
               </div>
-              <div className="flex-1 overflow-auto mt-4">
-                {filteredUsers.length > 0 ? (
-                  <table className="min-w-full bg-white border border-gray-300 rounded shadow">
-                    <thead>
-                      <tr className="bg-gray-300">
-                        <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
-                          Full Name
-                        </th>
-                        <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
-                          Email
-                        </th>
-                        <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
-                          Phone Number
-                        </th>
-                        <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
-                          Role
-                        </th>
-                        <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredUsers.map((user) => (
-                        <tr key={user.id} className="hover:bg-gray-100">
-                          <td className="px-6 py-4 border-b">{user.fullname}</td>
-                          <td className="px-6 py-4 border-b">{user.email}</td>
-                          <td className="px-6 py-4 border-b">{user.phoneNumber}</td>
-                          <td className="px-6 py-4 border-b">
-                            <select
-                              value={user.selectedRole || ""}
-                              onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                              className="border border-gray-300 rounded px-2 py-1"
-                            >
-                              <option value="" disabled>
-                                Select Role
-                              </option>
-                              {roles.map((role) => (
-                                <option key={role} value={role}>
-                                  {role}
-                                </option>
-                              ))}
-                            </select>
-                          </td>
-                          <td className="px-6 py-4 border-b">
-                            <button
-                              onClick={() => handleAddUserToProject(user.id)}
-                              className="text-blue-500 hover:text-blue-700 px-2 py-1 border border-blue-500 rounded hover:bg-blue-50"
-                            >
-                              Add to Project
-                            </button>
-                          </td>
+              <div>
+                <div className="flex-1 overflow-auto mt-4">
+                  {filteredUsers.length > 0 ? (
+                    <table className="min-w-full bg-white border border-gray-300 rounded shadow">
+                      <thead>
+                        <tr className="bg-gray-300">
+                          <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
+                            Full Name
+                          </th>
+                          <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
+                            Email
+                          </th>
+                          <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
+                            Phone Number
+                          </th>
+                          <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
+                            Role
+                          </th>
+                          <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
+                            Actions
+                          </th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                ) : (
-                  <p className="text-gray-500">No users available to add to this project.</p>
+                      </thead>
+                      <tbody>
+                        {filteredUsers.map((user) => (
+                          <tr key={user.id} className="hover:bg-gray-100">
+                            <td className="px-6 py-4 border-b">{user.fullname}</td>
+                            <td className="px-6 py-4 border-b">{user.email}</td>
+                            <td className="px-6 py-4 border-b">{user.phoneNumber}</td>
+                            <td className="px-6 py-4 border-b">
+                              <select
+                                value={user.selectedRole || ""}
+                                onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                                className="border border-gray-300 rounded px-2 py-1"
+                              >
+                                <option value="" disabled>
+                                  Select Role
+                                </option>
+                                {roles.map((role) => (
+                                  <option key={role} value={role}>
+                                    {role}
+                                  </option>
+                                ))}
+                              </select>
+                            </td>
+                            <td className="px-6 py-4 border-b">
+                              <button
+                                onClick={() => handleAddUserToProject(user.id)}
+                                className="text-blue-500 hover:text-blue-700 px-2 py-1 border border-blue-500 rounded hover:bg-blue-50"
+                              >
+                                Add to Project
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+
+
+                  ) : (
+                    <p className="text-gray-500">No users available to add to this project.</p>
+                  )}
+                </div>
+                {totalPages > 1 && (
+                  <div className="pagination mt-4 flex justify-between">
+                    <button
+                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
+                    >
+                      Previous
+                    </button>
+                    <span>
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                      }
+                      disabled={currentPage === totalPages || totalPages === 1}
+                      className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
+                    >
+                      Next
+                    </button>
+                  </div>
                 )}
               </div>
+
             </div>
           </div>
         )}

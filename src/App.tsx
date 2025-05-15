@@ -39,7 +39,6 @@ interface ChatHistory {
 }
 
 function App() {
-
   const [role, setRole] = useState("");
 
   useEffect(() => {
@@ -48,22 +47,18 @@ function App() {
       const username = localStorage.getItem("username") || "";
       const response = await getUserByUsername(username);
       setRole(response.data.Role);
-      console.log("Role:", response.data.Role);
     }
   }, []);
 
   const location = useLocation();
-  const isMainLanding = location.pathname === "/"
-  const isLogin = location.pathname === "/login"
-  const isSignUp = location.pathname === "/signup"
+  const isMainLanding = location.pathname === "/";
+  const isLogin = location.pathname === "/login";
+  const isSignUp = location.pathname === "/signup";
 
   // Tin nhắn mặc định khi bắt đầu một đoạn chat mới
   const FMessages: Message[] = [
     { text: "Hi! How can I help you?", sender: "bot" },
   ];
-
-
-
 
   // Đoạn chat mẫu để thêm vào lịch sử chat
   const sampleChat: Message[] = [
@@ -138,7 +133,9 @@ function App() {
   return (
     <AvatarProvider>
       <div className="flex h-screen">
-        {!isMainLanding && !isLogin && !isSignUp && <SideBar onOpenChatHistory={handleOpenChatHistory} />}
+        {!isMainLanding && !isLogin && !isSignUp && (
+          <SideBar onOpenChatHistory={handleOpenChatHistory} />
+        )}
         <div className="flex-1 flex flex-col">
           {!isMainLanding && !isLogin && !isSignUp && <Header />}
           <div className="flex-1 overflow-auto">
@@ -146,40 +143,57 @@ function App() {
               <Route path="/home" element={<Home />} />
               <Route path="/" element={<MainLanding />} />
               {role === "Admin" || role === "Super Admin" ? (
-                <Route path="/project-management" element={<ProjectManagement />} />
-              ) : (
-                <Route path="/project-management" element={<UserProjectManagement />} />
-              )}
-              <Route path="/chatbot" element={
-                <ChatAI
-                  messages={messages}
-                  onNewChat={handleNewChat}
-                  onSend={handleMessages}
-                  chatHistory={chatHistory}
-                  onSelectChat={handleSelectChat}
+                <Route
+                  path="/project-management"
+                  element={<ProjectManagement />}
                 />
-              } />
+              ) : (
+                <Route
+                  path="/project-management"
+                  element={<UserProjectManagement />}
+                />
+              )}
+              <Route
+                path="/chatbot"
+                element={
+                  <ChatAI
+                    messages={messages}
+                    onNewChat={handleNewChat}
+                    onSend={handleMessages}
+                    chatHistory={chatHistory}
+                    onSelectChat={handleSelectChat}
+                  />
+                }
+              />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/permissions" element={<Permissions />} />
-
-              <Route path="/company-management" element={<AdminCompanyManagement />} />
-              <Route path="/user-management" element={<AdminUsersManagement />} />
+              <Route
+                path="/company-management"
+                element={<AdminCompanyManagement />}
+              />
+              <Route
+                path="/user-management"
+                element={<AdminUsersManagement />}
+              />
               <Route path="/notification" element={<AdminSMSFacebook />} />
               <Route path="/superadmin" element={<SuperadminManagement />} />
               <Route path="/mainlanding" element={<MainLanding />} />
-              <Route path="/login" element={<Login />} />
+              <Route path="/login" element={<Login setRole={setRole} />} />
               <Route path="/signup" element={<SignUp />} />
-              <Route path="/project-members" element={<ProjectMembersManagement />} />
-
+              {/* <Route
+                path="/project-members"
+                element={<ProjectMembersManagement />}
+              /> */}
               <Route path="/upload" element={<UploadFile />} />
-
               <Route path="/profile" element={<Profile />} />
-              <Route path="/project-detail/:projectId" element={<ProjectDetail />} /> {/* Add this route */}
-
+              <Route
+                path="/project-detail/:projectId"
+                element={<ProjectDetail />}
+              />{" "}
+              {/* Add this route */}
             </Routes>
           </div>
         </div>
-
 
         {/* Modal lịch sử chat */}
         <ChatHistoryModal
@@ -192,8 +206,6 @@ function App() {
       </div>
     </AvatarProvider>
   );
-
 }
-
 
 export default App;

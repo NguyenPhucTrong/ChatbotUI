@@ -5,6 +5,8 @@ import { MdNotifications, MdHelp, MdSettings, MdSearch } from "react-icons/md";
 import { toast } from "react-toastify";
 import { useAvatar } from "./AvatarContext";
 import { getProjectById } from "../services/ProjectsServices"; // Import API service
+import { useNotification } from "../context/NotificationProvider";
+import axios from "../services/Custom_axios";
 
 export default function Header() {
   const { avatar } = useAvatar();
@@ -12,6 +14,8 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showChatbot, setShowChatbot] = useState(false);
   const [pageTitle, setPageTitle] = useState("Loading...");
+
+  const [showNotifications, setShowNotifications] = useState(false); // State để hiển thị thông báo
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -82,6 +86,83 @@ export default function Header() {
     }
   }, [location.pathname, projectId]);
 
+  const { notifications, fetchNotifications, clearNotifications } =
+    useNotification();
+  const userId = localStorage.getItem("userId");
+  const userNotifications = userId ? notifications[userId] || [] : [];
+
+  useEffect(() => {
+    if (userId) fetchNotifications(userId);
+  }, [localStorage.getItem("userId")]);
+
+  //   function renderNotification() {
+  //   fetchNotifications(localStorage.getItem("userId"))}
+  // }
+
+  // // Gọi sayHello mỗi 2 giây
+  // const intervalId = setInterval(renderNotification, 2000);
+
+  // Xác định tiêu đề trang dựa trên đường dẫn hiện tại
+  console.log("notifications:", notifications);
+  // let pageTitle = "";
+  // switch (location.pathname) {
+  //   case "/home":
+  //     pageTitle = "Trang chủ";
+  //     break;
+  //   case "/chatbot":
+  //     pageTitle = "Chatbot";
+  //     break;
+  //   case "/dashboard":
+  //     pageTitle = "Dashboard";
+  //     break;
+  //   case "/project-management":
+  //     pageTitle = "Project Management";
+  //     break;
+  //   case "/company-management":
+  //   case "/user-management":
+  //     pageTitle = "Admin";
+  //     break;
+  //   case "/notification":
+  //     pageTitle = "Notification";
+  //     break;
+  //   case "/superadmin":
+  //     pageTitle = "Superadmin";
+  //     break;
+  //   case "/profile":
+  //     pageTitle = "Profile";
+  //     break;
+  //   case "/upload":
+  //     pageTitle = "UploadFile";
+  //     break;
+  //   case "/permissions":
+  //     pageTitle = "Permissions";
+  //     break;
+  //   case "/project-members":
+  //     pageTitle = "Project-Members";
+  //     break;
+  //   case "/user-project-management":
+  //     pageTitle = "User Project Management";
+  //     break;
+  //   default:
+  //     pageTitle = "404 Not Found";
+  //     break;
+  // }
+
+  // const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //     setSearchQuery(e.target.value);
+  //     // onSearch(e.target.value);
+  //     console.log(e.target.value);
+  // }
+
+  const handleDeleteNotification = async (id: number) => {
+    try {
+      await axios.delete(`/api/notifications/${id}`);
+      if (userId) fetchNotifications(userId);
+    } catch (error) {
+      toast.error("Xoá thông báo thất bại!");
+    }
+  };
+
   return (
     <div className="w-full bg-gray-100">
       <div className="bg-white shadow-md w-full mx-auto p-4 flex justify-between items-center border-b border-gray-300">
@@ -109,10 +190,55 @@ export default function Header() {
         </div>
 
         <div className="flex flex-row gap-10">
-          <div className=" rounded-lg px-3 py-3 flex justify-between w-44">
-            <button>
+          <div className="rounded-lg px-3 py-3 flex justify-between w-44 relative">
+            <button
+              onClick={() => setShowNotifications(!showNotifications)} // Toggle thông báo
+            >
               <MdNotifications size={24} />
             </button>
+            {/* Dropdown danh sách thông báo */}
+
+            {showNotifications && (
+              <div className="absolute top-12 right-0 w-64 bg-white shadow-lg rounded-lg p-4 z-50">
+                <h3 className="text-lg font-bold mb-2">Notifications</h3>
+                {notifications.length > 0 ? (
+                  <ul>
+                    {notifications.map((notification) => (
+                      <li
+                        key={notification.IdNotification}
+                        className="p-2 border-b last:border-b-0 text-sm flex"
+                      >
+                        <div>
+                          <div>{notification.Message}</div>
+                          <div className="text-xs text-gray-400">
+                            {notification.DateCreate}
+                          </div>
+                        </div>
+                        <button
+                          className="ml-2 text-red-500 hover:text-red-700"
+                          onClick={() =>
+                            handleDeleteNotification(
+                              notification.IdNotification
+                            )
+                          }
+                          title="Xoá thông báo"
+                        >
+                          ✖
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-500 text-sm">No notifications</p>
+                )}
+                <button
+                  onClick={() => clearNotifications(userId!)}
+                  className="mt-2 bg-red-500 hover:bg-red-700 text-white py-1 px-3 rounded"
+                >
+                  Clear All
+                </button>
+              </div>
+            )}
             <button>
               <MdSettings size={24} />
             </button>

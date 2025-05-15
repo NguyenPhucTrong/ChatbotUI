@@ -92,7 +92,7 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
       Status: status,
       Priority: priority,
     };
-    data[Object.keys(prop)[0]] = parseInt(prop[Object.keys(prop)[0]]);
+    data[Object.keys(prop)[0]] = prop[Object.keys(prop)[0]];
     try {
       const response = await updateProject(project.id, data);
       toast.success("Cập nhật thành công!");

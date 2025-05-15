@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom"; // Import useNavigate
 import { useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { toast } from "react-toastify";
-import { AiOutlineRobot } from "react-icons/ai"; // Import AI icon
+import { AiOutlineRobot, AiOutlineFile, AiOutlineDelete } from "react-icons/ai"; // Import AI icon, file and delete icons
 import ChatAI from "./ChatAI"; // Import ChatAI
 import { getProjectById } from "../services/ProjectsServices"; // Import API to fetch project details
 import { getProjectMembers, addMemberToProject, removeMemberFromProject } from "../services/ProjectMembers"; // Import member services
@@ -419,26 +419,37 @@ export default function ProjectDetail() {
       {/* Uploaded Files Section */}
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-2">Uploaded Files</h2>
-        <ul>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {uploadedFiles.map((file) => (
-            <li key={file.id} className="flex justify-between items-center">
-              <a
-                href={file.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:underline"
-              >
+            <div
+              key={file.id}
+              className="border rounded-lg p-4 flex flex-col items-center bg-gray-50 shadow"
+            >
+              {/* File Icon */}
+              <AiOutlineFile size={40} className="text-blue-500 mb-2" />
+              {/* File Name */}
+              <p className="text-sm font-semibold text-gray-700 text-center truncate">
                 {file.name}
-              </a>
+              </p>
+              {/* File Size */}
+              <p className="text-xs text-gray-500">
+                {(file.size / 1024).toFixed(2)} KB
+              </p>
+              {/* Upload Date */}
+              <p className="text-xs text-gray-500">
+                Uploaded: {file.uploadDate}
+              </p>
+              {/* Actions */}
               <button
                 onClick={() => removeUploadedFile(file.id)}
-                className="text-red-500 hover:underline"
+                className="mt-2 text-red-500 hover:text-red-700 flex items-center"
               >
+                <AiOutlineDelete className="mr-1" />
                 Remove
               </button>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
 
       {/* Floating AI Button */}

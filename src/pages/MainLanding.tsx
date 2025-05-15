@@ -14,48 +14,48 @@ const MainLandingPage = () => {
         <div>
           <button className="mr-2 px-4 py-2 border border-black text-black bg-white hover:bg-gray-100 rounded"
             onClick={() => navigate("/login")}
-          >Đăng nhập</button>
+          >Login</button>
           <button className="px-4 py-2 bg-black text-white hover:bg-gray-800 rounded"
             onClick={() => navigate("/signup")}
-          >Đăng ký</button>
+          >Register</button>
         </div>
       </header >
 
       {/* Main Content */}
       < main className="text-center max-w-3xl mt-16" >
         <h2 className="text-4xl font-bold leading-tight">
-          Quản lý dự án thông minh <br /> với trợ lý AI
+          Smart project management <br /> with AI assistant
         </h2>
         <p className="mt-4 text-gray-600">
-          Nền tảng quản lý dự án tích hợp AI giúp đọc, tóm tắt và phân tích tài liệu.
-          Tối ưu hóa quy trình làm việc của team của bạn.
+          AI-powered project management platform that reads, summarizes, and analyzes documents.
+          Optimize your team's workflow.
         </p>
-        <button className="mt-6 px-6 py-3 text-lg bg-black text-white hover:bg-gray-800 rounded" onClick={() => navigate("/signup")}>Đăng ký ngay</button>
+        <button className="mt-6 px-6 py-3 text-lg bg-black text-white hover:bg-gray-800 rounded" onClick={() => navigate("/signup")}>Sign up now</button>
       </main >
 
       {/* Features Section */}
       < section className="mt-16 w-full px-6 max-w-5xl text-center" >
-        <h3 className="text-2xl font-semibold">Giải pháp toàn diện cho team của bạn</h3>
+        <h3 className="text-2xl font-semibold">Comprehensive solutions for your team</h3>
         <div className="flex justify-center mt-8 space-x-6">
           <div className="flex flex-col items-center max-w-xs">
             <FaRobot className="text-4xl bg-black text-white p-2 rounded-md" />
-            <h4 className="font-semibold mt-4">Bot AI thông minh</h4>
+            <h4 className="font-semibold mt-4">Smart AI Bot</h4>
             <p className="text-gray-600 text-sm mt-2">
-              Tự động đọc và tóm tắt tài liệu dự án, trả lời câu hỏi và đề xuất giải pháp.
+              Automatically read and summarize project documents, answer questions, and suggest solutions.
             </p>
           </div>
           <div className="flex flex-col items-center max-w-xs">
             <FaTasks className="text-4xl bg-black text-white p-2 rounded-md" />
-            <h4 className="font-semibold mt-4">Quản lý dự án</h4>
+            <h4 className="font-semibold mt-4">Project Management</h4>
             <p className="text-gray-600 text-sm mt-2">
-              Theo dõi tiến độ, phân công công việc và quản lý tài nguyên hiệu quả.
+              Track progress, assign work and manage resources effectively.
             </p>
           </div>
           <div className="flex flex-col items-center max-w-xs">
             <FaChartBar className="text-4xl bg-black text-white p-2 rounded-md" />
-            <h4 className="font-semibold mt-4">Phân tích & Báo cáo</h4>
+            <h4 className="font-semibold mt-4">Analysis & Reporting</h4>
             <p className="text-gray-600 text-sm mt-2">
-              Tạo báo cáo tự động, phân tích dữ liệu và đưa ra insights cho dự án.
+              Generate automated reports, analyze data and provide project insights.
             </p>
           </div>
         </div>
@@ -63,7 +63,7 @@ const MainLandingPage = () => {
 
       {/* Footer */}
       < footer className="mt-16 w-full py-6 border-t text-center text-gray-500 text-sm" >
-        <p>&copy; 2024 Project AI. Bản quyền thuộc về công ty.</p>
+        <p>&copy; 2024 Project AI. Copyright belongs to the company.</p>
       </footer >
     </div >
   );

@@ -8,7 +8,7 @@ import {
   createTask,
 } from "../services/TaskServices";
 import { toast } from "react-toastify";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import ReactDatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { getProjectMembers } from "../services/ProjectMembers";
@@ -291,6 +291,7 @@ const UploadFileModal: React.FC<{
 };
 
 export default function ProjectManagement() {
+  const navigate = useNavigate(); // Initialize navigate
   const [projects, setProjects] = useState<Project[]>([]);
   const [isEditing, setIsEditing] = useState<{
     tableId: number | null;
@@ -783,6 +784,10 @@ export default function ProjectManagement() {
     setSelectedProjectForUpload(null);
   };
 
+  const handleViewDetails = (projectId: number) => {
+    navigate(`/project-detail/${projectId}`); // Navigate to ProjectDetail with projectId
+  };
+
   return (
     <div className="p-6 flex-1 max-w-[1493px] mx-auto overflow-hidden">
       <h1 className="text-3xl font-semibold my-6 text-gray-800">
@@ -816,12 +821,21 @@ export default function ProjectManagement() {
 
           <div className="mt-4 flex justify-end">
             <button
+              onClick={() => handleViewDetails(project.id)} // Call handleViewDetails
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+            >
+              View Details
+            </button>
+          </div>
+
+          {/* <div className="mt-4 flex justify-end">
+            <button
               onClick={() => openUploadModal(project.id)}
               className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
             >
               Upload Files for {project.name}
             </button>
-          </div>
+          </div> */}
         </div>
 
       ))}

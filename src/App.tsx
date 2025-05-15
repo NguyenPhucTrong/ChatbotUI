@@ -23,6 +23,7 @@ import ProjectMembersManagement from "./pages/ProjectMembers";
 import UserProjectManagement from "./pages/UserProjectManagement.";
 import { getUserByUsername } from "./services/UserServices";
 import Permissions from "./pages/Permissions";
+import ProjectDetail from "./pages/ProjectDetail"; // Import ProjectDetail
 
 // Định nghĩa interface cho Message
 interface Message {
@@ -110,14 +111,14 @@ function App() {
   };
 
   // Hàm xử lý khi gửi tin nhắn mới
-  const handleMessages = async (text: string) => {
+  const handleMessages = async (text: string, idProject: number) => {
     setMessages([...messages, { text, sender: "me" }]);
 
     try {
       const question = {
-        idProject: 1,
-        query: text
-      }
+        idProject, // Sử dụng idProject được truyền vào
+        query: text,
+      };
       let res = await askQuestion(question); // Gửi query trực tiếp
       console.log("Response:", res);
       if (res.status === 200) {
@@ -138,10 +139,8 @@ function App() {
     <AvatarProvider>
       <div className="flex h-screen">
         {!isMainLanding && !isLogin && !isSignUp && <SideBar onOpenChatHistory={handleOpenChatHistory} />}
-        {/* <SideBar onOpenChatHistory={handleOpenChatHistory} /> */}
         <div className="flex-1 flex flex-col">
           {!isMainLanding && !isLogin && !isSignUp && <Header />}
-          {/* <Header /> */}
           <div className="flex-1 overflow-auto">
             <Routes>
               <Route path="/home" element={<Home />} />
@@ -175,6 +174,7 @@ function App() {
               <Route path="/upload" element={<UploadFile />} />
 
               <Route path="/profile" element={<Profile />} />
+              <Route path="/project-detail/:projectId" element={<ProjectDetail />} /> {/* Add this route */}
 
             </Routes>
           </div>

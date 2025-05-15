@@ -1,71 +1,86 @@
-import React, { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import flower1 from "../assets/image/flower1.png";
 import { MdNotifications, MdHelp, MdSettings, MdSearch } from "react-icons/md";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { useAvatar } from "./AvatarContext";
+import { getProjectById } from "../services/ProjectsServices"; // Import API service
 
 export default function Header() {
   const { avatar } = useAvatar();
   const [showOptions, setShowOptions] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showChatbot, setShowChatbot] = useState(false);
+  const [pageTitle, setPageTitle] = useState("Loading...");
 
   const location = useLocation();
-
   const navigate = useNavigate();
+  const { projectId } = useParams<{ projectId: string }>(); // Get projectId if available
 
-  // Xác định tiêu đề trang dựa trên đường dẫn hiện tại
+  useEffect(() => {
+    // Xác định tiêu đề trang dựa trên đường dẫn hiện tại
+    const fetchProjectName = async () => {
+      if (projectId) {
+        try {
+          const response = await getProjectById(Number(projectId));
+          const projectName = response.data.ProjectName;
+          setPageTitle(`Project Detail: ${projectName}`);
+        } catch (error) {
+          console.error("Error fetching project details:", error);
+          setPageTitle("Project Detail");
+        }
+      } else {
+        setPageTitle("Project Detail");
+      }
+    };
 
-  let pageTitle = "";
-  switch (location.pathname) {
-    case "/home":
-      pageTitle = "Trang chủ";
-      break;
-    case "/chatbot":
-      pageTitle = "Chatbot";
-      break;
-    case "/dashboard":
-      pageTitle = "Dashboard";
-      break;
-    case "/project-management":
-      pageTitle = "Project Management";
-      break;
-    case "/company-management":
-    case "/user-management":
-      pageTitle = "Admin";
-      break;
-    case "/notification":
-      pageTitle = "Notification";
-      break;
-    case "/superadmin":
-      pageTitle = "Superadmin";
-      break;
-    case "/profile":
-      pageTitle = "Profile";
-      break;
-    case "/upload":
-      pageTitle = "UploadFile";
-      break;
-    case "/permissions":
-      pageTitle = "Permissions";
-      break;
-    case "/project-members":
-      pageTitle = "Project-Members";
-      break;
-    case "/user-project-management":
-      pageTitle = "User Project Management";
-      break;
-    default:
-      pageTitle = "404 Not Found";
-      break;
-  }
-
-  // const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //     setSearchQuery(e.target.value);
-  //     // onSearch(e.target.value);
-  //     console.log(e.target.value);
-  // }
+    if (location.pathname.startsWith("/project-detail/")) {
+      fetchProjectName();
+    } else {
+      switch (location.pathname) {
+        case "/home":
+          setPageTitle("Trang chủ");
+          break;
+        case "/chatbot":
+          setPageTitle("Chatbot");
+          break;
+        case "/dashboard":
+          setPageTitle("Dashboard");
+          break;
+        case "/project-management":
+          setPageTitle("Project Management");
+          break;
+        case "/company-management":
+        case "/user-management":
+          setPageTitle("Admin");
+          break;
+        case "/notification":
+          setPageTitle("Notification");
+          break;
+        case "/superadmin":
+          setPageTitle("Superadmin");
+          break;
+        case "/profile":
+          setPageTitle("Profile");
+          break;
+        case "/upload":
+          setPageTitle("UploadFile");
+          break;
+        case "/permissions":
+          setPageTitle("Permissions");
+          break;
+        case "/project-members":
+          setPageTitle("Project-Members");
+          break;
+        case "/user-project-management":
+          setPageTitle("User Project Management");
+          break;
+        default:
+          setPageTitle("404 Not Found");
+          break;
+      }
+    }
+  }, [location.pathname, projectId]);
 
   return (
     <div className="w-full bg-gray-100">

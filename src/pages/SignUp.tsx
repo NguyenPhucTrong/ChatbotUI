@@ -69,11 +69,11 @@ export default function SignUp() {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100">
             <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md text-center">
-                <h2 className="text-2xl font-bold mb-6">Đăng ký tài khoản</h2>
+                <h2 className="text-2xl font-bold mb-6">Sign up for an account</h2>
 
                 <form className="space-y-4" onSubmit={handleSignUp}>
                     <div>
-                        <label className="block text-left text-sm font-medium">Tên người dùng</label>
+                        <label className="block text-left text-sm font-medium">User name</label>
                         <input
                             type="text"
                             value={username}
@@ -83,7 +83,7 @@ export default function SignUp() {
                         />
                     </div>
                     <div>
-                        <label className="block text-left text-sm font-medium">Họ và tên</label>
+                        <label className="block text-left text-sm font-medium">Full name</label>
                         <input
                             type="text"
                             value={fullname}
@@ -103,7 +103,7 @@ export default function SignUp() {
                         />
                     </div>
                     <div>
-                        <label className="block text-left text-sm font-medium">Số điện thoại</label>
+                        <label className="block text-left text-sm font-medium">Phone number</label>
                         <input
                             type="text"
                             value={phoneNumber}
@@ -113,7 +113,7 @@ export default function SignUp() {
                         />
                     </div>
                     <div>
-                        <label className="block text-left text-sm font-medium">Mật khẩu</label>
+                        <label className="block text-left text-sm font-medium">Password</label>
                         <div className="relative">
                             <input
                                 type={showPassword ? 'text' : 'password'}
@@ -127,12 +127,12 @@ export default function SignUp() {
                                 onClick={() => setShowPassword(!showPassword)}
                                 className="absolute right-2 top-2 text-sm text-gray-500"
                             >
-                                {showPassword ? 'Ẩn' : 'Hiển thị'}
+                                {showPassword ? 'Hide' : 'Display'}
                             </button>
                         </div>
                     </div>
                     <div>
-                        <label className="block text-left text-sm font-medium">Nhập lại mật khẩu</label>
+                        <label className="block text-left text-sm font-medium">Re-enter password</label>
                         <div className="relative">
                             <input
                                 type="password"
@@ -152,17 +152,17 @@ export default function SignUp() {
                         className="w-full bg-black text-white py-2 rounded-md"
                         disabled={!!passwordError}
                     >
-                        Đăng ký
+                        Register
                     </button>
                 </form>
 
                 <p className="mt-4 text-sm text-gray-500">
-                    Đã có tài khoản?{' '}
+                    Already have an account?{' '}
                     <span
                         className="text-blue-500 cursor-pointer hover:underline"
                         onClick={() => navigate('/login')}
                     >
-                        Đăng nhập
+                        Login
                     </span>
                 </p>
             </div>

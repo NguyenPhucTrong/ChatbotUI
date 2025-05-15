@@ -34,14 +34,14 @@ export default function MessageList({ messages, onNewChat }: MessageListProps) {
                 </div>
             ))}
             {/* Nút tạo đoạn chat mới */}
-            <div className="absolute bottom-4 right-4">
+            {/* <div className="absolute bottom-4 right-4">
                 <button
                     className="bg-green-500 px-4 py-2 rounded-lg text-white hover:bg-green-400"
                     onClick={onNewChat}
                 >
                     New Chat
                 </button>
-            </div>
+            </div> */}
         </div>
     );
 }

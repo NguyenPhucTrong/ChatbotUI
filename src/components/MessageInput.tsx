@@ -3,7 +3,7 @@ import { FaLink } from "react-icons/fa";
 
 // Định nghĩa interface cho các props của MessageInput
 interface MessageInputProps {
-    onSend: (text: string | number) => void;
+    onSend: (text: string) => void;
 }
 
 // Component MessageInput

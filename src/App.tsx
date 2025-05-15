@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SideBar from "./components/SideBar";
 import Header from "./components/Header";
 import Home from "./pages/Home";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import ChatAI from "./pages/ChatAI";
 import ChatHistoryModal from "./components/ChatHistoryModal";
+import ProjectManagement from "./pages/ProjectManagement";
 
 // Định nghĩa interface cho Message
 interface Message {
@@ -21,9 +22,13 @@ interface ChatHistory {
 }
 
 function App() {
+  // Tin nhắn mặc định khi bắt đầu một đoạn chat mới
   const FMessages: Message[] = [
     { text: "Hi! How can I help you?", sender: "bot" },
   ];
+
+
+
 
   const sampleChat: Message[] = [
     { text: "Hello!", sender: "me" },
@@ -64,27 +69,20 @@ function App() {
     setMessages(FMessages);
   };
 
-  const handleMessages = async (text: any) => {
-    const newMessage: Message = { text, sender: "me" };
-    console.log("Sending message:", newMessage);
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
-
-    try {
-      const response = await getChatBotResponse(text);
-      console.log("Received response from chatbot:", response);
-      const botMessage: Message = { text: response.Answer, sender: "bot" };
-      setMessages((prevMessages) => [...prevMessages, botMessage]);
-    } catch (error) {
-      console.error("Error getting response from chatbot:", error);
-    }
+  // Hàm xử lý khi gửi tin nhắn mới
+  const handleMessages = (text: any) => {
+    setMessages([...messages, { text, sender: "me" }]);
   };
 
   return (
     <div className="flex h-screen">
+      {/* Sidebar chứa các liên kết và nút mở modal lịch sử chat */}
       <SideBar onOpenChatHistory={handleOpenChatHistory} />
       <div className="flex-1 flex flex-col">
+        {/* Header của ứng dụng */}
         <Header />
         <div className="flex-1 overflow-auto">
+          {/* Định nghĩa các route cho ứng dụng */}
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/project-management" element={<ProjectManagement />} />
@@ -101,6 +99,7 @@ function App() {
           </Routes>
         </div>
       </div>
+      {/* Modal lịch sử chat */}
       <ChatHistoryModal
         isOpen={isChatHistoryOpen}
         onClose={handleCloseChatHistory}
@@ -109,6 +108,8 @@ function App() {
       />
     </div>
   );
+
 }
 
+// Xuất component App
 export default App;

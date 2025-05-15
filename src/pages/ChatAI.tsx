@@ -12,7 +12,7 @@ interface Message {
 interface ChatAIProps {
     messages: Message[];
     onNewChat: () => void;
-    onSend: (text: string | number) => void;
+    onSend: (text: string) => void;
     chatHistory: { id: number, title: string, messages: Message[] }[];
     onSelectChat: (selectedMessages: Message[]) => void;
 }

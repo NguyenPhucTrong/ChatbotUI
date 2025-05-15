@@ -30,17 +30,14 @@ export default function SideBar({
 
   useEffect(() => {
     const fetchPermissionsList = async () => {
-      const permissions = localStorage.getItem('Permission');
-      setPermissionsList(permissions ? permissions.split(',') : []);
+      const permissions = localStorage.getItem("Permission");
+      setPermissionsList(permissions ? permissions.split(",") : []);
     };
 
     fetchPermissionsList();
-    console.log('Permissions:', permissionsList);
   }, []);
 
-
   // const [permissionsList, setPermissionsList] = useState<string[]>([]);
-
 
   // useEffect(() => {
   //   const fetchPermissionsList = async () => {
@@ -50,7 +47,6 @@ export default function SideBar({
 
   //   fetchPermissionsList();
   // }, []);
-
 
   const [role, setRole] = useState("");
 
@@ -65,8 +61,9 @@ export default function SideBar({
   return (
     <div className="flex h-screen overflow-auto bg-gray-800">
       <div
-        className={`flex flex-col max-w-[288px] mx-auto  text-white h-screen transition-all duration-300 ${isOpen ? "w-72" : "w-16"
-          } `}
+        className={`flex flex-col max-w-[288px] mx-auto  text-white h-screen transition-all duration-300 ${
+          isOpen ? "w-72" : "w-16"
+        } `}
       >
         <button onClick={toggleSidebar} className="p-4">
           {isOpen ? (
@@ -92,8 +89,7 @@ export default function SideBar({
             <ul className="space-y-6">
               {role === "Super Admin" ? (
                 <>
-
-                  <li>
+                  {/* <li>
                     <NavLink
                       to="/user-management"
                       className={({ isActive }) =>
@@ -104,15 +100,14 @@ export default function SideBar({
                       <FaUserShield className="w-6 h-6 mr-2" />
                       <h1 className="text-lg font-light">Super Admin</h1>
                     </NavLink>
-                  </li>
-
-
+                  </li> */}
 
                   <li>
                     <NavLink
                       to="/home"
                       className={({ isActive }) =>
-                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                        `flex flex-row items-center p-3 pl-5 rounded ${
+                          isActive ? "bg-blue-900" : "hover:bg-gray-700"
                         }`
                       }
                     >
@@ -125,7 +120,8 @@ export default function SideBar({
                     <NavLink
                       to="/user-management"
                       className={({ isActive }) =>
-                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                        `flex flex-row items-center p-3 pl-5 rounded ${
+                          isActive ? "bg-blue-900" : "hover:bg-gray-700"
                         }`
                       }
                     >
@@ -137,7 +133,8 @@ export default function SideBar({
                     <NavLink
                       to="/permissions"
                       className={({ isActive }) =>
-                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                        `flex flex-row items-center p-3 pl-5 rounded ${
+                          isActive ? "bg-blue-900" : "hover:bg-gray-700"
                         }`
                       }
                     >
@@ -145,17 +142,12 @@ export default function SideBar({
                       <h1 className="text-lg font-light">Permission</h1>
                     </NavLink>
                   </li>
-
                 </>
               ) : (
                 <span></span>
               )}
               {role === "Admin" ? (
                 <>
-
-
-
-
                   {/* <li>
 
                     <NavLink
@@ -175,7 +167,8 @@ export default function SideBar({
                     <NavLink
                       to="/user-management"
                       className={({ isActive }) =>
-                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                        `flex flex-row items-center p-3 pl-5 rounded ${
+                          isActive ? "bg-blue-900" : "hover:bg-gray-700"
                         }`
                       }
                     >
@@ -184,13 +177,12 @@ export default function SideBar({
                     </NavLink>
                   </li>
 
-
-
                   <li>
                     <NavLink
                       to="/notification"
                       className={({ isActive }) =>
-                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                        `flex flex-row items-center p-3 pl-5 rounded ${
+                          isActive ? "bg-blue-900" : "hover:bg-gray-700"
                         }`
                       }
                     >
@@ -199,14 +191,13 @@ export default function SideBar({
                     </NavLink>
                   </li>
 
-
-
                   {/* {permissionsList.includes("GET: Tasks") ? ( */}
                   <li>
                     <NavLink
                       to="/project-management"
                       className={({ isActive }) =>
-                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                        `flex flex-row items-center p-3 pl-5 rounded ${
+                          isActive ? "bg-blue-900" : "hover:bg-gray-700"
                         }`
                       }
                     >
@@ -218,27 +209,25 @@ export default function SideBar({
                   //   <li>No Permission</li>
                   // )} */}
 
-
-                  <li>
+                  {/* <li>
                     <NavLink
                       to="/project-members"
                       className={({ isActive }) =>
-                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                        `flex flex-row items-center p-3 pl-5 rounded ${
+                          isActive ? "bg-blue-900" : "hover:bg-gray-700"
                         }`
                       }
                     >
                       <FaProjectDiagram className="w-6 h-6 mr-2" />
                       <h1 className="text-lg font-light">Project Members</h1>
                     </NavLink>
-
-
-
-                  </li>
+                  </li> */}
                   <li>
                     <NavLink
                       to="/dashboard"
                       className={({ isActive }) =>
-                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                        `flex flex-row items-center p-3 pl-5 rounded ${
+                          isActive ? "bg-blue-900" : "hover:bg-gray-700"
                         }`
                       }
                     >
@@ -246,7 +235,6 @@ export default function SideBar({
                       <h1 className="text-lg font-light">Dashboard</h1>
                     </NavLink>
                   </li>
-
                 </>
               ) : (
                 <span></span>
@@ -254,7 +242,6 @@ export default function SideBar({
 
               {role === "User" ? (
                 <>
-
                   <li>
                     <button
                       className="flex flex-row w-full text-left p-3 pl-5 rounded hover:bg-gray-700"
@@ -269,7 +256,8 @@ export default function SideBar({
                     <NavLink
                       to="/project-management"
                       className={({ isActive }) =>
-                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                        `flex flex-row items-center p-3 pl-5 rounded ${
+                          isActive ? "bg-blue-900" : "hover:bg-gray-700"
                         }`
                       }
                     >
@@ -278,12 +266,12 @@ export default function SideBar({
                     </NavLink>
                   </li>
 
-
                   <li>
                     <NavLink
                       to="/chatbot"
                       className={({ isActive }) =>
-                        `flex flex-row items-center p-3 pl-5 rounded ${isActive ? "bg-blue-900" : "hover:bg-gray-700"
+                        `flex flex-row items-center p-3 pl-5 rounded ${
+                          isActive ? "bg-blue-900" : "hover:bg-gray-700"
                         }`
                       }
                     >
@@ -291,8 +279,6 @@ export default function SideBar({
                       <h1 className="text-lg font-light">ChatBot Q&A</h1>
                     </NavLink>
                   </li>
-
-
                 </>
               ) : (
                 <span></span>

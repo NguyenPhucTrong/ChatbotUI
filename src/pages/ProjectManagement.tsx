@@ -11,11 +11,17 @@ import { toast } from "react-toastify";
 import { Navigate, useNavigate } from "react-router-dom";
 import ReactDatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { getProjectMembers } from "../services/ProjectMembers";
+import {
+  addMemberToProject,
+  getProjectMembers,
+  removeMemberFromProject,
+} from "../services/ProjectMembers";
 import SearchAndFilters from "../components/SearchAndFilters";
 import ProjectTable from "../components/ProjectTable";
 import { useDropzone } from "react-dropzone";
-import axios from "axios";
+import axios from "../services/Custom_axios";
+import { getAllUsers, getUsersPagination } from "../services/UserServices";
+import { useNotification } from "../context/NotificationProvider";
 
 interface Task {
   id: number;
@@ -26,6 +32,16 @@ interface Task {
   assignee: string;
   createdAt: string;
   projectId: number;
+}
+
+interface User {
+  id: number;
+  fullname: string;
+  email: string;
+  phoneNumber: string;
+  projectId?: number; // ID của dự án mà user đang tham gia
+  selectedRole?: string; // Vai trò được chọn
+  role?: string; // Role property added
 }
 
 interface Project {
@@ -76,8 +92,11 @@ const UploadFileModal: React.FC<{
   const [isUploading, setIsUploading] = useState(false);
   const [folderPath, setFolderPath] = useState(`projects/${projectId}`);
 
+  const [members, setMembers] = useState<Member[]>([]);
+
   const CLOUDINARY_URL = import.meta.env.VITE_CLOUDINARY_URL!;
-  const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET!;
+  const CLOUDINARY_UPLOAD_PRESET = import.meta.env
+    .VITE_CLOUDINARY_UPLOAD_PRESET!;
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: (acceptedFiles) => {
@@ -88,16 +107,16 @@ const UploadFileModal: React.FC<{
     },
     multiple: true,
     accept: {
-      'application/pdf': ['.pdf'],
-      'text/plain': ['.txt'],
-      'application/json': ['.json'],
-      'image/*': ['.png', '.jpg', '.jpeg', '.gif'],
+      "application/pdf": [".pdf"],
+      "text/plain": [".txt"],
+      "application/json": [".json"],
+      "image/*": [".png", ".jpg", ".jpeg", ".gif"],
     },
   });
 
   const handleUpload = async () => {
     if (selectedFiles.length === 0) {
-      toast.error('Please select at least one file to upload!');
+      toast.error("Please select at least one file to upload!");
       return;
     }
 
@@ -105,13 +124,13 @@ const UploadFileModal: React.FC<{
 
     const uploadPromises = selectedFiles.map(async (file) => {
       const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-      formData.append('folder', folderPath);
-      formData.append('tags', `project-${projectId}`);
+      formData.append("file", file);
+      formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+      formData.append("folder", folderPath);
+      formData.append("tags", `project-${projectId}`);
 
-      const fileNameWithoutExt = file.name.split('.').slice(0, -1).join('.');
-      formData.append('public_id', fileNameWithoutExt);
+      const fileNameWithoutExt = file.name.split(".").slice(0, -1).join(".");
+      formData.append("public_id", fileNameWithoutExt);
 
       try {
         const response = await axios.post(CLOUDINARY_URL, formData);
@@ -129,7 +148,7 @@ const UploadFileModal: React.FC<{
         toast.success(`File "${file.name}" uploaded successfully!`);
         return uploadedFile;
       } catch (error) {
-        console.error('Error uploading file:', error);
+        console.error("Error uploading file:", error);
         toast.error(`Failed to upload "${file.name}".`);
         return null;
       }
@@ -141,11 +160,11 @@ const UploadFileModal: React.FC<{
   };
 
   const removeSelectedFile = (index: number) => {
-    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const removeUploadedFile = (id: string) => {
-    setUploadedFiles(prev => prev.filter(file => file.id !== id));
+    setUploadedFiles((prev) => prev.filter((file) => file.id !== id));
   };
 
   return (
@@ -180,15 +199,19 @@ const UploadFileModal: React.FC<{
 
           <div
             {...getRootProps()}
-            className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-gray-100'
-              }`}
+            className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer ${
+              isDragActive
+                ? "border-blue-500 bg-blue-50"
+                : "border-gray-300 bg-gray-100"
+            }`}
           >
             <input {...getInputProps()} />
             {isDragActive ? (
               <p className="text-blue-500">Drop files here...</p>
             ) : (
               <p className="text-gray-500">
-                Drag and drop files here or <span className="text-blue-500 underline">click to browse</span>
+                Drag and drop files here or{" "}
+                <span className="text-blue-500 underline">click to browse</span>
               </p>
             )}
           </div>
@@ -198,10 +221,15 @@ const UploadFileModal: React.FC<{
               <h2 className="text-lg font-semibold mb-2">Selected Files:</h2>
               <ul className="border rounded divide-y">
                 {selectedFiles.map((file, index) => (
-                  <li key={index} className="p-3 flex justify-between items-center">
+                  <li
+                    key={index}
+                    className="p-3 flex justify-between items-center"
+                  >
                     <div>
                       <span className="font-medium">{file.name}</span>
-                      <span className="text-sm text-gray-500 ml-2">({(file.size / 1024).toFixed(2)} KB)</span>
+                      <span className="text-sm text-gray-500 ml-2">
+                        ({(file.size / 1024).toFixed(2)} KB)
+                      </span>
                     </div>
                     <button
                       onClick={(e) => {
@@ -222,12 +250,15 @@ const UploadFileModal: React.FC<{
             <button
               onClick={handleUpload}
               disabled={isUploading || selectedFiles.length === 0}
-              className={`px-6 py-2 rounded-lg text-white ${isUploading || selectedFiles.length === 0
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-blue-500 hover:bg-blue-700'
-                }`}
+              className={`px-6 py-2 rounded-lg text-white ${
+                isUploading || selectedFiles.length === 0
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-blue-500 hover:bg-blue-700"
+              }`}
             >
-              {isUploading ? 'Uploading...' : `Upload ${selectedFiles.length} File(s)`}
+              {isUploading
+                ? "Uploading..."
+                : `Upload ${selectedFiles.length} File(s)`}
             </button>
             {selectedFiles.length > 0 && (
               <button
@@ -264,8 +295,12 @@ const UploadFileModal: React.FC<{
                           {file.name}
                         </a>
                       </td>
-                      <td className="px-4 py-3">{(file.size / 1024).toFixed(2)} KB</td>
-                      <td className="px-4 py-3 font-mono text-sm">{file.folder}</td>
+                      <td className="px-4 py-3">
+                        {(file.size / 1024).toFixed(2)} KB
+                      </td>
+                      <td className="px-4 py-3 font-mono text-sm">
+                        {file.folder}
+                      </td>
                       <td className="px-4 py-3">
                         <button
                           onClick={() => removeUploadedFile(file.id)}
@@ -293,6 +328,7 @@ const UploadFileModal: React.FC<{
 export default function ProjectManagement() {
   const navigate = useNavigate(); // Initialize navigate
   const [projects, setProjects] = useState<Project[]>([]);
+  const [listManager, setListManager] = useState([]);
   const [isEditing, setIsEditing] = useState<{
     tableId: number | null;
     taskId: number | null;
@@ -309,9 +345,16 @@ export default function ProjectManagement() {
   const [members, setMembers] = useState<Member[]>([]);
   const [role, setRole] = useState<string | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [selectedProjectForUpload, setSelectedProjectForUpload] = useState<number | null>(null);
+  const [selectedProjectForUpload, setSelectedProjectForUpload] = useState<
+    number | null
+  >(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(
+    null
+  );
 
   const token = localStorage.getItem("userToken");
+
+  const { fetchNotifications } = useNotification();
 
   if (!token) {
     toast.error("Please login to access this page.");
@@ -319,19 +362,27 @@ export default function ProjectManagement() {
   }
   const [permissionsList, setPermissionsList] = useState<string[]>([]);
 
-
-
   useEffect(() => {
     const fetchPermissionsList = async () => {
-      const permissions = localStorage.getItem('Permission');
-      setPermissionsList(permissions ? permissions.split(',') : []);
+      const permissions = localStorage.getItem("Permission");
+      setPermissionsList(permissions ? permissions.split(",") : []);
     };
 
+    async function getManager() {
+      try {
+        const response = await getUsersPagination(1, 100, "");
+        let data = response.data.data.filter(
+          (item: any) => item.Role === "Admin"
+        );
+        setListManager(data);
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
+      }
+    }
+    getManager();
+
     fetchPermissionsList();
-
   }, []);
-
-
 
   const mapStatusToBackend = (status: string): string => {
     if (status === "Not Started") return "Blocked";
@@ -364,16 +415,31 @@ export default function ProjectManagement() {
         const projectResponse = await getAllProjects();
         console.log("Projects data:", projectResponse.data.data);
 
-        const projectsData = projectResponse.data.data.map((project: any) => ({
-          id: project.IdProject,
-          name: project.ProjectName,
-          tasks: [],
-        }));
+        const projectsData: any = [];
+        projectResponse.data.data.map((project: any) => {
+          if (localStorage.getItem("userRole") === "Admin") {
+            console.log(project);
+            if (project.Manager === null) {
+              return;
+            }
+            if (
+              localStorage.getItem("userId") !== project.Manager?.toString()
+            ) {
+              return;
+            }
+          }
+          projectsData.push({
+            id: project.IdProject,
+            name: project.ProjectName,
+            status: project.Status,
+            priority: project.Priority,
+            manager: project.Manager,
+            tasks: [],
+          });
+        });
 
         const taskResponse = await getAllTasks();
-        console.log("Tasks data:", taskResponse.data.data);
         const tasksData = taskResponse.data.data.map((task: any) => {
-          console.log("Task DueDate:", task.DueDate);
           return {
             id: task.IdTask,
             title: task.Title,
@@ -390,7 +456,9 @@ export default function ProjectManagement() {
 
         const projectsWithTasks = projectsData.map((project: Project) => ({
           ...project,
-          tasks: tasksData.filter((task: Task) => task.projectId === project.id),
+          tasks: tasksData.filter(
+            (task: Task) => task.projectId === project.id
+          ),
         }));
 
         setProjects(projectsWithTasks);
@@ -435,16 +503,36 @@ export default function ProjectManagement() {
     fetchMembersForProject();
   }, [projects]);
 
+  function convertDate(input: string) {
+    const [year, month, day] = input.split("-");
+    const paddedDay = day.padStart(2, "0");
+    const paddedMonth = month.padStart(2, "0");
+    return `${paddedDay}/${paddedMonth}/${year}`;
+  }
+
+  function convertDateandNextMonth(input: string) {
+    let [year, month, day] = input.split("-").map((str) => parseInt(str));
+    month += 1;
+    if (month > 12) {
+      month = 1;
+      year += 1;
+    }
+    const paddedDay = String(day).padStart(2, "0");
+    const paddedMonth = String(month).padStart(2, "0");
+
+    return `${paddedDay}/${paddedMonth}/${year}`;
+  }
+
   const addTask = async (projectId: number) => {
     const newTask: Task = {
       id: Date.now(),
       title: "New Task",
       status: "Pending",
-      dueDate: "01/01/2025",
+      dueDate: convertDateandNextMonth(new Date().toISOString().split("T")[0]),
       priority: "Low",
       assignee: "Unassigned",
       projectId: projectId,
-      createdAt: new Date().toISOString(),
+      createdAt: convertDate(new Date().toISOString().split("T")[0]),
     };
 
     try {
@@ -526,6 +614,44 @@ export default function ProjectManagement() {
           return project;
         })
       );
+
+      const response2 = await getProjectMembers(projectId);
+      if (!response2.data || !Array.isArray(response2.data)) {
+        throw new Error("Invalid response format from getProjectMembers API.");
+      }
+
+      const projectMembers = response2.data;
+      console.log("Related members:", projectMembers);
+
+      // Gửi thông báo cho từng thành viên qua API
+      await Promise.all(
+        projectMembers.map((member: { IdUser: number }) => {
+          const msg = `The task "${newTitle}" in project "${
+            projects.find((p) => p.id === projectId)?.name
+          }" has been updated.`;
+          console.log("Sending notification:", {
+            idUser: member.IdUser,
+            message: msg,
+          });
+          return axios.post(
+            "/api/notifications",
+            {},
+            {
+              params: {
+                idUser: member.IdUser,
+                message: msg,
+              },
+            }
+          );
+        })
+      );
+
+      // Cập nhật lại notifications cho user hiện tại (nếu muốn)
+      const userId = localStorage.getItem("userId");
+      if (userId) {
+        fetchNotifications(userId);
+      }
+
       toast.success("Title updated successfully!");
     } catch (error) {
       console.error("Error updating title:", error);
@@ -550,13 +676,15 @@ export default function ProjectManagement() {
       return;
     }
 
-    const formattedDueDate = `${String(selectedDate.getDate()).padStart(
-      2,
-      "0"
-    )}-${String(selectedDate.getMonth() + 1).padStart(
-      2,
-      "0"
-    )}-${selectedDate.getFullYear()}`;
+    let formattedDueDate = convertDate(newDueDate);
+
+    // const formattedDueDate = `${String(selectedDate.getDate()).padStart(
+    //   2,
+    //   "0"
+    // )}-${String(selectedDate.getMonth() + 1).padStart(
+    //   2,
+    //   "0"
+    // )}-${selectedDate.getFullYear()}`;
 
     const updatedTask = projects
       .find((project) => project.id === projectId)
@@ -784,8 +912,157 @@ export default function ProjectManagement() {
     setSelectedProjectForUpload(null);
   };
 
+
   const handleViewDetails = (projectId: number) => {
     navigate(`/project-detail/${projectId}`); // Navigate to ProjectDetail with projectId
+
+  const fetchMembers = async (id: number) => {
+    try {
+      const membersResponse = await getProjectMembers(id);
+
+      const membersData = membersResponse.data;
+
+      if (!Array.isArray(membersData)) {
+        console.warn("Invalid response format:", membersData);
+        setMembers([]);
+        return;
+      }
+
+      const data = membersData.map((member: any) => ({
+        id: member.IdProjectMember,
+        userId: member.IdUser,
+        fullname: member.Fullname,
+        email: member.Email,
+        phoneNumber: member.PhoneNumber,
+        userole: member.UserRole,
+      }));
+
+      setMembers(data);
+    } catch (error) {
+      console.error("Error fetching members:", error);
+      toast.error("Failed to load project members.");
+    }
+  };
+
+  const handleProjectChange = (id: number) => {
+    setSelectedProjectId(id);
+    fetchMembers(id);
+  };
+
+  const handleRemoveMember = async (memberId: number) => {
+    try {
+      await removeMemberFromProject(memberId); // Gọi API xóa thành viên
+      toast.success("Member removed from project successfully!");
+
+      // Cập nhật danh sách thành viên sau khi xóa
+      setMembers((prevMembers) =>
+        prevMembers.filter((member) => member.id !== memberId)
+      );
+    } catch (error) {
+      console.error("Error removing member from project:", error);
+      toast.error("Failed to remove member from project.");
+    }
+  };
+
+  const [users, setUsers] = useState<User[]>([]);
+  const filteredUsers = users.filter((user) => {
+    const isMember = members.some((member) => member.userId === user.id);
+    const isAdminOrSuperAdmin =
+      user.role === "Admin" || user.role === "Super Admin";
+
+    return !isMember && !isAdminOrSuperAdmin;
+  });
+
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
+
+  useEffect(() => {
+    // Fetch users with pagination
+    const fetchUsers = async (page: number = 1, pageSize: number = 10) => {
+      try {
+        const response = await getUsersPagination(page, pageSize);
+        console.log("API Response:", response.data);
+
+        if (!response.data || !response.data.data) {
+          console.warn("Invalid response format:", response.data);
+          setUsers([]);
+          setTotalPages(0);
+          return;
+        }
+
+        const fetchedUsers = response.data.data.map((user: any) => ({
+          id: user.IdUser,
+          fullname: user.Fullname,
+          email: user.Email,
+          phoneNumber: user.PhoneNumber,
+          role: user.Role,
+        }));
+
+        setUsers(fetchedUsers);
+        setTotalPages(response.data.totalPages || 0);
+
+        // Nếu không còn user nào và đang ở trang > 1, chuyển về trang trước
+        if (fetchedUsers.length === 0 && page > 1) {
+          setCurrentPage((prev) => Math.max(prev - 1, 1));
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        toast.error("Failed to load users.");
+      }
+    };
+
+    fetchUsers(currentPage, pageSize);
+  }, [currentPage, pageSize]);
+
+  const handleRoleChange = (userId: number, role: string) => {
+    setUsers((prevUsers) =>
+      prevUsers.map((user) =>
+        user.id === userId ? { ...user, selectedRole: role } : user
+      )
+    );
+  };
+
+  const roles = [
+    "Frontend Developer",
+    "Tester",
+    "UI/UX Designer",
+    "Backend Developer",
+    "Business Analysis",
+    "AI Researcher",
+  ];
+
+  const handleAddUserToProject = async (userId: number) => {
+    if (!selectedProjectId) {
+      toast.error("Please select a project first.");
+      return;
+    }
+
+    const user = users.find((u) => u.id === userId);
+    if (!user?.selectedRole || user.selectedRole.trim() === "") {
+      toast.error(
+        "Please select a role for the user before adding them to the project."
+      );
+      return;
+    }
+    try {
+      console.log(
+        "Adding user to project:",
+        selectedProjectId,
+        userId,
+        user.selectedRole
+      );
+      await addMemberToProject(selectedProjectId, userId, user.selectedRole);
+      toast.success("User added to project successfully!");
+      fetchMembers(selectedProjectId); // Refresh members list
+
+      // Gửi sự kiện để cập nhật danh sách dự án trong ProjectManagement
+      window.dispatchEvent(new Event("projectUpdated"));
+    } catch (error) {
+      console.error("Error adding user to project:", error);
+      toast.error("Failed to add user to project.");
+    }
+
   };
 
   return (
@@ -803,22 +1080,31 @@ export default function ProjectManagement() {
         setFilterPriority={setFilterPriority}
       />
 
-      {projects.map((project) => (
-        <div key={project.id} className="mb-8">
-          <ProjectTable
-            project={project}
-            members={members}
-            filteredTasks={filteredTasks}
-            handleEditTitle={handleEditTitle}
-            handleEditDueDate={handleEditDueDate}
-            updateTaskStatus={updateTaskStatus}
-            updateTaskPriority={updateTaskPriority}
-            handleAssignMemberToTask={handleAssignMemberToTask}
-            deleteTask={deleteTask}
-            addTask={addTask}
-            permissionsList={permissionsList}
-          />
-
+      {/* Select Project */}
+      <div className="mb-6">
+        <label
+          htmlFor="project"
+          className="block text-lg font-medium text-gray-700"
+        >
+          Select Project
+        </label>
+        <select
+          id="project"
+          value={selectedProjectId || ""}
+          onChange={(e) => handleProjectChange(Number(e.target.value))}
+          className="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+        >
+          <option value="" disabled>
+            -- Select a project --
+          </option>
+          {projects.map((project) => (
+            <option key={project.id} value={project.id}>
+              {project.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      
           <div className="mt-4 flex justify-end">
             <button
               onClick={() => handleViewDetails(project.id)} // Call handleViewDetails
@@ -836,17 +1122,175 @@ export default function ProjectManagement() {
               Upload Files for {project.name}
             </button>
           </div> */}
-        </div>
 
-      ))}
+      {projects.length === 0 ? (
+        <div>You don't have project now</div>
+      ) : (
+        projects.map((project) => {
+          if (selectedProjectId === project.id)
+            return (
+              <div key={project.id} className="mb-8">
+                <ProjectTable
+                  project={project}
+                  members={members}
+                  filteredTasks={filteredTasks}
+                  handleEditTitle={handleEditTitle}
+                  handleEditDueDate={handleEditDueDate}
+                  updateTaskStatus={updateTaskStatus}
+                  updateTaskPriority={updateTaskPriority}
+                  handleAssignMemberToTask={handleAssignMemberToTask}
+                  deleteTask={deleteTask}
+                  addTask={addTask}
+                  permissionsList={permissionsList}
+                  listManager={listManager}
+                />
+
+                <div className="mt-4 flex justify-end">
+                  <button
+                    onClick={() => openUploadModal(project.id)}
+                    className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+                  >
+                    Upload Files for {project.name}
+                  </button>
+                </div>
+              </div>
+            );
+        })
+      )}
+
+      {/* Members List */}
+      {selectedProjectId && (
+        <div className="mb-6">
+          <h2 className="text-2xl font-semibold mb-4">Project Members</h2>
+          <ul className="list-disc pl-6">
+            {members.length > 0 ? (
+              members.map((member) => (
+                <li
+                  key={member.id}
+                  className="flex justify-between items-center"
+                >
+                  <span>
+                    {member.fullname} ({member.email}) Role: {member.userole}
+                  </span>
+                  <button
+                    onClick={() => handleRemoveMember(member.id)}
+                    className="text-red-500 hover:text-red-700 px-2 py-1 rounded hover:bg-red-50"
+                  >
+                    Remove
+                  </button>
+                </li>
+              ))
+            ) : (
+              <p>No members in this project.</p>
+            )}
+          </ul>
+
+        </div>
+      )}
+
+      {selectedProjectId && (
+        <div>
+          <h2 className="text-2xl font-semibold mb-4">All Users</h2>
+          <div className="overflow-x-auto">
+            {filteredUsers.length > 0 ? (
+              <table className="min-w-full bg-white border border-gray-300 rounded shadow">
+                <thead>
+                  <tr className="bg-gray-300">
+                    <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
+                      Full Name
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
+                      Email
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
+                      Phone Number
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
+                      Role
+                    </th>
+                    <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredUsers.map((user) => (
+                    <tr key={user.id} className="hover:bg-gray-100">
+                      <td className="px-6 py-4 border-b">{user.fullname}</td>
+                      <td className="px-6 py-4 border-b">{user.email}</td>
+                      <td className="px-6 py-4 border-b">{user.phoneNumber}</td>
+                      <td className="px-6 py-4 border-b">
+                        <select
+                          value={user.selectedRole || ""}
+                          onChange={(e) =>
+                            handleRoleChange(user.id, e.target.value)
+                          }
+                          className="border border-gray-300 rounded px-2 py-1"
+                        >
+                          <option value="" disabled>
+                            Select Role
+                          </option>
+                          {roles.map((role) => (
+                            <option key={role} value={role}>
+                              {role}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="px-6 py-4 border-b">
+                        <button
+                          onClick={() => handleAddUserToProject(user.id)}
+                          className="text-blue-500 hover:text-blue-700 px-2 py-1 border border-blue-500 rounded hover:bg-blue-50"
+                        >
+                          Add to Project
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p className="text-gray-500">
+                No users available to add to this project.
+              </p>
+            )}
+          </div>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="pagination mt-4 flex justify-between">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <span>
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={currentPage === totalPages || totalPages === 1}
+                className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {showUploadModal && selectedProjectForUpload && (
         <UploadFileModal
           projectId={selectedProjectForUpload}
-          projectName={projects.find(p => p.id === selectedProjectForUpload)?.name || ""}
+          projectName={
+            projects.find((p) => p.id === selectedProjectForUpload)?.name || ""
+          }
           onClose={closeUploadModal}
         />
       )}
     </div>
   );
-};
+}

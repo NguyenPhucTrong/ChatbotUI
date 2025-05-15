@@ -49,12 +49,22 @@ const ProjectMembersManagement: React.FC = () => {
       try {
         const response = await getAllProjects();
         console.log("API Response:", response.data);
-        setProjects(
-          response.data.data.map((project: any) => ({
+        const data: any = [];
+
+        response.data.data.map((project: any) => {
+          if (localStorage.getItem("userRole") === "Admin") {
+            if (
+              localStorage.getItem("userId") !== project.Manager?.toString()
+            ) {
+              return;
+            }
+          }
+          data.push({
             id: project.IdProject,
             name: project.ProjectName,
-          }))
-        );
+          });
+        });
+        setProjects(data);
       } catch (error) {
         console.error("Error fetching projects:", error);
         toast.error("Failed to load projects.");
@@ -113,6 +123,7 @@ const ProjectMembersManagement: React.FC = () => {
 
       const data = membersData.map((member: any) => ({
         id: member.IdProjectMember,
+        userId: member.IdUser,
         fullname: member.Fullname,
         email: member.Email,
         phoneNumber: member.PhoneNumber,
@@ -147,11 +158,18 @@ const ProjectMembersManagement: React.FC = () => {
 
     const user = users.find((u) => u.id === userId);
     if (!user?.selectedRole || user.selectedRole.trim() === "") {
-      toast.error("Please select a role for the user before adding them to the project.");
+      toast.error(
+        "Please select a role for the user before adding them to the project."
+      );
       return;
     }
     try {
-      console.log("Adding user to project:", selectedProjectId, userId, user.selectedRole);
+      console.log(
+        "Adding user to project:",
+        selectedProjectId,
+        userId,
+        user.selectedRole
+      );
       await addMemberToProject(selectedProjectId, userId, user.selectedRole);
       toast.success("User added to project successfully!");
       fetchMembers(selectedProjectId); // Refresh members list
@@ -170,7 +188,9 @@ const ProjectMembersManagement: React.FC = () => {
       toast.success("Member removed from project successfully!");
 
       // Cập nhật danh sách thành viên sau khi xóa
-      setMembers((prevMembers) => prevMembers.filter((member) => member.id !== memberId));
+      setMembers((prevMembers) =>
+        prevMembers.filter((member) => member.id !== memberId)
+      );
     } catch (error) {
       console.error("Error removing member from project:", error);
       toast.error("Failed to remove member from project.");
@@ -179,8 +199,9 @@ const ProjectMembersManagement: React.FC = () => {
 
   // Lọc danh sách users để loại bỏ những người đã có trong members
   const filteredUsers = users.filter((user) => {
-    const isMember = members.some((member) => member.id === user.id);
-    const isAdminOrSuperAdmin = user.role === "Admin" || user.role === "Super Admin";
+    const isMember = members.some((member) => member.userId === user.id);
+    const isAdminOrSuperAdmin =
+      user.role === "Admin" || user.role === "Super Admin";
 
     return !isMember && !isAdminOrSuperAdmin;
   });
@@ -234,9 +255,12 @@ const ProjectMembersManagement: React.FC = () => {
           <ul className="list-disc pl-6">
             {members.length > 0 ? (
               members.map((member) => (
-                <li key={member.id} className="flex justify-between items-center">
+                <li
+                  key={member.id}
+                  className="flex justify-between items-center"
+                >
                   <span>
-                    {member.id} {member.fullname} ({member.email}) Role: {member.userole}
+                    {member.fullname} ({member.email}) Role: {member.userole}
                   </span>
                   <button
                     onClick={() => handleRemoveMember(member.id)}
@@ -316,7 +340,9 @@ const ProjectMembersManagement: React.FC = () => {
                 </tbody>
               </table>
             ) : (
-              <p className="text-gray-500">No users available to add to this project.</p>
+              <p className="text-gray-500">
+                No users available to add to this project.
+              </p>
             )}
           </div>
           {/* Pagination */}

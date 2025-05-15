@@ -7,7 +7,7 @@ import { loginAuth } from "../services/AuthServices";
 import { getUserByUsername } from "../services/UserServices";
 import { jwtDecode } from "jwt-decode";
 
-const Login = () => {
+const Login = ({ setRole }) => {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -20,8 +20,6 @@ const Login = () => {
       const data = await loginAuth(username, password);
       console.log("Dữ liệu trả về từ server:", data);
 
-
-
       const { access_token } = data;
       localStorage.setItem("userToken", access_token);
 
@@ -32,12 +30,8 @@ const Login = () => {
       localStorage.setItem("userId", decordToken.IdUser);
       localStorage.setItem("userRole", decordToken.Role);
       localStorage.setItem("username", decordToken.sub);
-      localStorage.setItem("Permission", decordToken.permissions);
-
-      console.log("ID người dùng:", decordToken.IdUser);
-      console.log("Tên người dùng:", decordToken.sub);
-      console.log("Quyền người dùng:", decordToken.Role);
-      console.log("Quyền truy cập:", decordToken.permissions);
+      // localStorage.setItem("Permission", decordToken.permissions);
+      setRole(decordToken.Role);
 
       toast.success("Đăng nhập thành công!");
       if (response.data.Role === "Super Admin") {
@@ -53,7 +47,6 @@ const Login = () => {
       toast.error("Đăng nhập thất bại. Vui lòng thử lại.");
     }
   };
-
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">

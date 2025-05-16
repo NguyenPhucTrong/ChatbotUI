@@ -7,7 +7,7 @@ import ChatAI from "./ChatAI"; // Import ChatAI
 import { getProjectById } from "../services/ProjectsServices"; // Import API to fetch project details
 import { getProjectMembers, addMemberToProject, removeMemberFromProject } from "../services/ProjectMembers"; // Import member services
 import { getUsersPagination } from "../services/UserServices";
-import { askQuestion } from "../services/AIService"; // Import askQuestion từ AIService
+import { askQuestion, writeDocs } from "../services/AIService"; // Import thêm writeDocs
 
 interface UploadedFile {
   id: string;
@@ -74,6 +74,7 @@ export default function ProjectDetail() {
     multiple: true,
     accept: {
       "application/pdf": [".pdf"],
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document" : [".docx"],
       "text/plain": [".txt"],
       "application/json": [".json"],
       "image/*": [".png", ".jpg", ".jpeg", ".gif"],
@@ -233,6 +234,17 @@ export default function ProjectDetail() {
           },
         ]);
         toast.success(`File "${file.name}" uploaded successfully!`);
+
+        // Gọi writeDocs cho file PDF hoặc DOCX
+        const ext = file.name.split('.').pop()?.toLowerCase();
+        if (ext === "pdf" || ext === "docx") {
+          try {
+            await writeDocs(Number(projectId), data.secure_url);
+            toast.success(`File "${file.name}" đã được xử lý cho AI!`);
+          } catch (err) {
+            toast.error(`Xử lý AI cho file "${file.name}" thất bại!`);
+          }
+        }
       } catch (error) {
         console.error("Error uploading file:", error);
         toast.error(`Failed to upload file "${file.name}".`);
@@ -254,20 +266,36 @@ export default function ProjectDetail() {
 
   const handleMessages = async (text: string) => {
     setMessages((prevMessages) => [...prevMessages, { text, sender: "me" }]);
-  
+
     try {
+      // Chuẩn bị history cho backend
+      const history = messages.map((msg) => ({
+        role: msg.sender === "me" ? "user" : "assistant",
+        content: msg.text,
+      }));
+
       const question = {
-        idProject: Number(projectId), // Sử dụng projectId từ URL
+        idProject: Number(projectId),
         query: text,
+        history,
       };
-      const res = await askQuestion(question); // Gửi query đến API
-      console.log("Response:", res);
+      const res = await askQuestion(question);
       if (res.status === 200) {
-        const botMessage = res.data.Answer; // Lấy câu trả lời từ response
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          { text: botMessage, sender: "bot" },
-        ]);
+        const botMessage = res.data.Answer;
+        // Nếu backend trả về History mới thì dùng luôn
+        if (res.data.History) {
+          setMessages(
+            res.data.History.map((msg: any) => ({
+              sender: msg.role === "user" ? "me" : "bot",
+              text: msg.content,
+            }))
+          );
+        } else {
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            { text: botMessage, sender: "bot" },
+          ]);
+        }
       } else {
         console.error("Error:", res.data.message);
       }

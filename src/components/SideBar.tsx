@@ -177,7 +177,7 @@ export default function SideBar({
                     </NavLink>
                   </li>
 
-                  <li>
+                  {/* <li>
                     <NavLink
                       to="/notification"
                       className={({ isActive }) =>
@@ -189,7 +189,7 @@ export default function SideBar({
                       <FaBell className="w-6 h-6 mr-2" />
                       <h1 className="text-lg font-light">Notification</h1>
                     </NavLink>
-                  </li>
+                  </li> */}
 
                   {/* {permissionsList.includes("GET: Tasks") ? ( */}
                   <li>

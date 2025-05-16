@@ -89,7 +89,8 @@ export default function Header() {
   const { notifications, fetchNotifications, clearNotifications } =
     useNotification();
   const userId = localStorage.getItem("userId");
-  const userNotifications = userId ? notifications[userId] || [] : [];
+  const userNotifications = userId ? notifications || {} : {};
+  console.log("userNotifications", userNotifications);
 
   useEffect(() => {
     if (userId) fetchNotifications(userId);
@@ -103,21 +104,29 @@ export default function Header() {
       toast.error("Xoá thông báo thất bại!");
     }
   };
+  const handleDeleteAllNotifications = async (userId: number) => {
+    try {
+      await axios.delete(`/api/notifications/user/%7Bid%7D?idUser=${userId}`);
+      if (userId) fetchNotifications(userId);
+    } catch (error) {
+      toast.error("Xoá tất cả thông báo thất bại!");
+    }
+  };
 
   return (
     <div className="w-full bg-gray-100">
       <div className="bg-white shadow-md w-full mx-auto p-4 flex justify-between items-center border-b border-gray-300">
         <div className="flex flex-row items-center">
           <h1 className="text-xl font-bold">{pageTitle}</h1>
-          <button
+          {/* <button
             className="bg-slate-700 ml-8 px-4 py-2 rounded-lg text-white hover:bg-slate-500"
             onClick={() => setShowChatbot(!showChatbot)}
           >
             AI Chat
-          </button>
+          </button> */}
         </div>
         <div className="relative">
-          <input
+          {/* <input
             type="text"
             placeholder="Search..."
             value={searchQuery}
@@ -127,24 +136,31 @@ export default function Header() {
           <MdSearch
             size={25}
             className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500"
-          />
+          /> */}
         </div>
 
         <div className="flex flex-row gap-10">
           <div className="rounded-lg px-3 py-3 flex justify-between w-44 relative">
             <button
-              onClick={() => setShowNotifications(!showNotifications)} // Toggle thông báo
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="relative"
             >
               <MdNotifications size={24} />
+              {userNotifications.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5">
+                  {userNotifications.length}
+                </span>
+              )}
             </button>
+            {/* ...rest of code... */}
             {/* Dropdown danh sách thông báo */}
 
             {showNotifications && (
               <div className="absolute top-12 right-0 w-64 bg-white shadow-lg rounded-lg p-4 z-50">
                 <h3 className="text-lg font-bold mb-2">Notifications</h3>
-                {notifications.length > 0 ? (
+                {userNotifications.length > 0 ? (
                   <ul>
-                    {notifications.map((notification) => (
+                    {userNotifications.map((notification) => (
                       <li
                         key={notification.IdNotification}
                         className="p-2 border-b last:border-b-0 text-sm flex"
@@ -173,7 +189,7 @@ export default function Header() {
                   <p className="text-gray-500 text-sm">No notifications</p>
                 )}
                 <button
-                  onClick={() => clearNotifications(userId!)}
+                  onClick={() => handleDeleteAllNotifications(userId!)}
                   className="mt-2 bg-red-500 hover:bg-red-700 text-white py-1 px-3 rounded"
                 >
                   Clear All

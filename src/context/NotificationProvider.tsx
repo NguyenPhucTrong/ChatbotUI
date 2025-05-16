@@ -32,6 +32,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
       const res = await axios.get(
         `/api/notifications/%7Bid%7D?idUser=${userId}`
       );
+      console.log(res.data);
       setNotifications(res.data);
     } catch (error) {
       setNotifications((prev) => ({

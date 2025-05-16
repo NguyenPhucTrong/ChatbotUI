@@ -242,7 +242,7 @@ export default function SideBar({
 
               {role === "User" ? (
                 <>
-                  <li>
+                  {/* <li>
                     <button
                       className="flex flex-row w-full text-left p-3 pl-5 rounded hover:bg-gray-700"
                       onClick={onOpenChatHistory}
@@ -250,7 +250,7 @@ export default function SideBar({
                       <FaHistory className="w-6 h-6 mr-2" />
                       <h1 className="text-lg font-light">History Chat</h1>
                     </button>
-                  </li>
+                  </li> */}
 
                   <li>
                     <NavLink
@@ -266,7 +266,7 @@ export default function SideBar({
                     </NavLink>
                   </li>
 
-                  <li>
+                  {/* <li>
                     <NavLink
                       to="/chatbot"
                       className={({ isActive }) =>
@@ -278,7 +278,7 @@ export default function SideBar({
                       <FaRobot className="w-6 h-6 mr-2" />
                       <h1 className="text-lg font-light">ChatBot Q&A</h1>
                     </NavLink>
-                  </li>
+                  </li> */}
                 </>
               ) : (
                 <span></span>

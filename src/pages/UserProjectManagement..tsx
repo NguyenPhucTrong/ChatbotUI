@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { getAllProjects } from "../services/ProjectsServices";
 import { getProjectMembers } from "../services/ProjectMembers";
 import SearchAndFilters from "../components/SearchAndFilters";
@@ -42,6 +42,9 @@ export default function UserProjectManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
   const [filterPriority, setFilterPriority] = useState("All");
+
+    const navigate = useNavigate(); // Initialize navigate
+
 
   const token = localStorage.getItem("userToken");
 
@@ -188,6 +191,11 @@ export default function UserProjectManagement() {
     }
   };
 
+
+  const handleViewDetails = (projectId: number) => {
+    navigate(`/project-detail/${projectId}`); // Navigate to ProjectDetail with projectId
+  };
+
   return (
     <div className="p-6 flex-1 max-w-[1493px] mx-auto overflow-hidden">
       <h1 className="text-3xl font-semibold my-6 text-gray-800">
@@ -206,21 +214,67 @@ export default function UserProjectManagement() {
 
       {/* Project Tables */}
       {projects.length > 0 ? (
-        projects.map((project) => (
+        <div>
+
+          {projects.map((project) => (
+        <div key={project.id} className="mb-8">
           <ProjectTable
-            key={project.id}
             project={project}
-            members={[]} // Không cần danh sách thành viên cho user
-            filteredTasks={filteredTasks}
-            handleEditTitle={() => {}} // Không cần chỉnh sửa tiêu đề
-            handleEditDueDate={() => {}} // Không cần chỉnh sửa ngày hết hạn
-            updateTaskStatus={updateTaskStatus} // Không cần cập nhật trạng thái
-            updateTaskPriority={() => {}} // Không cần cập nhật mức độ ưu tiên
-            handleAssignMemberToTask={() => {}} // Không cần gán thành viên
-            deleteTask={() => {}} // Không cần xóa task
-            addTask={() => {}} // Không cần thêm task
+           members={[]} // Không cần danh sách thành viên cho user
+                filteredTasks={filteredTasks}
+                handleEditTitle={() => {}} // Không cần chỉnh sửa tiêu đề
+                handleEditDueDate={() => {}} // Không cần chỉnh sửa ngày hết hạn
+                updateTaskStatus={updateTaskStatus} // Không cần cập nhật trạng thái
+                updateTaskPriority={() => {}} // Không cần cập nhật mức độ ưu tiên
+                handleAssignMemberToTask={() => {}} // Không cần gán thành viên
+                deleteTask={() => {}} // Không cần xóa task
+                addTask={() => {}} // Không cần thêm task
           />
-        ))
+
+          <div className="mt-4 flex justify-end">
+            <button
+              onClick={() => handleViewDetails(project.id)} // Call handleViewDetails
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+            >
+              View Details
+            </button>
+          </div>
+
+          {/* <div className="mt-4 flex justify-end">
+            <button
+              onClick={() => openUploadModal(project.id)}
+              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+            >
+              Upload Files for {project.name}
+            </button>
+          </div> */}
+        </div>
+      ))}
+          {/* {projects.map((project) => (
+            <div key={project.id}>
+              <ProjectTable
+                project={project}
+                members={[]} // Không cần danh sách thành viên cho user
+                filteredTasks={filteredTasks}
+                handleEditTitle={() => {}} // Không cần chỉnh sửa tiêu đề
+                handleEditDueDate={() => {}} // Không cần chỉnh sửa ngày hết hạn
+                updateTaskStatus={updateTaskStatus} // Không cần cập nhật trạng thái
+                updateTaskPriority={() => {}} // Không cần cập nhật mức độ ưu tiên
+                handleAssignMemberToTask={() => {}} // Không cần gán thành viên
+                deleteTask={() => {}} // Không cần xóa task
+                addTask={() => {}} // Không cần thêm task
+              />
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={() => handleViewDetails(project.id)} // Call handleViewDetails
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                >
+                  View Details
+                </button>
+              </div>
+            </div>
+          ))} */}
+        </div>
       ) : (
         <p className="text-gray-500">No projects available.</p>
       )}

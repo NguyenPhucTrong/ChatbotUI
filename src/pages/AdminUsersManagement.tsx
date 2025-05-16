@@ -214,8 +214,8 @@ const AdminUsersManagement: React.FC = () => {
     setEmail(user.Email);
     setPhoneNumber(user.PhoneNumber);
     setRole(user.Role);
-    setPassword("");
-    setConfirmPassword("");
+    setPassword(user.Password || "");
+    setConfirmPassword(user.Password || "");
     setShowEditModal(true);
   };
 

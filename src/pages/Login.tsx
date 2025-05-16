@@ -63,21 +63,21 @@ const Login = ({ setRole }) => {
                 navigate("/home");
               }}
             />{" "}
-            Đăng nhập với Google
+            Sign in with Google
           </button>
           <button className="flex items-center w-full px-4 py-2 border rounded-md">
-            <FaGithub className="mr-2" onClick={() => navigate("/home")} /> Đăng
-            nhập với Github
+            <FaGithub className="mr-2" onClick={() => navigate("/home")} />
+            Sign in with Github
           </button>
           <button className="flex items-center w-full px-4 py-2 border rounded-md">
             <FaMicrosoft className="mr-2" onClick={() => navigate("/home")} />{" "}
-            Đăng nhập với Microsoft
+            Sign in with Microsoft
           </button>
         </div>
 
         <div className="my-4 border-t relative">
           <span className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-white px-2 text-gray-500">
-            Hoặc
+            Or 
           </span>
         </div>
 
@@ -85,7 +85,7 @@ const Login = ({ setRole }) => {
         <form className="space-y-4" onSubmit={handleLogin}>
           <div>
             <label className="block text-left text-sm font-medium">
-              Tên người dùng
+              User name
             </label>
             <input
               type="text"
@@ -97,7 +97,7 @@ const Login = ({ setRole }) => {
           </div>
           <div>
             <label className="block text-left text-sm font-medium">
-              Mật khẩu
+              Password
             </label>
             <input
               type="password"
@@ -111,17 +111,17 @@ const Login = ({ setRole }) => {
             type="submit"
             className="w-full bg-black text-white py-2 rounded-md"
           >
-            Đăng nhập
+            Login
           </button>
         </form>
         {/* Link to SignUp */}
         <p className="mt-4 text-sm text-gray-500">
-          Chưa có tài khoản?{" "}
+          Don't have an account?{" "}
           <span
             className="text-blue-500 cursor-pointer hover:underline"
             onClick={() => navigate("/signup")}
           >
-            Đăng ký ngay
+            Sign up now
           </span>
         </p>
       </div>

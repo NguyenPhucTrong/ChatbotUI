@@ -8,6 +8,7 @@ import { getProjectById } from "../services/ProjectsServices"; // Import API to 
 import { getProjectMembers, addMemberToProject, removeMemberFromProject } from "../services/ProjectMembers"; // Import member services
 import { getUsersPagination } from "../services/UserServices";
 import { askQuestion, writeDocs } from "../services/AIService"; // Import thêm writeDocs
+import { addFileToProject } from "../services/StorageService";
 
 interface UploadedFile {
   id: string;
@@ -64,6 +65,21 @@ export default function ProjectDetail() {
   const CLOUDINARY_URL = import.meta.env.VITE_CLOUDINARY_URL!;
   const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET!;
 
+    const [usersRole, setUsersRole] = useState<string>(""); // State for user role
+
+
+  useEffect(() => {
+    const fetchUsersRole = async () => {
+      const userRole = localStorage.getItem("userRole");
+      setUsersRole(userRole || ""); // Set user role from local storage
+    }
+
+    fetchUsersRole();
+
+    console.log("User role:", usersRole);
+  }, []);
+
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: (acceptedFiles) => {
       if (acceptedFiles.length > 0) {
@@ -74,7 +90,7 @@ export default function ProjectDetail() {
     multiple: true,
     accept: {
       "application/pdf": [".pdf"],
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document" : [".docx"],
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document" : ["docx"],
       "text/plain": [".txt"],
       "application/json": [".json"],
       "image/*": [".png", ".jpg", ".jpeg", ".gif"],
@@ -111,47 +127,48 @@ export default function ProjectDetail() {
     fetchProjectDetails();
   }, [projectId]);
 
-  useEffect(() => {
-    // Fetch project members
-    const fetchMembers = async () => {
-      try {
-        const response = await getProjectMembers(Number(projectId));
-        const membersData = response.data.map((member: any) => ({
-          id: member.IdUser,
-          fullname: member.Fullname,
-          email: member.Email,
-          phoneNumber: member.PhoneNumber,
-          userole: member.UserRole,
-        }));
-        setMembers(membersData);
-      } catch (error) {
-        console.error("Error fetching project members:", error);
-        toast.error("Failed to load project members.");
-      }
-    };
+// Fetch project members
+const fetchMembers = async () => {
+  try {
+    const response = await getProjectMembers(Number(projectId));
+    const membersData = response.data.map((member: any) => ({
+      id: member.IdProjectMember,
+      iduser: member.IdUser,
+      fullname: member.Fullname,
+      email: member.Email,
+      phoneNumber: member.PhoneNumber,
+      userole: member.UserRole,
+    }));
+    setMembers(membersData);
+  } catch (error) {
+    console.error("Error fetching project members:", error);
+    toast.error("Failed to load project members.");
+  }
+};
 
-    // Fetch all users
-    const fetchUsers = async (page: number = 1, pageSize: number = 10) => {
-      try {
-        const response = await getUsersPagination(page, pageSize);
-        const fetchedUsers = response.data.data.map((user: any) => ({
-          id: user.IdUser,
-          fullname: user.Fullname,
-          email: user.Email,
-          phoneNumber: user.PhoneNumber,
-          role: user.Role,
-        }));
-        setUsers(fetchedUsers);
-        setTotalPages(response.data.totalPages || 0);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-        toast.error("Failed to load users.");
-      }
-    };
+// Fetch all users
+const fetchUsers = async (page: number = 1, pageSize: number = 10) => {
+  try {
+    const response = await getUsersPagination(page, pageSize);
+    const fetchedUsers = response.data.data.map((user: any) => ({
+      id: user.IdUser,
+      fullname: user.Fullname,
+      email: user.Email,
+      phoneNumber: user.PhoneNumber,
+      role: user.Role,
+    }));
+    setUsers(fetchedUsers);
+    setTotalPages(response.data.totalPages || 0);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    toast.error("Failed to load users.");
+  }
+};
 
-    fetchMembers();
-    fetchUsers(currentPage, pageSize);
-  }, [projectId, currentPage, pageSize]);
+useEffect(() => {
+  fetchMembers();
+  fetchUsers(currentPage, pageSize);
+}, [projectId, currentPage, pageSize]);
 
   const handleRoleChange = (userId: number, role: string) => {
     setUsers((prevUsers) =>
@@ -160,31 +177,21 @@ export default function ProjectDetail() {
       )
     );
   };
-
-  const handleAddUserToProject = async (userId: number) => {
-    const user = users.find((u) => u.id === userId);
-    if (!user?.selectedRole || user.selectedRole.trim() === "") {
-      toast.error("Please select a role for the user before adding them to the project.");
-      return;
-    }
-    try {
-      await addMemberToProject(Number(projectId), userId, user.selectedRole);
-      toast.success("User added to project successfully!");
-      setMembers((prev) => [
-        ...prev,
-        {
-          id: userId,
-          fullname: user.fullname,
-          email: user.email,
-          phoneNumber: user.phoneNumber,
-          userole: user.selectedRole,
-        },
-      ]);
-    } catch (error) {
-      console.error("Error adding user to project:", error);
-      toast.error("Failed to add user to project.");
-    }
-  };
+// const handleAddUserToProject = async (userId: number) => {
+//   const user = users.find((u) => u.id === userId);
+//   if (!user?.selectedRole || user.selectedRole.trim() === "") {
+//     toast.error("Please select a role for the user before adding them to the project.");
+//     return;
+//   }
+//   try {
+//     await addMemberToProject(Number(projectId), userId, user.selectedRole);
+//     toast.success("User added to project successfully!");
+//     await fetchMembers(); // Cập nhật lại danh sách members
+//   } catch (error) {
+//     console.error("Error adding user to project:", error);
+//     toast.error("Failed to add user to project.");
+//   }
+// };
 
   const handleRemoveMember = async (memberId: number) => {
     try {
@@ -221,6 +228,21 @@ export default function ProjectDetail() {
           body: formData,
         });
         const data = await response.json();
+
+        // Lưu vào database
+        // try {
+        //   await addFileToProject({
+        //     IdStorage: 0, // hoặc null nếu backend tự tăng
+        //     IdProject: Number(projectId),
+        //     StorageURL: data.secure_url,
+        //     Filename: data.original_filename,
+        //     Size: data.bytes,
+        //   });
+        //   toast.success(`File "${file.name}" đã lưu vào database!`);
+        // } catch (dbErr) {
+        //   toast.error(`Lưu DB thất bại cho file "${file.name}"!`);
+        // }
+
         setUploadedFiles((prev) => [
           ...prev,
           {
@@ -310,10 +332,12 @@ export default function ProjectDetail() {
   };
 
   // Filter users to exclude those already in the project
-  const filteredUsers = users.filter(
-    (user) => !members.some((member) => member.id === user.id)
-  );
+  const filteredUsers = users.filter((user) => {
+    const isMember = members.some((member) => member.iduser === user.id);
+    const isAdminOrSuperAdmin = user.role === "Admin" || user.role === "Super Admin";
 
+    return !isMember && !isAdminOrSuperAdmin;
+  })
   const roles = [
     "Frontend Developer",
     "Tester",
@@ -338,133 +362,145 @@ export default function ProjectDetail() {
         {projectName} - ID: {projectId}
       </h1>
 
-      {/* Project Members Section */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-semibold mb-4">Project Members</h2>
-        <ul className="list-disc pl-6">
-          {members.length > 0 ? (
-            members.map((member) => (
-              <li key={member.id} className="flex justify-between items-center">
-                <span>
-                  {member.fullname} ({member.email}) - Role: {member.userole}
-                </span>
+    {(usersRole === "Admin" || usersRole === "Super Admin") ? (<>
+
+
+
+        {/* Project Members Section */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-semibold mb-4">Project Members</h2>
+          <ul className="list-disc pl-6">
+            {members.length > 0 ? (
+              members.map((member) => (
+                <li key={member.id} className="flex justify-between items-center">
+                  <span>
+                    {member.fullname} ({member.email}) - Role: {member.userole}
+                  </span>
+                  <button
+                    onClick={() => handleRemoveMember(member.id)}
+                    className="text-red-500 hover:text-red-700 px-2 py-1 rounded hover:bg-red-50"
+                  >
+                    Remove
+                  </button>
+                </li>
+              ))
+            ) : (
+              <p>No members in this project.</p>
+            )}
+          </ul>
+        </div>
+
+        {/* All Users Button */}
+        <div className="mb-6">
+          <button
+            onClick={() => setIsAllUsersOpen(true)}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            All Users
+          </button>
+        </div>
+
+        {/* All Users Modal */}
+        {isAllUsersOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white w-[80%] h-[80%] rounded-lg shadow-lg p-6 flex flex-col">
+              <div className="flex justify-between items-center border-b pb-4">
+                <h2 className="text-2xl font-bold">All Users</h2>
                 <button
-                  onClick={() => handleRemoveMember(member.id)}
-                  className="text-red-500 hover:text-red-700 px-2 py-1 rounded hover:bg-red-50"
+                  onClick={() => setIsAllUsersOpen(false)}
+                  className="text-red-500 text-xl"
                 >
-                  Remove
+                  ✖
                 </button>
-              </li>
-            ))
-          ) : (
-            <p>No members in this project.</p>
-          )}
-        </ul>
-      </div>
-
-      {/* Project Manager Section */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-semibold mb-4">Project Manager</h2>
-        {manager ? (
-          <div className="p-4 border rounded bg-gray-50">
-            <p>
-              <strong>Name:</strong> {manager.fullname}
-            </p>
-            <p>
-              <strong>Email:</strong> {manager.email}
-            </p>
-          </div>
-        ) : (
-          <p>No manager assigned for this project.</p>
-        )}
-      </div>
-
-      {/* All Users Button */}
-      <div className="mb-6">
-        <button
-          onClick={() => setIsAllUsersOpen(true)}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          All Users
-        </button>
-      </div>  
-
-      {/* All Users Modal */}
-      {isAllUsersOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white w-[80%] h-[80%] rounded-lg shadow-lg p-6 flex flex-col">
-            <div className="flex justify-between items-center border-b pb-4">
-              <h2 className="text-2xl font-bold">All Users</h2>
+              </div>
+              <div className="flex-1 overflow-auto mt-4">
+                {filteredUsers.length > 0 ? (
+                  <table className="min-w-full bg-white border border-gray-300 rounded shadow">
+                    <thead>
+                      <tr className="bg-gray-300">
+                        <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
+                          Full Name
+                        </th>
+                        <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
+                          Email
+                        </th>
+                        <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
+                          Phone Number
+                        </th>
+                        <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
+                          Role
+                        </th>
+                        <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredUsers.map((user) => (
+                        <tr key={user.id} className="hover:bg-gray-100">
+                          <td className="px-6 py-4 border-b">{user.fullname}</td>
+                          <td className="px-6 py-4 border-b">{user.email}</td>
+                          <td className="px-6 py-4 border-b">{user.phoneNumber}</td>
+                          <td className="px-6 py-4 border-b">
+                            <select
+                              value={user.selectedRole || ""}
+                              onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                              className="border border-gray-300 rounded px-2 py-1"
+                            >
+                              <option value="" disabled>
+                                Select Role
+                              </option>
+                              {roles.map((role) => (
+                                <option key={role} value={role}>
+                                  {role}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+                          <td className="px-6 py-4 border-b">
+                            <button
+                              onClick={() => handleAddUserToProject(user.id)}
+                              className="text-blue-500 hover:text-blue-700 px-2 py-1 border border-blue-500 rounded hover:bg-blue-50"
+                            >
+                              Add to Project
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <p className="text-gray-500">No users available to add to this project.</p>
+                )}
+              </div>
+               {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="pagination mt-4 flex justify-between">
               <button
-                onClick={() => setIsAllUsersOpen(false)}
-                className="text-red-500 text-xl"
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
               >
-                ✖
+                Previous
+              </button>
+              <span>
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={currentPage === totalPages || totalPages === 1}
+                className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
+              >
+                Next
               </button>
             </div>
-            <div className="flex-1 overflow-auto mt-4">
-              {filteredUsers.length > 0 ? (
-                <table className="min-w-full bg-white border border-gray-300 rounded shadow">
-                  <thead>
-                    <tr className="bg-gray-300">
-                      <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
-                        Full Name
-                      </th>
-                      <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
-                        Email
-                      </th>
-                      <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
-                        Phone Number
-                      </th>
-                      <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
-                        Role
-                      </th>
-                      <th className="px-6 py-4 text-left font-semibold text-gray-700 border-b">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredUsers.map((user) => (
-                      <tr key={user.id} className="hover:bg-gray-100">
-                        <td className="px-6 py-4 border-b">{user.fullname}</td>
-                        <td className="px-6 py-4 border-b">{user.email}</td>
-                        <td className="px-6 py-4 border-b">{user.phoneNumber}</td>
-                        <td className="px-6 py-4 border-b">
-                          <select
-                            value={user.selectedRole || ""}
-                            onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                            className="border border-gray-300 rounded px-2 py-1"
-                          >
-                            <option value="" disabled>
-                              Select Role
-                            </option>
-                            {roles.map((role) => (
-                              <option key={role} value={role}>
-                                {role}
-                              </option>
-                            ))}
-                          </select>
-                        </td>
-                        <td className="px-6 py-4 border-b">
-                          <button
-                            onClick={() => handleAddUserToProject(user.id)}
-                            className="text-blue-500 hover:text-blue-700 px-2 py-1 border border-blue-500 rounded hover:bg-blue-50"
-                          >
-                            Add to Project
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <p className="text-gray-500">No users available to add to this project.</p>
-              )}
+          )}
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </>) : (<></>)}
 
       {/* Upload Files Section */}
       <div className="mb-6">

@@ -51,14 +51,14 @@ export default function MessageInput({ onSend }: MessageInputProps) {
                 Send
             </button>
             {/* Nút chọn file */}
-            <label className="ml-4 cursor-pointer">
+            {/* <label className="ml-4 cursor-pointer">
                 <FaLink size={20} />
                 <input
                     type="file"
                     className="hidden"
                     onChange={handleFileChange}
                 />
-            </label>
+            </label> */}
         </div>
     );
 }

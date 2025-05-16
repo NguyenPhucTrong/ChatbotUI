@@ -7,10 +7,10 @@ import Dashboard from "./pages/Dashboard";
 import ChatAI from "./pages/ChatAI";
 import ChatHistoryModal from "./components/ChatHistoryModal";
 import Profile from "./pages/Profile";
-import AdminCompanyManagement from "./pages/AdminCompanyManagement";
+// import AdminCompanyManagement from "./pages/AdminCompanyManagement";
 import AdminUsersManagement from "./pages/AdminUsersManagement";
 import AdminSMSFacebook from "./pages/AdminSMSFacebook";
-import SuperadminManagement from "./pages/SuperadminManagement";
+// import SuperadminManagement from "./pages/SuperadminManagement";
 import MainLanding from "./pages/MainLanding";
 import Login from "./pages/Login";
 import { ToastContainer } from "react-toastify";
@@ -30,12 +30,12 @@ interface Message {
   text: string;
 }
 
-// Định nghĩa interface cho ChatHistory
-interface ChatHistory {
-  id: number;
-  title: string;
-  messages: Message[];
-}
+// // Định nghĩa interface cho ChatHistory
+// interface ChatHistory {
+//   id: number;
+//   title: string;
+//   messages: Message[];
+// }
 
 function App() {
   const [role, setRole] = useState("");
@@ -168,14 +168,14 @@ function App() {
               <Route path="/permissions" element={<Permissions />} />
               <Route
                 path="/company-management"
-                element={<AdminCompanyManagement />}
+                // element={<AdminCompanyManagement />}
               />
               <Route
                 path="/user-management"
                 element={<AdminUsersManagement />}
               />
-              <Route path="/notification" element={<AdminSMSFacebook />} />
-              <Route path="/superadmin" element={<SuperadminManagement />} />
+              {/* <Route path="/notification" element={<AdminSMSFacebook />} />
+              <Route path="/superadmin" element={<SuperadminManagement />} /> */}
               <Route path="/mainlanding" element={<MainLanding />} />
               <Route path="/login" element={<Login setRole={setRole} />} />
               <Route path="/signup" element={<SignUp />} />

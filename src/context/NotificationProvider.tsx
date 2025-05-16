@@ -15,6 +15,7 @@ interface NotificationContextProps {
   notifications: UserNotifications;
   clearNotifications: (userId: string) => void;
   fetchNotifications: (userId: string) => void;
+  playNotificationSound: () => void;
 }
 
 const NotificationContext = createContext<NotificationContextProps | undefined>(
@@ -132,7 +133,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <NotificationContext.Provider
-      value={{ notifications, fetchNotifications, clearNotifications }}
+      value={{ notifications, fetchNotifications, clearNotifications, playNotificationSound }}
     >
       {children}
     </NotificationContext.Provider>

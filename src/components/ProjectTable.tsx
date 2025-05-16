@@ -81,6 +81,7 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
   listManager,
 }) => {
   // console.log("permissionsList", permissionsList);
+  const [usersRole, setUsersRole] = useState<string>(""); // State for user role
 
   const [manager, setManager] = useState(project.manager);
   const [status, setStatus] = useState(project.status);
@@ -108,6 +109,18 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
       toast.error("có lỗi!");
     }
   }
+
+    useEffect(() => {
+    const fetchUsersRole = async () => {
+      const userRole = localStorage.getItem("userRole");
+      setUsersRole(userRole || ""); // Set user role from local storage
+    }
+
+    fetchUsersRole();
+
+    console.log("User role:", usersRole);
+  }, []);
+
   return (
     <div className="w-full overflow-x-auto mx-auto mt-6 mb-6">
       <h2 className="text-2xl font-semibold mb-4">{project.name}</h2>
@@ -163,7 +176,9 @@ const ProjectTable: React.FC<ProjectTableProps> = ({
             <th className="px-4 py-2 bg-gray-200">Status</th>
             <th className="px-4 py-2 bg-gray-200">Due Date</th>
             <th className="px-4 py-2 bg-gray-200">Priority</th>
-            <th className="px-4 py-2 bg-gray-200">Delete</th>
+            {(usersRole === "Admin" || usersRole === "Super Admin") ? (<>
+            <th className="px-4 py-2 bg-gray-200">Delete</th> 
+            </>) : (<> </>) }
           </tr>
         </thead>
         <tbody>

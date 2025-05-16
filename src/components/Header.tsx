@@ -43,7 +43,7 @@ export default function Header() {
     } else {
       switch (location.pathname) {
         case "/home":
-          setPageTitle("Trang chủ");
+          setPageTitle("Home");
           break;
         case "/chatbot":
           setPageTitle("Chatbot");
@@ -86,7 +86,7 @@ export default function Header() {
     }
   }, [location.pathname, projectId]);
 
-  const { notifications, fetchNotifications, clearNotifications } =
+  const { notifications, fetchNotifications, clearNotifications, playNotificationSound } =
     useNotification();
   const userId = localStorage.getItem("userId");
   const userNotifications = userId ? notifications || {} : {};
@@ -95,6 +95,16 @@ export default function Header() {
   useEffect(() => {
     if (userId) fetchNotifications(userId);
   }, [localStorage.getItem("userId")]);
+
+  useEffect(() => {
+    if (userId) return;
+    const notiArr = notifications?.["userId"] || [];
+    if (notiArr.length > prevCountRef.current) {
+      playNotificationSound();
+    }
+    prevCountRef.current = notiArr.length;
+
+  }, [notifications, userId, playNotificationSound]);
 
   const handleDeleteNotification = async (id: number) => {
     try {
@@ -112,6 +122,10 @@ export default function Header() {
       toast.error("Xoá tất cả thông báo thất bại!");
     }
   };
+
+
+  // const userNotifications = userId ? notifications || {} : {};
+  // console.log("userNotifications", userNotifications);
 
   return (
     <div className="w-full bg-gray-100">
@@ -155,47 +169,47 @@ export default function Header() {
             {/* ...rest of code... */}
             {/* Dropdown danh sách thông báo */}
 
-            {showNotifications && (
-              <div className="absolute top-12 right-0 w-64 bg-white shadow-lg rounded-lg p-4 z-50">
-                <h3 className="text-lg font-bold mb-2">Notifications</h3>
-                {userNotifications.length > 0 ? (
-                  <ul>
-                    {userNotifications.map((notification) => (
-                      <li
-                        key={notification.IdNotification}
-                        className="p-2 border-b last:border-b-0 text-sm flex"
-                      >
-                        <div>
-                          <div>{notification.Message}</div>
-                          <div className="text-xs text-gray-400">
-                            {notification.DateCreate}
-                          </div>
-                        </div>
-                        <button
-                          className="ml-2 text-red-500 hover:text-red-700"
-                          onClick={() =>
-                            handleDeleteNotification(
-                              notification.IdNotification
-                            )
-                          }
-                          title="Xoá thông báo"
-                        >
-                          ✖
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-gray-500 text-sm">No notifications</p>
-                )}
-                <button
-                  onClick={() => handleDeleteAllNotifications(userId!)}
-                  className="mt-2 bg-red-500 hover:bg-red-700 text-white py-1 px-3 rounded"
-                >
-                  Clear All
-                </button>
-              </div>
-            )}
+{showNotifications && (
+  <div className="absolute top-12 right-0 w-64 bg-white shadow-lg rounded-lg p-4 z-50">
+    <h3 className="text-lg font-bold mb-2">Notifications</h3>
+    <div className="max-h-64 overflow-y-auto"> {/* Thêm dòng này */}
+      {userNotifications.length > 0 ? (
+  <ul>
+    {[...userNotifications].reverse().map((notification) => (
+      <li
+        key={notification.IdNotification}
+        className="p-2 border-b last:border-b-0 text-sm flex"
+      >
+        <div>
+          <div>{notification.Message}</div>
+          <div className="text-xs text-gray-400">
+            {notification.DateCreate}
+          </div>
+        </div>
+        <button
+          className="ml-2 text-red-500 hover:text-red-700"
+          onClick={() =>
+            handleDeleteNotification(notification.IdNotification)
+          }
+          title="Xoá thông báo"
+        >
+          ✖
+        </button>
+      </li>
+    ))}
+  </ul>
+) : (
+  <p className="text-gray-500 text-sm">No notifications</p>
+)}
+    </div>
+    <button
+      onClick={() => handleDeleteAllNotifications(userId!)}
+      className="mt-2 bg-red-500 hover:bg-red-700 text-white py-1 px-3 rounded"
+    >
+      Clear All
+    </button>
+  </div>
+)}
             <button>
               <MdSettings size={24} />
             </button>

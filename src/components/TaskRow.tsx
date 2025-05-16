@@ -90,6 +90,19 @@ const TaskRow: React.FC<TaskRowProps> = ({
     task.dueDate ? new Date(isoDate(task.dueDate)) : null
   );
 
+    const [usersRole, setUsersRole] = useState<string>(""); // State for user role
+
+      useEffect(() => {
+    const fetchUsersRole = async () => {
+      const userRole = localStorage.getItem("userRole");
+      setUsersRole(userRole || ""); // Set user role from local storage
+    }
+
+    fetchUsersRole();
+
+    console.log("User role:", usersRole);
+  }, []);
+
   function convertDate(input: string) {
     if (input.split("-").length > 2) {
       const [year, month, day] = input.split("-");
@@ -202,6 +215,9 @@ const TaskRow: React.FC<TaskRowProps> = ({
         </select>
       </td>
 
+            {(usersRole === "Admin" || usersRole === "Super Admin") ? (<>
+
+
       <td className="border-b px-6 py-4">
         <button
           onClick={() => deleteTask(projectId, task.id)}
@@ -210,6 +226,8 @@ const TaskRow: React.FC<TaskRowProps> = ({
           🗑️
         </button>
       </td>
+      </> ): (<>  
+      </>) }
     </tr>
   );
 };

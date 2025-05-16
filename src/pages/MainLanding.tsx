@@ -1,6 +1,7 @@
 import React from "react";
 import { FaRobot, FaTasks, FaChartBar } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import flower1 from "../assets/image/flower2.png"; // Đường dẫn đúng tới ảnh của bạn
 
 const MainLandingPage = () => {
 
@@ -10,7 +11,11 @@ const MainLandingPage = () => {
     <div className="min-h-screen flex flex-col items-center bg-white">
       {/* Header */}
       <header className="w-full flex justify-between items-center p-6 border-b">
-        <h1 className="text-xl font-bold">LOGO</h1>
+        <img
+          src={flower1}
+          alt="Logo"
+          className="w-14 h-14 rounded-full object-cover"
+        />
         <div>
           <button className="mr-2 px-4 py-2 border border-black text-black bg-white hover:bg-gray-100 rounded"
             onClick={() => navigate("/login")}
